@@ -79,13 +79,19 @@
                                     AutoGenerateColumns="False"
                                     ItemsSource="{Binding Suppliers}"
                                     SelectedItem="{Binding SelectedSupplier}">
+                                    <DataGrid.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding EnterKeyPressedCommand}" />
+                                    </DataGrid.InputBindings>
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Binding="{Binding Id}" Header="ID" />
-                                        <DataGridTextColumn Binding="{Binding Name}" Header="Имя" />
+                                        <DataGridTextColumn
+                                            MinWidth="300"
+                                            Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Имя" />
                                         <DataGridTemplateColumn Header="Редактировать">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Button>
+                                                    <Button Command="{Binding DataContext.EditeSuplierCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
                                                         <materialDesign:PackIcon
                                                             Width="16"
                                                             Height="16"
@@ -97,7 +103,7 @@
                                         <DataGridTemplateColumn Header="Удалить">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Button>
+                                                    <Button Command="{Binding DataContext.DeleteSuplierCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
                                                         <materialDesign:PackIcon
                                                             Width="16"
                                                             Height="16"
