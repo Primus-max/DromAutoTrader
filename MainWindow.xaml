@@ -18,8 +18,55 @@
     TextOptions.TextRenderingMode="Auto"
     mc:Ignorable="d">
     <Grid>
-        <materialDesign:Card Margin="16" Padding="32">
-            <TextBlock Style="{DynamicResource MaterialDesignTitleTextBlock}">My First Material Design App</TextBlock>
+        <materialDesign:Card Margin="16">
+            <materialDesign:Card>
+                <ScrollViewer HorizontalScrollBarVisibility="Auto">
+                    <TabControl HorizontalContentAlignment="Left" Style="{StaticResource MaterialDesignFilledUniformTabControl}">
+                        <TabControl.Template>
+                            <ControlTemplate TargetType="TabControl">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <!--  Здесь разместите вкладки (TabItems)  -->
+                                    <TabPanel Grid.Row="0" IsItemsHost="True" />
+
+                                    <!--  Здесь разместите содержимое выбранной вкладки  -->
+                                    <Border Grid.Row="1">
+                                        <ContentPresenter ContentSource="SelectedContent" />
+                                    </Border>
+                                </Grid>
+                            </ControlTemplate>
+                        </TabControl.Template>
+
+                        <!--  Здесь добавьте ваши TabItem  -->
+                        <TabItem Header="Объявления">
+                            <TextBlock Margin="10" Text="Filled example tab 1" />
+                        </TabItem>
+                        <TabItem Header="Загрузить прайс">
+                            <TextBlock Margin="10" Text="Filled example tab 2" />
+                        </TabItem>
+                        <TabItem Header="Быстрое добавление ссылок">
+                            <TextBlock Margin="10" Text="Filled example tab 3" />
+                        </TabItem>
+                        <TabItem Header="Поставщики">
+                            <TextBlock Margin="10" Text="Filled example tab 4" />
+                        </TabItem>
+                        <TabItem Header="Каналы">
+                            <TextBlock Margin="10" Text="Filled example tab 5" />
+                        </TabItem>
+                        <TabItem Header="Брэнды">
+                            <TextBlock Margin="10" Text="Filled example tab 6" />
+                        </TabItem>
+                        <TabItem Header="Ставки">
+                            <TextBlock Margin="10" Text="Filled example tab 7" />
+                        </TabItem>
+                    </TabControl>
+                </ScrollViewer>
+            </materialDesign:Card>
         </materialDesign:Card>
+
     </Grid>
 </Window>
