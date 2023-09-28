@@ -4,9 +4,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:DromAutoTrader"
+     xmlns:vm="clr-namespace:DromAutoTrader.ViewModels"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="MainWindow"
+    
+    Title="{}"
     Width="800"
     Height="450"
     Background="{DynamicResource MaterialDesignPaper}"
@@ -16,6 +18,8 @@
     TextElement.Foreground="{DynamicResource MaterialDesignBody}"
     TextOptions.TextFormattingMode="Ideal"
     TextOptions.TextRenderingMode="Auto"
+    WindowStartupLocation="CenterScreen"
+    WindowState="Maximized"
     mc:Ignorable="d">
     <Grid>
         <materialDesign:Card Margin="16">
@@ -60,41 +64,49 @@
                                     Text="Этот раздел отвечает за добавление, удаление, или изменения данных о поставщике" />
 
                                 <!--  Кнопка добавления нового поставщика  -->
-                                <Button Margin="20,16,0,30" Content="Добавить" Width="200" HorizontalAlignment="Left"/>
+                                <Button
+                                    Width="200"
+                                    Margin="20,16,0,30"
+                                    HorizontalAlignment="Left"
+                                    Click="AddSupplierButton_Click"
+                                    Content="Добавить" />
 
                                 <!--  Контейнер для списка поставщиков  -->
-                                <Grid Height="Auto">
-                                    <DataGrid x:Name="SupplierDataGrid" AutoGenerateColumns="False">
-                                        <DataGrid.Columns>
-                                            <DataGridTextColumn Binding="{Binding Id}" Header="ID" />
-                                            <DataGridTextColumn Binding="{Binding Name}" Header="Имя" />
-                                            <DataGridTemplateColumn Header="Редактировать">
-                                                <DataGridTemplateColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <Button>
-                                                            <materialDesign:PackIcon
-                                                                Width="{StaticResource IconSize}"
-                                                                Height="{StaticResource IconSize}"
-                                                                Kind="Pencil" />
-                                                        </Button>
-                                                    </DataTemplate>
-                                                </DataGridTemplateColumn.CellTemplate>
-                                            </DataGridTemplateColumn>
-                                            <DataGridTemplateColumn Header="Удалить">
-                                                <DataGridTemplateColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <Button>
-                                                            <materialDesign:PackIcon
-                                                                Width="{StaticResource IconSize}"
-                                                                Height="{StaticResource IconSize}"
-                                                                Kind="Delete" />
-                                                        </Button>
-                                                    </DataTemplate>
-                                                </DataGridTemplateColumn.CellTemplate>
-                                            </DataGridTemplateColumn>
-                                        </DataGrid.Columns>
-                                    </DataGrid>
-                                </Grid>
+                                <DataGrid
+                                    x:Name="SupplierDataGrid"
+                                    AutoGenerateColumns="False"
+                                    KeyUp="SupplierDataGrid_KeyUp"
+                                    
+                                    SelectedItem="{Binding SelectedSupplier}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Binding="{Binding Id}" Header="ID" />
+                                        <DataGridTextColumn Binding="{Binding Name}" Header="Имя" />
+                                        <DataGridTemplateColumn Header="Редактировать">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Click="EditButton_Click">
+                                                        <materialDesign:PackIcon
+                                                            Width="16"
+                                                            Height="16"
+                                                            Kind="Pencil" />
+                                                    </Button>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Header="Удалить">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Click="DeleteButton_Click">
+                                                        <materialDesign:PackIcon
+                                                            Width="16"
+                                                            Height="16"
+                                                            Kind="Delete" />
+                                                    </Button>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
 
 
                             </StackPanel>
