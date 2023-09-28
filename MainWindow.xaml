@@ -4,11 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:DromAutoTrader"
-     xmlns:vm="clr-namespace:DromAutoTrader.ViewModels"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    
-    Title="{}"
+    xmlns:vm="clr-namespace:DromAutoTrader.ViewModels"
+    Title="{Binding Title}"
     Width="800"
     Height="450"
     Background="{DynamicResource MaterialDesignPaper}"
@@ -21,6 +20,9 @@
     WindowStartupLocation="CenterScreen"
     WindowState="Maximized"
     mc:Ignorable="d">
+    <Window.DataContext>
+        <vm:MainWindowViewModel />
+    </Window.DataContext>
     <Grid>
         <materialDesign:Card Margin="16">
             <materialDesign:Card>
@@ -68,14 +70,14 @@
                                     Width="200"
                                     Margin="20,16,0,30"
                                     HorizontalAlignment="Left"
-                                    Click="AddSupplierButton_Click"
+                                    
+                                    Command="{Binding AddSupplierCommand}"
                                     Content="Добавить" />
 
                                 <!--  Контейнер для списка поставщиков  -->
                                 <DataGrid
                                     x:Name="SupplierDataGrid"
                                     AutoGenerateColumns="False"
-                                    KeyUp="SupplierDataGrid_KeyUp"
                                     
                                     SelectedItem="{Binding SelectedSupplier}">
                                     <DataGrid.Columns>
@@ -84,7 +86,7 @@
                                         <DataGridTemplateColumn Header="Редактировать">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Button Click="EditButton_Click">
+                                                    <Button >
                                                         <materialDesign:PackIcon
                                                             Width="16"
                                                             Height="16"
@@ -96,7 +98,7 @@
                                         <DataGridTemplateColumn Header="Удалить">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Button Click="DeleteButton_Click">
+                                                    <Button >
                                                         <materialDesign:PackIcon
                                                             Width="16"
                                                             Height="16"
