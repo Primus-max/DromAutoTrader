@@ -41,6 +41,7 @@ namespace DromAutoTrader
             }
         }
 
+        #region ПОСТАВЩИКИ
         // Метод для получения всех поставщиков из базы данных
         public List<Supplier> GetAllSuppliers()
         {
@@ -54,6 +55,9 @@ namespace DromAutoTrader
                 return new List<Supplier>(); // Вернуть пустой список или обработать ошибку иным способом
             }
         }
+        #endregion
+
+
 
         // Другие методы и события вашего MainWindow
     }
