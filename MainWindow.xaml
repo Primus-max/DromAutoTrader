@@ -70,7 +70,6 @@
                                     Width="200"
                                     Margin="20,16,0,30"
                                     HorizontalAlignment="Left"
-                                    
                                     Command="{Binding AddSupplierCommand}"
                                     Content="Добавить" />
 
@@ -78,7 +77,7 @@
                                 <DataGrid
                                     x:Name="SupplierDataGrid"
                                     AutoGenerateColumns="False"
-                                    
+                                    ItemsSource="{Binding Suppliers}"
                                     SelectedItem="{Binding SelectedSupplier}">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Binding="{Binding Id}" Header="ID" />
@@ -86,7 +85,7 @@
                                         <DataGridTemplateColumn Header="Редактировать">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Button >
+                                                    <Button>
                                                         <materialDesign:PackIcon
                                                             Width="16"
                                                             Height="16"
@@ -98,7 +97,7 @@
                                         <DataGridTemplateColumn Header="Удалить">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Button >
+                                                    <Button>
                                                         <materialDesign:PackIcon
                                                             Width="16"
                                                             Height="16"

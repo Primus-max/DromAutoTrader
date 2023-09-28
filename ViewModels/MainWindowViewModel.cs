@@ -49,8 +49,8 @@ namespace DromAutoTrader.ViewModels
 
         private void OnAddSupplierCommandExecuted(object sender)
         {
-            
-            
+
+            AddNewSupplier();
         }
         #endregion
 
@@ -62,6 +62,10 @@ namespace DromAutoTrader.ViewModels
 
             #region Инициализация команд
             AddSupplierCommand = new LambdaCommand(OnAddSupplierCommandExecuted, CanAddSupplierCommandExecute);
+            #endregion
+
+            #region Инициализация источников данных
+            Suppliers = new ObservableCollection<Supplier>();
             #endregion
         }
 
@@ -88,7 +92,21 @@ namespace DromAutoTrader.ViewModels
 
         #region Поставщики
 
+        public void AddNewSupplier()
+        {
 
+           // SupplierDataGrid.IsReadOnly = false;
+
+            // Создаем нового поставщика с пустым именем
+            var newSupplier = new Supplier { Id = Suppliers.Count + 1, };
+
+            // Добавляем его в список поставщиков
+            Suppliers.Add(newSupplier);
+
+            // Устанавливаем источник данных для DataGrid
+           // SupplierDataGrid.ItemsSource = Suppliers;
+
+        }
 
         #endregion
 
