@@ -6,7 +6,6 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Xml.Linq;
 using AppContext = DromAutoTrader.Data.Connection.AppContext;
 
 namespace DromAutoTrader.ViewModels
@@ -20,7 +19,7 @@ namespace DromAutoTrader.ViewModels
         private Supplier _selectedSupplier = null!;
         private string? _newSuplierName = "Имя поставщика";
         private DataGrid _supplierDataGrid = null!;
-        private bool _isNameEditable = true;
+
         #endregion
 
         #region Публичный поля
@@ -54,15 +53,12 @@ namespace DromAutoTrader.ViewModels
             get => _supplierDataGrid;
             set => Set(ref _supplierDataGrid, value);
         }
-        public bool IsNameEditable
-        {
-            get => _isNameEditable;
-            set => Set(ref _isNameEditable, value);
 
-        }
         #endregion
 
-        #region Команды
+        #region КОМАНДЫ
+
+        #region Поставщики
         public ICommand AddSupplierCommand { get; } = null!;
 
         private bool CanAddSupplierCommandExecute(object p) => true;
@@ -107,7 +103,10 @@ namespace DromAutoTrader.ViewModels
             }
         }
 
-        // EnterKeyPressedCommand
+
+        #endregion
+
+
         #endregion
 
 
@@ -153,8 +152,6 @@ namespace DromAutoTrader.ViewModels
 
         public void AddNewSupplier()
         {
-            IsNameEditable = false;
-
             // Создаем нового поставщика с пустым именем
             var newSupplier = new Supplier { Id = Suppliers.Count + 1, };
 
@@ -196,7 +193,7 @@ namespace DromAutoTrader.ViewModels
             try
             {
                 _db.SaveChanges();
-                IsNameEditable = true;
+                
                 MessageBox.Show($"Поставщик: {name} сохранен");
             }
             catch (Exception)
