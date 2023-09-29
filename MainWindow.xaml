@@ -54,9 +54,9 @@
                         <TabItem Header="Загрузить прайс">
                             <TextBlock Margin="10" Text="Filled example tab 2" />
                         </TabItem>
-                        <TabItem Header="Быстрое добавление ссылок">
+                        <!--<TabItem Header="Быстрое добавление ссылок">
                             <TextBlock Margin="10" Text="Filled example tab 3" />
-                        </TabItem>
+                        </TabItem>-->
                         <TabItem Header="Поставщики">
 
                             <StackPanel Margin="20">
