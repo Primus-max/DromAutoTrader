@@ -25,6 +25,10 @@ namespace DromAutoTrader.ViewModels
         private DataGrid _supplierDataGrid = null!;
         #endregion
 
+        #region Бренды
+        private ObservableCollection<Brand> _brands = null!;
+        #endregion
+
         #region Каналы
         private Channel _selectedChannel = null!;
         #endregion
@@ -68,6 +72,13 @@ namespace DromAutoTrader.ViewModels
         }
         #endregion
 
+        #region Бренды
+        public ObservableCollection<Brand> Brands
+        {
+            get => _brands;
+            set => Set(ref _brands, value);
+        }
+        #endregion
         #region Каналы
         public Channel SelectedChannel
         {
