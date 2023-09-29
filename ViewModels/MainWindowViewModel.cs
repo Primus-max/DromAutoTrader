@@ -13,16 +13,26 @@ namespace DromAutoTrader.ViewModels
     class MainWindowViewModel : BaseViewModel
     {
         #region Приватные поля
+        #region Базовые
         private string? _title = string.Empty;
         private AppContext _db = null!;
+        #endregion
+
+        #region Поставщики
         private ObservableCollection<Supplier> _suppliers = null!;
         private Supplier _selectedSupplier = null!;
         private string? _newSuplierName = "Имя поставщика";
         private DataGrid _supplierDataGrid = null!;
+        #endregion
+
+        #region Каналы
+        private Channel _selectedChannel = null!;
+        #endregion
 
         #endregion
 
         #region Публичный поля
+        #region Базовые
         public string Title
         {
             get => _title;
@@ -33,6 +43,9 @@ namespace DromAutoTrader.ViewModels
             get => _db;
             set => Set(ref _db, value);
         }
+        #endregion
+
+        #region Поставщики
         public ObservableCollection<Supplier> Suppliers
         {
             get => _suppliers;
@@ -53,6 +66,15 @@ namespace DromAutoTrader.ViewModels
             get => _supplierDataGrid;
             set => Set(ref _supplierDataGrid, value);
         }
+        #endregion
+
+        #region Каналы
+        public Channel SelectedChannel
+        {
+            get => _selectedChannel;
+            set => Set(ref _selectedChannel, value);
+        }
+        #endregion
 
         #endregion
 
@@ -106,6 +128,9 @@ namespace DromAutoTrader.ViewModels
 
         #endregion
 
+        #region Каналы
+
+        #endregion
 
         #endregion
 
@@ -116,19 +141,29 @@ namespace DromAutoTrader.ViewModels
             InitializeDatabase();
 
             #region Инициализация команд
+
+            #region Поставщики
             AddSupplierCommand = new LambdaCommand(OnAddSupplierCommandExecuted, CanAddSupplierCommandExecute);
             EnterKeyPressedCommand = new LambdaCommand(OnEnterKeyPressedCommandExecuted, CanEnterKeyPressedCommandExecute);
             EditeSuplierCommand = new LambdaCommand(OnEditeSuplierCommandExecuted, CanEditeSuplierCommandExecute);
             DeleteSuplierCommand = new LambdaCommand(OnDeleteSuplierCommandExecuted, CanDeleteSuplierCommandExecute);
             #endregion
 
+            #endregion
+
             #region Инициализация источников данных
+
+            #region Поставщики
             Suppliers = GetAllSuppliers();
+            #endregion
+
             #endregion
         }
 
 
         #region Методы
+
+        #region Базовые
         // Метод инициализации базы данных
         private void InitializeDatabase()
         {
@@ -147,6 +182,7 @@ namespace DromAutoTrader.ViewModels
             }
         }
 
+        #endregion
 
         #region Поставщики
 
