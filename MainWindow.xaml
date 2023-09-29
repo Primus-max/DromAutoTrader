@@ -10,6 +10,8 @@
     Title="{Binding Title}"
     Width="800"
     Height="450"
+    d:DesignHeight="1200"
+    d:DesignWidth="1200"
     Background="{DynamicResource MaterialDesignPaper}"
     FontFamily="{DynamicResource MaterialDesignFont}"
     TextElement.FontSize="13"
@@ -149,13 +151,48 @@
                                             <LineBreak />
                                             <Run Text="По умолчанию Да" />
                                         </TextBlock>
-                                        <CheckBox Margin="10">
+                                        <CheckBox
+                                            Width="Auto"
+                                            Margin="10"
+                                            HorizontalAlignment="Left">
                                             <Label Content="Нет" />
                                         </CheckBox>
                                     </StackPanel>
                                 </StackPanel>
+                                <Button
+                                    Width="270"
+                                    Margin="50,20,0,0"
+                                    HorizontalAlignment="Left"
+                                    Background="#877200"
+                                    Content="Поехали" />
+
+                                <DataGrid
+                                    x:Name="ProcessPostingDataGrid"
+                                    Margin="30"
+                                    AutoGenerateColumns="False"
+                                    ItemsSource="{Binding Suppliers}"
+                                    SelectedItem="{Binding SelectedSupplier}">
+                                    <DataGrid.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding EnterKeyPressedCommand}" />
+                                    </DataGrid.InputBindings>
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Binding="{Binding Id}" Header="Файл" />
+                                        <DataGridTextColumn
+                                            MinWidth="300"
+                                            Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Статус" />
+                                        <DataGridTemplateColumn Header="Канал" />
+                                        <DataGridTemplateColumn Header="Процесс" />
+                                        <DataGridTemplateColumn Header="Всего" />
+                                        <DataGridTemplateColumn Header="Дата размещения" />
+                                        <DataGridTemplateColumn Header="Получить файл" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
 
                             </StackPanel>
+
+
                         </TabItem>
                         <!--<TabItem Header="Быстрое добавление ссылок">
                             <TextBlock Margin="10" Text="Filled example tab 3" />
@@ -167,6 +204,7 @@
                                     Margin="20,20"
                                     FontSize="14"
                                     Text="Этот раздел отвечает за добавление, удаление, или изменения данных о поставщике" />
+
 
                                 <!--  Кнопка добавления нового поставщика  -->
                                 <Button
@@ -223,59 +261,192 @@
 
 
 
-                            <!--StackPanel Margin="20">
-                                <TextBlock
-                                    Margin="20,20"
-                                    FontSize="14"
-                                    Text="Этот раздел отвечает за добавление, удаление, или изменения данных о поставщике" />
-                                <Expander HorizontalAlignment="Stretch" Header="Добавить/изменить поставщика">
-                                    <StackPanel
-                                        HorizontalAlignment="Left"
-                                        Width="400"
-                                        Margin="24,8,24,16"
-                                        Orientation="Vertical"
-                                        TextBlock.Foreground="{DynamicResource MaterialDesignBody}">
 
-                                        <StackPanel
-                                            Width="400"
-                                            Margin="0,0,0,20"
-                                            HorizontalAlignment="Left">
-                                            <TextBlock Text="Наименование поставщика:" />
-                                            <TextBox
-                                                Name="SupplierNameTextBox"
-                                                Margin="0,4"
-                                                Text="{Binding SelectedSupplier.Name, Mode=TwoWay}" />
-                                        </StackPanel>
-
-
-                                        <StackPanel
-                                            Width="400"
-                                            Margin="0,0,0,20"
-                                            HorizontalAlignment="Left">
-                                            <TextBlock Text="Адрес:" />
-                                            <TextBox
-                                                Name="SupplierAdressTextBox"
-                                                Margin="0,4"
-                                                Text="{Binding SelectedSupplier.Name, Mode=TwoWay}" />
-                                        </StackPanel>
-
-
-                            -->
-                            <!--  Другие поля поставщика, добавьте их аналогично  -->
-                            <!--
-
-                                        <Button
-                                            Width="270"
-                                            Margin="100,16,0,20"
-                                            HorizontalAlignment="Right"
-                                            Content="Сохранить изменения" />
-                                    </StackPanel>
-                                </Expander>
-                            </StackPanel>-->
 
                         </TabItem>
                         <TabItem Header="Каналы">
-                            <TextBlock Margin="10" Text="Filled example tab 5" />
+                            <StackPanel Margin="20">
+                                <TextBlock
+                                    Margin="20,20"
+                                    FontSize="14"
+                                    Foreground="#6d6d6d"
+                                    Text="Этот раздел отвечает за добавление/ редактирование канала" />
+
+
+                                <StackPanel
+                                    Width="800"
+                                    Margin="0,20"
+                                    HorizontalAlignment="Left">
+                                    <Expander HorizontalAlignment="Stretch" Header="Добавить/редактировать канал">
+                                        <StackPanel
+                                            Width="Auto"
+                                            Margin="20"
+                                            HorizontalAlignment="Left"
+                                            Orientation="Vertical"
+                                            TextBlock.Foreground="{DynamicResource MaterialDesignBody}">
+
+                                            <StackPanel Orientation="Horizontal">
+                                                <StackPanel
+                                                    Width="400"
+                                                    Margin="0,0,0,20"
+                                                    HorizontalAlignment="Left">
+                                                    <TextBlock Text="Название канала:" />
+                                                    <TextBox
+                                                        Name="ChannelNameTextBox"
+                                                        Width="300"
+                                                        Margin="0,4"
+                                                        HorizontalAlignment="Left"
+                                                        HorizontalContentAlignment="Left"
+                                                        Text="{Binding SelectedSupplier.Name, Mode=TwoWay}" />
+                                                </StackPanel>
+                                                <StackPanel
+                                                    Width="400"
+                                                    Margin="0,0,0,20"
+                                                    HorizontalAlignment="Left">
+                                                    <TextBlock Text="Токен:" />
+                                                    <TextBox
+                                                        Name="ChannelTokenTextBox"
+                                                        Width="300"
+                                                        Margin="0,4"
+                                                        HorizontalAlignment="Left"
+                                                        Text="{Binding SelectedSupplier.Name, Mode=TwoWay}" />
+                                                </StackPanel>
+                                            </StackPanel>
+
+
+                                            <StackPanel Orientation="Horizontal">
+                                                <StackPanel
+                                                    Width="400"
+                                                    Margin="0,0,0,20"
+                                                    HorizontalAlignment="Left">
+                                                    <TextBlock Text="Город:" />
+                                                    <TextBox
+                                                        Name="ChannelCityTextBox"
+                                                        Width="300"
+                                                        Margin="0,4"
+                                                        HorizontalAlignment="Left"
+                                                        Text="{Binding SelectedSupplier.Name, Mode=TwoWay}" />
+                                                </StackPanel>
+                                                <StackPanel
+                                                    Width="400"
+                                                    Margin="0,0,0,20"
+                                                    HorizontalAlignment="Left">
+                                                    <TextBlock Text="Email:" />
+                                                    <TextBox
+                                                        Name="ChannelEmailTextBox"
+                                                        Width="300"
+                                                        Margin="0,4"
+                                                        HorizontalAlignment="Left"
+                                                        Text="{Binding SelectedSupplier.Name, Mode=TwoWay}" />
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal">
+                                                <StackPanel
+                                                    Width="400"
+                                                    Margin="0,0,0,20"
+                                                    HorizontalAlignment="Left">
+                                                    <TextBlock Text="Телефон:" />
+                                                    <TextBox
+                                                        Name="ChannelPhoneTextBox"
+                                                        Width="300"
+                                                        Margin="0,4"
+                                                        HorizontalAlignment="Left"
+                                                        Text="{Binding SelectedSupplier.Name, Mode=TwoWay}" />
+                                                </StackPanel>
+                                                <StackPanel
+                                                    Width="400"
+                                                    Margin="0,0,0,20"
+                                                    HorizontalAlignment="Left">
+                                                    <TextBlock Text="Адресс:" />
+                                                    <TextBox
+                                                        Name="ChannelAdressTextBox"
+                                                        Width="300"
+                                                        Margin="0,4"
+                                                        HorizontalAlignment="Left"
+                                                        Text="{Binding SelectedSupplier.Name, Mode=TwoWay}" />
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal">
+                                                <StackPanel
+                                                    Width="400"
+                                                    Margin="0,0,0,20"
+                                                    HorizontalAlignment="Left">
+                                                    <TextBlock Text="Ширина:" />
+                                                    <TextBox
+                                                        Name="ChannelLatitudeTextBox"
+                                                        Width="300"
+                                                        Margin="0,4"
+                                                        HorizontalAlignment="Left"
+                                                        Text="{Binding SelectedSupplier.Name, Mode=TwoWay}" />
+                                                </StackPanel>
+                                                <StackPanel
+                                                    Width="400"
+                                                    Margin="0,0,0,20"
+                                                    HorizontalAlignment="Left">
+                                                    <TextBlock Text="Долгота:" />
+                                                    <TextBox
+                                                        Name="ChannelLongitudeTextBox"
+                                                        Width="300"
+                                                        Margin="0,4"
+                                                        HorizontalAlignment="Left"
+                                                        Text="{Binding SelectedSupplier.Name, Mode=TwoWay}" />
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <Button
+                                                Width="270"
+                                                Margin="100,16,0,20"
+                                                HorizontalAlignment="Right"
+                                                Content="Сохранить изменения" />
+                                        </StackPanel>
+                                    </Expander>
+                                </StackPanel>
+
+                                <!--  Контейнер для списка поставщиков  -->
+                                <DataGrid
+                                    x:Name="ChannelsDataGrid"
+                                    AutoGenerateColumns="False"
+                                    ItemsSource="{Binding Suppliers}"
+                                    SelectedItem="{Binding SelectedSupplier}">
+                                    <DataGrid.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding EnterKeyPressedCommand}" />
+                                    </DataGrid.InputBindings>
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Binding="{Binding Id}" Header="ID" />
+                                        <DataGridTextColumn
+                                            MinWidth="300"
+                                            Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Имя" />
+                                        <DataGridTemplateColumn Header="Редактировать">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Command="{Binding DataContext.EditeSuplierCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
+                                                        <materialDesign:PackIcon
+                                                            Width="16"
+                                                            Height="16"
+                                                            Kind="Pencil" />
+                                                    </Button>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Header="Удалить">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Command="{Binding DataContext.DeleteSuplierCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
+                                                        <materialDesign:PackIcon
+                                                            Width="16"
+                                                            Height="16"
+                                                            Kind="Delete" />
+                                                    </Button>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+
                         </TabItem>
                         <TabItem Header="Брэнды">
                             <StackPanel Margin="20">
