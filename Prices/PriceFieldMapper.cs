@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace DromAutoTrader.Prices
 {
-    internal class PriceFieldMapper
+    public class PriceFieldMapper
     {
         private readonly Dictionary<string, List<string>> fieldMappings;
 
@@ -11,26 +12,26 @@ namespace DromAutoTrader.Prices
         {
             // Инициализируем словарь синонимов полей
             fieldMappings = new Dictionary<string, List<string>>
-        {
-            { "Brand", new List<string> { "Brand", "Бренд" } },
-            { "Artikul", new List<string> { "Artikul", "Артикул" } },
-            { "Description", new List<string> { "Description", "Описание" } },
-            { "PriceBuy", new List<string> { "PriceBuy", "Цена закупки" } },
-            { "Count", new List<string> { "Count", "Количество" } },
-            { "KatalogName", new List<string> { "KatalogName", "Название каталога" } }
-            // Добавьте другие поля и их синонимы
-        };
+            {
+                { "Brand", new List<string> { "Brand", "Бренд" } },
+                { "Artikul", new List<string> { "Artikul", "Артикул" } },
+                { "Description", new List<string> { "Description", "Описание" } },
+                { "PriceBuy", new List<string> { "PriceBuy", "Цена закупки" } },
+                { "Count", new List<string> { "Count", "Количество" } },
+                { "KatalogName", new List<string> { "KatalogName", "Название каталога" } }
+            };
         }
 
         public int MapField(string fieldName)
         {
-            // Поиск синонимов для заданного поля
-            var mappedField = fieldMappings.FirstOrDefault(entry => entry.Value.Contains(fieldName));
+            // Поиск синонимов для заданного поля, учитывая регистр символов
+            var mappedField = fieldMappings.FirstOrDefault(entry => entry.Value.Any(value => value.Equals(fieldName, StringComparison.OrdinalIgnoreCase)));
 
             // Если синонимы найдены, возвращаем индекс столбца
             // В противном случае возвращаем -1 или другое значение по умолчанию
             return mappedField.Key != null ? GetColumnIndexByName(mappedField.Key) : -1;
         }
+
 
         private int GetColumnIndexByName(string columnName)
         {
@@ -39,12 +40,14 @@ namespace DromAutoTrader.Prices
 
             // Пример словаря:
             var columnIndices = new Dictionary<string, int>
-    {
-        { "Brand", 1 },
-        { "Artikul", 2 },
-        { "Description", 3 },
-        // Добавьте другие поля и их индексы
-    };
+            {
+                { "Brand", 0 },
+                { "Artikul", 1 },
+                { "Description", 2 },
+                { "PriceBuy", 3 },
+                { "Count", 4 },
+                { "KatalogName", 5 },
+            };
 
             // Попытка получить индекс по имени поля
             if (columnIndices.ContainsKey(columnName))

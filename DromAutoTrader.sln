@@ -3,7 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34024.191
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DromAutoTrader", "DromAutoTrader.csproj", "{73CE92FA-9733-4DB3-9511-2650E29D7B51}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DromAutoTrader", "DromAutoTrader.csproj", "{73CE92FA-9733-4DB3-9511-2650E29D7B51}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DromTests", "..\DromTests\DromTests.csproj", "{2F181CD3-F928-4D28-8261-4C0FF20BCE5C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{73CE92FA-9733-4DB3-9511-2650E29D7B51} = {73CE92FA-9733-4DB3-9511-2650E29D7B51}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +20,10 @@ Global
 		{73CE92FA-9733-4DB3-9511-2650E29D7B51}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73CE92FA-9733-4DB3-9511-2650E29D7B51}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{73CE92FA-9733-4DB3-9511-2650E29D7B51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F181CD3-F928-4D28-8261-4C0FF20BCE5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F181CD3-F928-4D28-8261-4C0FF20BCE5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F181CD3-F928-4D28-8261-4C0FF20BCE5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F181CD3-F928-4D28-8261-4C0FF20BCE5C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
