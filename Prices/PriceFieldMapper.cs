@@ -4,6 +4,9 @@ using System.Linq;
 
 namespace DromAutoTrader.Prices
 {
+    /// <summary>
+    /// Класс для получения индекса поля в файле Excel по его имени.
+    /// </summary>
     public class PriceFieldMapper
     {
         private readonly Dictionary<string, List<string>> fieldMappings;
@@ -13,15 +16,20 @@ namespace DromAutoTrader.Prices
             // Инициализируем словарь синонимов полей
             fieldMappings = new Dictionary<string, List<string>>
             {
-                { "Brand", new List<string> { "Brand", "Бренд" } },
-                { "Artikul", new List<string> { "Artikul", "Артикул" } },
-                { "Description", new List<string> { "Description", "Описание" } },
-                { "PriceBuy", new List<string> { "PriceBuy", "Цена закупки" } },
-                { "Count", new List<string> { "Count", "Количество" } },
-                { "KatalogName", new List<string> { "KatalogName", "Название каталога" } }
+                { PriceField.Brand.ToString(), new List<string> { "Brand", "Бренд" } },
+                { PriceField.Artikul.ToString(), new List<string> { "Artikul", "Артикул" } },
+                { PriceField.Description.ToString(), new List<string> { "Description", "Описание" } },
+                { PriceField.PriceBuy.ToString(), new List<string> { "PriceBuy", "Цена закупки" } },
+                { PriceField.Count.ToString(), new List<string> { "Count", "Количество" } },
+                { PriceField.KatalogName.ToString(), new List<string> { "KatalogName", "Название каталога" } }
             };
         }
 
+        /// <summary>
+        /// Метод для сопоставления имени поля с индексом столбца.
+        /// </summary>
+        /// <param name="fieldName">Имя поля или его синоним.</param>
+        /// <returns>Индекс столбца или -1, если сопоставление не найдено.</returns>
         public int MapField(string fieldName)
         {
             // Поиск синонимов для заданного поля, учитывая регистр символов
@@ -32,27 +40,13 @@ namespace DromAutoTrader.Prices
             return mappedField.Key != null ? GetColumnIndexByName(mappedField.Key) : -1;
         }
 
-
         private int GetColumnIndexByName(string columnName)
         {
-            // Здесь нужно получить индекс столбца по его имени.
-            // Например, можно использовать словарь, который сопоставляет имена полей и индексы столбцов.
-
-            // Пример словаря:
-            var columnIndices = new Dictionary<string, int>
+            if (Enum.TryParse(columnName, true, out PriceField field))
             {
-                { "Brand", 0 },
-                { "Artikul", 1 },
-                { "Description", 2 },
-                { "PriceBuy", 3 },
-                { "Count", 4 },
-                { "KatalogName", 5 },
-            };
-
-            // Попытка получить индекс по имени поля
-            if (columnIndices.ContainsKey(columnName))
-            {
-                return columnIndices[columnName];
+                // Если удалось преобразовать имя поля в значение перечисления, 
+                // то можно получить индекс, используя целочисленное значение перечисления.
+                return (int)field;
             }
 
             // Если индекс не найден, можно вернуть -1 или другое значение по умолчанию
