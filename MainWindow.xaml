@@ -51,7 +51,7 @@
 
                         <!--  Здесь добавьте ваши TabItem  -->
                         <TabItem Header="Объявления">
-                            <TextBlock Margin="10" Text="Filled example tab 1" />
+                            <TextBlock Margin="10" Text="Раздел объявлениЙ" />
                         </TabItem>
                         <TabItem Header="Загрузить прайс">
                             <StackPanel>
@@ -517,7 +517,7 @@
                             </StackPanel>
                         </TabItem>
                         <TabItem Header="Ставки">
-                            <TextBlock Margin="10" Text="Filled example tab 7" />
+                            <TextBlock Margin="10" Text="Раздел ставок" />
                         </TabItem>
                     </TabControl>
                 </ScrollViewer>
