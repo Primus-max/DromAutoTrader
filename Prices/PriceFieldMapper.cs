@@ -19,8 +19,8 @@ namespace DromAutoTrader.Prices
                 { PriceField.Brand.ToString(), new List<string> { "Brand", "Бренд" } },
                 { PriceField.Artikul.ToString(), new List<string> { "Artikul", "Артикул" } },
                 { PriceField.Description.ToString(), new List<string> { "Description", "Описание" } },
-                { PriceField.PriceBuy.ToString(), new List<string> { "PriceBuy", "Цена закупки" } },
-                { PriceField.Count.ToString(), new List<string> { "Count", "Количество" } },
+                { PriceField.PriceBuy.ToString(), new List<string> { "PriceBuy", "Цена закупки", "Цена"} },
+                { PriceField.Count.ToString(), new List<string> { "Count", "Количество","Наличие" } },
                 { PriceField.KatalogName.ToString(), new List<string> { "KatalogName", "Название каталога" } }
             };
         }

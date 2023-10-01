@@ -3,9 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OfficeOpenXml;
 
 namespace DromAutoTrader.Prices
 {
@@ -28,95 +25,105 @@ namespace DromAutoTrader.Prices
 
             using (var package = new ExcelPackage(new FileInfo(filePath)))
             {
-                var worksheet = package.Workbook.Worksheets[0]; // Предположим, что данные находятся в первом листе.
+                var worksheet = package.Workbook.Worksheets[0]; // Предполагаем, что данные находятся в первом листе.
 
-                // Здесь вы можете использовать EPPlus для извлечения данных из Excel и применить сопоставление полей.
                 int rowCount = worksheet.Dimension.End.Row;
+                int colCount = worksheet.Dimension.End.Column;
 
-                // Предположим, что у вас есть сопоставление синонимов полей.
-                var fieldMapper = new PriceFieldMapper();
+                // Получаем индексы колонок из файла
+                var columnIndexes = GetColumnIndexes(worksheet, colCount);
 
-                for (int row = 2; row <= rowCount; row++) // Предполагаем, что первая строка - заголовки.
+                for (int row = 2; row <= rowCount; row++) // Предполагаем, что первая строка - заголовки и начинаем с 2-й строки.
                 {
                     var priceItem = new FormattedPrice();
 
-                    // Используем fieldMapper для сопоставления синонимов полей с номерами столбцов.
-                    var brandColumn = fieldMapper.MapField("brand");
-                    var artikulColumn = fieldMapper.MapField("artikul");
-                    var descriptionColumn = fieldMapper.MapField("description");
-                    var priceBuyColumn = fieldMapper.MapField("price_buy");
-                    var countColumn = fieldMapper.MapField("count");
-                    var katalogNameColumn = fieldMapper.MapField("katalog_name");
-
-                    string brandCellValue = worksheet.Cells[row, brandColumn].Text;
-                    if (!string.IsNullOrEmpty(brandCellValue))
+                    foreach (var field in columnIndexes.Keys)
                     {
-                        priceItem.Brand = brandCellValue;
-                    }
-                    else
-                    {
-                        // Обработка ошибки или установка значения по умолчанию для Brand.
-                    }
-
-                    string artikulCellValue = worksheet.Cells[row, artikulColumn].Text;
-                    if (!string.IsNullOrEmpty(artikulCellValue))
-                    {
-                        priceItem.Artikul = artikulCellValue;
-                    }
-                    else
-                    {
-                        // Обработка ошибки или установка значения по умолчанию для Artikul.
+                        int columnIndex = columnIndexes[field];
+                        if (columnIndex != -1)
+                        {
+                            string cellValue = worksheet.Cells[row, columnIndex].Text;
+                            if (!string.IsNullOrEmpty(cellValue))
+                            {
+                                SetPropertyByFieldName(priceItem, field, cellValue);
+                            }
+                            else
+                            {
+                                // Обработка ошибки или установка значения по умолчанию.
+                            }
+                        }
                     }
 
-                    string descriptionCellValue = worksheet.Cells[row, descriptionColumn].Text;
-                    if (!string.IsNullOrEmpty(descriptionCellValue))
-                    {
-                        priceItem.Description = descriptionCellValue;
-                    }
-                    else
-                    {
-                        // Обработка ошибки или установка значения по умолчанию для Description.
-                    }
+                    // Добавляем обработанный элемент в коллекцию.
+                    priceList.Add(priceItem);
+                }
+            }
 
-                    // Преобразование цены из строки в decimal
-                    if (decimal.TryParse(worksheet.Cells[row, priceBuyColumn].Text, out decimal priceBuyValue))
+            return priceList;
+        }
+
+        
+        // Метод для получения индексов колонок из файла
+        private Dictionary<PriceField, int> GetColumnIndexes(ExcelWorksheet worksheet, int colCount)
+        {
+            var columnIndexes = new Dictionary<PriceField, int>();
+
+            for (int col = 1; col <= colCount; col++)
+            {
+                string columnName = worksheet.Cells[1, col].Text;
+                int columnIndex = fieldMapper.MapField(columnName);
+
+                if (columnIndex != -1)
+                {
+                    columnIndexes[(PriceField)columnIndex] = col;
+                }
+            }
+
+            return columnIndexes;
+        }
+
+
+        // Метод для установки свойства priceItem на основе имени поля
+        private void SetPropertyByFieldName(FormattedPrice priceItem, PriceField field, string value)
+        {
+            switch (field)
+            {
+                case PriceField.Brand:
+                    priceItem.Brand = value;
+                    break;
+                case PriceField.Artikul:
+                    priceItem.Artikul = value;
+                    break;
+                case PriceField.Description:
+                    priceItem.Description = value;
+                    break;
+                case PriceField.PriceBuy:
+                    if (decimal.TryParse(value, out decimal priceBuyValue))
                     {
                         priceItem.PriceBuy = priceBuyValue;
                     }
                     else
                     {
                         // Обработка ошибки при парсинге цены.
-                        // Можете установить значение по умолчанию или выполнить другие действия для PriceBuy.
                     }
-
-                    // Преобразование количества из строки в int
-                    if (int.TryParse(worksheet.Cells[row, countColumn].Text, out int countValue))
+                    break;
+                case PriceField.Count:
+                    if (int.TryParse(value, out int countValue))
                     {
                         priceItem.Count = countValue;
                     }
                     else
                     {
                         // Обработка ошибки при парсинге количества.
-                        // Можете установить значение по умолчанию или выполнить другие действия для Count.
                     }
-
-                    string katalogNameCellValue = worksheet.Cells[row, katalogNameColumn].Text;
-                    if (!string.IsNullOrEmpty(katalogNameCellValue))
-                    {
-                        priceItem.KatalogName = katalogNameCellValue;
-                    }
-                    else
-                    {
-                        // Обработка ошибки или установка значения по умолчанию для KatalogName.
-                    }
-
-                    // Добавляем обработанный элемент в коллекцию.
-                    priceList.Add(priceItem);
-                }
-
+                    break;
+                case PriceField.KatalogName:
+                    priceItem.KatalogName = value;
+                    break;
+                default:
+                    // Неизвестное поле, обработка ошибки.
+                    break;
             }
-
-            return priceList;
         }
 
     }

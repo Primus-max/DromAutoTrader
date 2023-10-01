@@ -1,6 +1,8 @@
 ﻿using DromAutoTrader.Models;
+using DromAutoTrader.Prices;
 using DromAutoTrader.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,13 +21,25 @@ namespace DromAutoTrader
     public partial class MainWindow : Window
     {
       
-        public MainWindow()
-        {
-            InitializeComponent();
+            public MainWindow()
+            {
+                InitializeComponent();
 
-            var viewModel = new MainWindowViewModel();
-            DataContext = viewModel;
-            viewModel.SupplierDataGrid = SupplierDataGrid;
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+                var viewModel = new MainWindowViewModel();
+                DataContext = viewModel;
+                viewModel.SupplierDataGrid = SupplierDataGrid;
+
+
+            TestParsing();
+            }
+
+        public void TestParsing()
+        {
+            PriceProcessor priceProcessor = new PriceProcessor();
+
+            priceProcessor.ProcessExcelPrice(@"C:\\Users\\FedoTT\\source\\repos\\DromTests\\TestData\\PriceList1.xlsx");
         }
 
 
