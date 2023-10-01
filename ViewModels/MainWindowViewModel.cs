@@ -189,7 +189,8 @@ namespace DromAutoTrader.ViewModels
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
+                // TODO сделать запись логов
+                //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
             }
         }
 

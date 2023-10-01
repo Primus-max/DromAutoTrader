@@ -1,17 +1,10 @@
-﻿using DromAutoTrader.Models;
-using DromAutoTrader.Prices;
+﻿using DromAutoTrader.Prices;
 using DromAutoTrader.ViewModels;
-using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
+using System.IO;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using AppContext = DromAutoTrader.Data.Connection.AppContext;
+
 
 namespace DromAutoTrader
 {
@@ -20,31 +13,48 @@ namespace DromAutoTrader
     /// </summary>
     public partial class MainWindow : Window
     {
-      
-            public MainWindow()
-            {
-                InitializeComponent();
 
-                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+        public MainWindow()
+        {
+            InitializeComponent();
 
-                var viewModel = new MainWindowViewModel();
-                DataContext = viewModel;
-                viewModel.SupplierDataGrid = SupplierDataGrid;
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            var viewModel = new MainWindowViewModel();
+            DataContext = viewModel;
+            viewModel.SupplierDataGrid = SupplierDataGrid;
 
 
             TestParsing();
-            }
+        }
 
         public void TestParsing()
         {
             PriceProcessor priceProcessor = new PriceProcessor();
+            BrandImporter brandImporter = new BrandImporter();
 
-          var afdgdfg=  priceProcessor.ProcessExcelPrice(@"C:\Users\FedoTT\source\repos\DromAutoTrader\ТЗ\Прайсы\price_uniqom 2023_09_29_05_04_02.XLSX");
+            string directoryPath = @"C:\Users\FedoTT\source\repos\DromAutoTrader\ТЗ\Прайсы";
+
+            if (Directory.Exists(directoryPath))
+            {
+                string[] fileEntries = Directory.GetFiles(directoryPath, "*.xlsx"); // Получить все файлы с расширением .xlsx
+
+                foreach (string filePath in fileEntries)
+                {
+                    var prices = priceProcessor.ProcessExcelPrice(filePath);
+                    brandImporter.ImportBrandsFromPrices(prices);
+                }
+            }
+            else
+            {
+                // TODO запись логов
+                //Console.WriteLine("Указанная директория не существует.");
+            }
         }
 
 
 
-       
+
 
 
 

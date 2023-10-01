@@ -136,6 +136,5 @@ namespace DromAutoTrader.Prices
                     break;
             }
         }
-
     }
 }
