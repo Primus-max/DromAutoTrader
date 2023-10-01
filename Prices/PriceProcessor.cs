@@ -31,7 +31,7 @@ namespace DromAutoTrader.Prices
                 int colCount = worksheet.Dimension.End.Column;
 
                 // Получаем индексы колонок из файла
-                var columnIndexes = GetColumnIndexes(worksheet, colCount);
+                var columnIndexes = GetColumnIndexes(worksheet);
 
                 for (int row = 2; row <= rowCount; row++) // Предполагаем, что первая строка - заголовки и начинаем с 2-й строки.
                 {
@@ -64,9 +64,10 @@ namespace DromAutoTrader.Prices
 
         
         // Метод для получения индексов колонок из файла
-        private Dictionary<PriceField, int> GetColumnIndexes(ExcelWorksheet worksheet, int colCount)
+        private Dictionary<PriceField, int> GetColumnIndexes(ExcelWorksheet worksheet)
         {
             var columnIndexes = new Dictionary<PriceField, int>();
+            int colCount = worksheet.Dimension.End.Column;
 
             for (int col = 1; col <= colCount; col++)
             {
