@@ -39,7 +39,7 @@ namespace DromAutoTrader
         {
             PriceProcessor priceProcessor = new PriceProcessor();
 
-            priceProcessor.ProcessExcelPrice(@"C:\\Users\\FedoTT\\source\\repos\\DromTests\\TestData\\PriceList1.xlsx");
+          var afdgdfg=  priceProcessor.ProcessExcelPrice(@"C:\Users\FedoTT\source\repos\DromAutoTrader\ТЗ\Прайсы\price_uniqom 2023_09_29_05_04_02.XLSX");
         }
 
 

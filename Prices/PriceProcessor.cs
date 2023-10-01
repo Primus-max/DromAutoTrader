@@ -1,24 +1,27 @@
 ﻿using OfficeOpenXml;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace DromAutoTrader.Prices
 {
     public class PriceProcessor
     {
         private PriceFieldMapper fieldMapper;
-        private PriceParser parser;
-        private PriceList priceList;
 
+
+        /// <summary>
+        /// Класс для обработки прайс-листов из Excel-файлов.
+        /// </summary>
         public PriceProcessor()
         {
             fieldMapper = new PriceFieldMapper();
-            parser = new PriceParser();
-            priceList = new PriceList();
         }
 
+        /// <summary>
+        /// Обработка прайс-листа из Excel-файла.
+        /// </summary>
+        /// <param name="filePath">Путь к Excel-файлу.</param>
+        /// <returns>Коллекция обработанных прайс-листов.</returns>
         public PriceList ProcessExcelPrice(string filePath)
         {
             var priceList = new PriceList(); // Создаем коллекцию для хранения обработанных прайс-листов.
@@ -28,7 +31,6 @@ namespace DromAutoTrader.Prices
                 var worksheet = package.Workbook.Worksheets[0]; // Предполагаем, что данные находятся в первом листе.
 
                 int rowCount = worksheet.Dimension.End.Row;
-                int colCount = worksheet.Dimension.End.Column;
 
                 // Получаем индексы колонок из файла
                 var columnIndexes = GetColumnIndexes(worksheet);
@@ -37,15 +39,22 @@ namespace DromAutoTrader.Prices
                 {
                     var priceItem = new FormattedPrice();
 
-                    foreach (var field in columnIndexes.Keys)
+                    foreach (var columnIndexInFile in columnIndexes.Values) // Используем значения (индексы колонок из файла Excel)
                     {
-                        int columnIndex = columnIndexes[field];
-                        if (columnIndex != -1)
+                        if (columnIndexInFile != -1)
                         {
-                            string cellValue = worksheet.Cells[row, columnIndex].Text;
+                            string cellValue = worksheet.Cells[row, columnIndexInFile].Text;
                             if (!string.IsNullOrEmpty(cellValue))
                             {
-                                SetPropertyByFieldName(priceItem, field, cellValue);
+                                // Определяем, куда ложить значение на основе индекса колонки из файла Excel
+                                foreach (var field in columnIndexes.Keys)
+                                {
+                                    if (columnIndexes[field] == columnIndexInFile)
+                                    {
+                                        SetPropertyByFieldName(priceItem, field, cellValue);
+                                        break; // Прерываем цикл, так как поле уже найдено и установлено
+                                    }
+                                }
                             }
                             else
                             {
@@ -53,6 +62,7 @@ namespace DromAutoTrader.Prices
                             }
                         }
                     }
+
 
                     // Добавляем обработанный элемент в коллекцию.
                     priceList.Add(priceItem);
@@ -62,8 +72,8 @@ namespace DromAutoTrader.Prices
             return priceList;
         }
 
-        
-        // Метод для получения индексов колонок из файла
+
+        // Метод для получения индексов колонок из файла при ассоциации колонок из нашего прайса
         private Dictionary<PriceField, int> GetColumnIndexes(ExcelWorksheet worksheet)
         {
             var columnIndexes = new Dictionary<PriceField, int>();

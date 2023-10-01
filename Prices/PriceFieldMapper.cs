@@ -16,12 +16,12 @@ namespace DromAutoTrader.Prices
             // Инициализируем словарь синонимов полей
             fieldMappings = new Dictionary<string, List<string>>
             {
-                { PriceField.Brand.ToString(), new List<string> { "Brand", "Бренд" } },
-                { PriceField.Artikul.ToString(), new List<string> { "Artikul", "Артикул" } },
+                { PriceField.Brand.ToString(), new List<string> { "Brand", "Бренд", "Торговая марка" } },
+                { PriceField.Artikul.ToString(), new List<string> { "Artikul", "Артикул", "Код" } },
                 { PriceField.Description.ToString(), new List<string> { "Description", "Описание" } },
-                { PriceField.PriceBuy.ToString(), new List<string> { "PriceBuy", "Цена закупки", "Цена"} },
-                { PriceField.Count.ToString(), new List<string> { "Count", "Количество","Наличие" } },
-                { PriceField.KatalogName.ToString(), new List<string> { "KatalogName", "Название каталога" } }
+                { PriceField.PriceBuy.ToString(), new List<string> { "PriceBuy", "Цена закупки", "Цена", "price" } },
+                { PriceField.Count.ToString(), new List<string> { "Count", "Количество","Наличие", "stock", "Остаток" } },
+                { PriceField.KatalogName.ToString(), new List<string> { "KatalogName", "Название каталога", "Наименование", "fullname" } }
             };
         }
 
