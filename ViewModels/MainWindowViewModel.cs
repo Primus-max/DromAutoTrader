@@ -168,6 +168,10 @@ namespace DromAutoTrader.ViewModels
             Suppliers = GetAllSuppliers();
             #endregion
 
+            #region Бренды
+            Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
+            #endregion
+
             #endregion
         }
 

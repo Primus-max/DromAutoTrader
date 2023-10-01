@@ -25,32 +25,32 @@ namespace DromAutoTrader
             viewModel.SupplierDataGrid = SupplierDataGrid;
 
 
-            TestParsing();
+            //TestParsing();
         }
 
-        public void TestParsing()
-        {
-            PriceProcessor priceProcessor = new PriceProcessor();
-            BrandImporter brandImporter = new BrandImporter();
+        //public void TestParsing()
+        //{
+        //    PriceProcessor priceProcessor = new PriceProcessor();
+        //    BrandImporter brandImporter = new BrandImporter();
 
-            string directoryPath = @"C:\Users\FedoTT\source\repos\DromAutoTrader\ТЗ\Прайсы";
+        //    string directoryPath = @"C:\Users\FedoTT\source\repos\DromAutoTrader\ТЗ\Прайсы";
 
-            if (Directory.Exists(directoryPath))
-            {
-                string[] fileEntries = Directory.GetFiles(directoryPath, "*.xlsx"); // Получить все файлы с расширением .xlsx
+        //    if (Directory.Exists(directoryPath))
+        //    {
+        //        string[] fileEntries = Directory.GetFiles(directoryPath, "*.xlsx"); // Получить все файлы с расширением .xlsx
 
-                foreach (string filePath in fileEntries)
-                {
-                    var prices = priceProcessor.ProcessExcelPrice(filePath);
-                    brandImporter.ImportBrandsFromPrices(prices);
-                }
-            }
-            else
-            {
-                // TODO запись логов
-                //Console.WriteLine("Указанная директория не существует.");
-            }
-        }
+        //        foreach (string filePath in fileEntries)
+        //        {
+        //            var prices = priceProcessor.ProcessExcelPrice(filePath);
+        //            brandImporter.ImportBrandsFromPrices(prices);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        // TODO запись логов
+        //        //Console.WriteLine("Указанная директория не существует.");
+        //    }
+        
 
 
 
@@ -204,3 +204,4 @@ namespace DromAutoTrader
         // Другие методы и события вашего MainWindow
     }
 }
+

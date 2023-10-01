@@ -477,15 +477,15 @@
                                         <DataGridTextColumn
                                             MinWidth="120"
                                             Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
-                                            Header="Место картинок" />
+                                            Header="Название" />
                                         <DataGridTextColumn
                                             MinWidth="120"
-                                            Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
-                                            Header="Шаблон картинок" />
+                                            Binding="{Binding FindImageService, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Адрес шаблона" />
                                         <DataGridTextColumn
                                             MinWidth="120"
-                                            Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
-                                            Header="Имя" />
+                                            Binding="{Binding  DefaultImage, UpdateSourceTrigger=PropertyChanged}"
+                                            Header="Заглушка" />
                                         <DataGridTemplateColumn Header="Редактировать">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
@@ -512,7 +512,6 @@
                                         </DataGridTemplateColumn>
                                     </DataGrid.Columns>
                                 </DataGrid>
-
 
                             </StackPanel>
                         </TabItem>
