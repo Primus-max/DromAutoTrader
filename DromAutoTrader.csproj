@@ -23,4 +23,10 @@
     <Folder Include="Views\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="AdsPowerManager">
+      <HintPath>..\libs\AdsPowerManager\bin\Debug\net6.0\AdsPowerManager.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

@@ -4,7 +4,11 @@ using OfficeOpenXml;
 using System.IO;
 using System;
 using System.Windows;
-
+using AdsPowerManager;
+using OpenQA.Selenium;
+using System.Threading.Tasks;
+using System.Windows.Documents;
+using System.Collections.Generic;
 
 namespace DromAutoTrader
 {
@@ -26,6 +30,31 @@ namespace DromAutoTrader
 
 
             //TestParsing();
+
+            GetDriver();   
+        }
+
+        public async Task  GetDriver()
+        {                    
+
+            BrowserManager browserManager = new BrowserManager();
+          ProfileManager profileManager = new ProfileManager();
+            Profile profile = new Profile();
+            List<Profile> list = await  profileManager.GetProfiles();
+
+            foreach (var item in list)
+            {
+                IWebDriver driver = await browserManager.InitializeDriver(item.UserId);
+            }
+
+            
+        }
+
+        public async Task GetProfiles()
+        {
+
+           
+
         }
 
         //public void TestParsing()
@@ -50,7 +79,7 @@ namespace DromAutoTrader
         //        // TODO запись логов
         //        //Console.WriteLine("Указанная директория не существует.");
         //    }
-        
+
 
 
 
