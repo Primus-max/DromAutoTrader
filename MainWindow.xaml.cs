@@ -1,5 +1,5 @@
 ﻿using AdsPowerManager;
-
+using DromAutoTrader.DromManager;
 using DromAutoTrader.ViewModels;
 using OfficeOpenXml;
 using OpenQA.Selenium;
@@ -37,10 +37,15 @@ namespace DromAutoTrader
 
             foreach (Profile profile in profiles)
             {
-                var profileName = profile.Name;
-                IWebDriver driver = await browserManager.InitializeDriver(profileName);
+                if(profile.Name == "MainCraftIrk")
+                {
+                    var profileName = profile.Name;
+                    IWebDriver driver = await browserManager.InitializeDriver(profileName);
 
-
+                    DromAdPublisher dromAdPublisher = new DromAdPublisher(driver);
+                    dromAdPublisher.PublishAd("Защитный комплект амортизатора 16F F10066 (2шт/упак)");
+                }
+                
             }
         }
         

@@ -10,6 +10,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DromTests", "..\DromTests\D
 		{73CE92FA-9733-4DB3-9511-2650E29D7B51} = {73CE92FA-9733-4DB3-9511-2650E29D7B51}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DromSeleniumTest", "..\DromSeleniumTest\DromSeleniumTest.csproj", "{FE719D28-4A5B-4A08-B734-A62E4F617626}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +26,10 @@ Global
 		{2F181CD3-F928-4D28-8261-4C0FF20BCE5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F181CD3-F928-4D28-8261-4C0FF20BCE5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F181CD3-F928-4D28-8261-4C0FF20BCE5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE719D28-4A5B-4A08-B734-A62E4F617626}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE719D28-4A5B-4A08-B734-A62E4F617626}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE719D28-4A5B-4A08-B734-A62E4F617626}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE719D28-4A5B-4A08-B734-A62E4F617626}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
