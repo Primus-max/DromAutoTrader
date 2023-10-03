@@ -350,6 +350,25 @@ namespace DromAutoTrader.DromManager
             element.Submit();
             Thread.Sleep(random.Next(100, 200));
         }
+
+        // Закрываю все кладки кроме текущей
+        private void CloseAllTabsExceptCurrent()
+        {
+            string currentWindowHandle = _driver.CurrentWindowHandle;
+
+            foreach (string windowHandle in _driver.WindowHandles)
+            {
+                if (windowHandle != currentWindowHandle)
+                {
+                    _driver.SwitchTo().Window(windowHandle);
+                    _driver.Close();
+                }
+                Thread.Sleep(200);
+            }
+
+            // Вернуться на исходную вкладку
+            _driver.SwitchTo().Window(currentWindowHandle);
+        }
     }
 }
 
