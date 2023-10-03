@@ -1,6 +1,6 @@
 ﻿
 using OpenQA.Selenium;
-using OpenQA.Selenium.Interactions;
+using System.Collections.Generic;
 using System.Threading;
 using System;
 
@@ -24,6 +24,8 @@ namespace DromAutoTrader.DromManager
             OpenGoodsPage();
             SetWindowSize();
 
+            CloseAllTabsExceptCurrent();
+
             //ClickSubjectField();
             TitleInput(adTitle);
             PressEnterKey();
@@ -34,13 +36,15 @@ namespace DromAutoTrader.DromManager
             BrandInput("Brand");
             ArticulInput("Articul");
             PriceInput("3453.8");
-            StateBtn();
+            //Сondition();
+            Thread.Sleep(500);
+
             DescriptionTextInput("Новые запчасти");
-            PresentPartBtn();
-            StateBtn();
-            ClickPublishButton();
-            StateBtn();
-            ClickPublishButton();
+
+            CheckAndFillRequiredFields();
+            Thread.Sleep(500);
+
+            GoodPresentState();
         }
 
         // Метод открытия страницы с размещением объявления
@@ -254,7 +258,7 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод получения кнопки выбора состояния (новое или б/у)
-        public void StateBtn()
+        public void Сondition()
         {
             try
             {
@@ -289,7 +293,7 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод получения кнопки наличия или под заказ
-        public void PresentPartBtn()
+        public void GoodPresentState()
         {
             try
             {
@@ -368,6 +372,45 @@ namespace DromAutoTrader.DromManager
 
             // Вернуться на исходную вкладку
             _driver.SwitchTo().Window(currentWindowHandle);
+        }
+
+        // Метод проверки на валидность заполненной формы
+        public void CheckAndFillRequiredFields()
+        {
+            IList<IWebElement> liElements = null!;
+
+            try
+            {
+                liElements = _driver.FindElements(By.CssSelector("ul.bulletin_adding__completeness_watcher__fields li"));
+            }
+            catch (Exception)
+            {
+                return;
+            }
+
+            foreach (IWebElement liElement in liElements)
+            {
+                string dataRequired = liElement.GetAttribute("data-required");
+                string dataName = liElement.GetAttribute("data-name");
+
+                if (dataRequired == "1")
+                {
+                    // Вызываем соответствующий метод заполнения поля на основе data-name
+                    switch (dataName)
+                    {
+                        case "condition":
+                            Сondition();
+                            Thread.Sleep(500);
+                            break;
+                        case "goodPresentState":
+                            GoodPresentState();
+                            Thread.Sleep(500);
+                            break;
+                            // Добавьте другие case для других полей
+                    }
+                }
+            }
+
         }
     }
 }
