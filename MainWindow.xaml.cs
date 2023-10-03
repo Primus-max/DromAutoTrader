@@ -1,14 +1,11 @@
-﻿using DromAutoTrader.Prices;
+﻿using AdsPowerManager;
+
 using DromAutoTrader.ViewModels;
 using OfficeOpenXml;
-using System.IO;
-using System;
-using System.Windows;
-using AdsPowerManager;
 using OpenQA.Selenium;
-using System.Threading.Tasks;
-using System.Windows.Documents;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Windows;
 
 namespace DromAutoTrader
 {
@@ -28,34 +25,25 @@ namespace DromAutoTrader
             DataContext = viewModel;
             viewModel.SupplierDataGrid = SupplierDataGrid;
 
-
-            //TestParsing();
-
-            GetDriver();   
+            TestProfileName();
         }
-
-        public async Task  GetDriver()
-        {                    
-
-            BrowserManager browserManager = new BrowserManager();
-          ProfileManager profileManager = new ProfileManager();
-            Profile profile = new Profile();
-            List<Profile> list = await  profileManager.GetProfiles();
-
-            foreach (var item in list)
-            {
-                IWebDriver driver = await browserManager.InitializeDriver(item.UserId);
-            }
-
-            
-        }
-
-        public async Task GetProfiles()
+               
+        public async void TestProfileName()
         {
+            ProfileManager profileManager = new ProfileManager();
+            List<Profile> profiles = await profileManager.GetProfiles();
+            BrowserManager browserManager = new BrowserManager();
+         
 
-           
+            foreach (Profile profile in profiles)
+            {
+                var profileName = profile.Name;
+                IWebDriver driver = await browserManager.InitializeDriver(profileName);
 
+
+            }
         }
+        
 
         //public void TestParsing()
         //{

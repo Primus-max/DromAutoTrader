@@ -10,6 +10,6 @@ namespace DromAutoTrader.Models
     internal class Channel: IBaseModel
     {
         public int Id { get; set; } // Уникальный идентификатор поставщика
-        public string? Name { get; set; }  // Название поставщика    
+        public string? Name { get; set; } = string.Empty;  // Название поставщика    
     }
 }
