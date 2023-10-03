@@ -1,13 +1,11 @@
-﻿using AngleSharp.Dom;
+﻿
 using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Support.UI;
-using System;
-using System.Security.Policy;
+using OpenQA.Selenium.Interactions;
 using System.Threading;
+using System;
 
 namespace DromAutoTrader.DromManager
-{   
+{
     public class DromAdPublisher
     {
         private string gooodsUrl = new("https://baza.drom.ru/adding?type=goods");
@@ -18,6 +16,31 @@ namespace DromAutoTrader.DromManager
         {
             // Инициализация драйвера Chrome
             _driver = driver;
+        }
+
+        // Метод входная точка
+        public void PublishAd(string adTitle)
+        {
+            OpenGoodsPage();
+            SetWindowSize();
+
+            //ClickSubjectField();
+            TitleInput(adTitle);
+            PressEnterKey();
+            ClickDirControlVariant();
+            ClickBulletinTypeVariant();
+            InsertImage(@"C:\Users\FedoTT\Desktop\0321-re.jpg");
+
+            BrandInput("Brand");
+            ArticulInput("Articul");
+            PriceInput("3453.8");
+            StateBtn();
+            DescriptionTextInput("Новые запчасти");
+            PresentPartBtn();
+            StateBtn();
+            ClickPublishButton();
+            StateBtn();
+            ClickPublishButton();
         }
 
         // Метод открытия страницы с размещением объявления
@@ -76,60 +99,22 @@ namespace DromAutoTrader.DromManager
             }
         }
 
-        //public void ClickSubjectField()
-        //{
-        //    try
-        //    {
-        //        // Нахождение элемента по имени и клик по нему
-        //        IWebElement subjectInput = _driver.FindElement(By.Name("subject"));
-        //        subjectInput.Click();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine("Ошибка при клике на поле 'subject': " + ex.Message);
-        //    }
-        //}
-
         // Метод получение input заголовка и ввода текста
+
         public void TitleInput(string text)
         {
             try
             {
                 // Ввод текста в поле ввода
                 IWebElement subjectInput = _driver.FindElement(By.Name("subject"));
-                ClearAndEnterText(subjectInput, text);               
+
+
+                ClearAndEnterText(subjectInput, text);
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Ошибка при вводе текста в поле 'subject': " + ex.Message);
             }
-        }
-
-        // Метод ввода текста в Input, сначала отчищаем, потом вводим
-        private static void ClearAndEnterText(IWebElement element, string text)
-        {
-            Random random = new Random();
-
-            element.Clear(); // Очищаем элемент перед вводом текста
-
-            foreach (char letter in text)
-            {
-                if (letter == '\b')
-                {
-                    // Если символ является символом backspace, удаляем следующий символ
-                    element.SendKeys(Keys.Delete);
-                }
-                else
-                {
-                    // Вводим символ
-                    element.SendKeys(letter.ToString());
-                }
-
-                Thread.Sleep(random.Next(100, 350));  // Добавляем небольшую паузу между вводом каждого символа
-            }
-
-            element.Submit();
-            Thread.Sleep(random.Next(300, 700));
         }
 
         // Метод нажатия Enter
@@ -154,6 +139,9 @@ namespace DromAutoTrader.DromManager
             {
                 // Нахождение и клик по элементу по CSS селектору
                 IWebElement dirControlVariant = _driver.FindElement(By.CssSelector(".dir_control__variant"));
+
+                ScrollToElement(dirControlVariant);
+
                 dirControlVariant.Click();
             }
             catch (Exception ex)
@@ -169,6 +157,9 @@ namespace DromAutoTrader.DromManager
             {
                 // Нахождение и клик по элементу по CSS селектору
                 IWebElement bulletinTypeVariant = _driver.FindElement(By.CssSelector(".choice-w-caption__variant:nth-child(1) .bulletin-type__variant-title"));
+
+                ScrollToElement(bulletinTypeVariant);
+
                 bulletinTypeVariant.Click();
             }
             catch (Exception ex)
@@ -177,26 +168,143 @@ namespace DromAutoTrader.DromManager
             }
         }
 
-        // ---------------------- Метод вставки картинок
-        public void InsertImage()
+        // Метод вставки картинок
+        public void InsertImage(string imgPath)
         {
-            string imagePath = @"C:\Users\FedoTT\Desktop\0321-re.jpg";
             try
-            {                
+            {
                 // Найти элемент <input type="file>
-                IWebElement fileInput = _driver.FindElement(By.Name("up[]"));                
+                IWebElement fileInput = _driver.FindElement(By.Name("up[]"));
+
+                ScrollToElement(fileInput);
 
                 // Вставить путь к изображению в элемент
-                fileInput.SendKeys(imagePath);
-              
+                fileInput.SendKeys(imgPath);
+
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Произошла ошибка при вставке изображения: " + ex.Message);
-            }           
+            }
         }
-        // ----------------------
 
+        // Метод получения инпута и вставки имени брэнда
+        public void BrandInput(string brandName)
+        {
+            try
+            {
+                // Найти элемент <input type="file>
+                IWebElement brandNameInput = _driver.FindElement(By.Name("manufacturer"));
+
+                if (string.IsNullOrEmpty(brandNameInput.Text))
+                {
+
+                    ScrollToElement(brandNameInput);
+
+                    // Вставить путь к изображению в элемент
+                    ClearAndEnterText(brandNameInput, brandName);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Произошла ошибка при вставке изображения: " + ex.Message);
+            }
+        }
+
+        // Метод получения инпута и вставки номера 
+        public void ArticulInput(string articulName)
+        {
+            try
+            {
+                // Найти элемент <input type="file>
+                IWebElement articulNameInput = _driver.FindElement(By.Name("autoPartsOemNumber"));
+
+                if (string.IsNullOrEmpty(articulNameInput.Text))
+                {
+
+                    ScrollToElement(articulNameInput);
+
+                    ClearAndEnterText(articulNameInput, articulName);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Произошла ошибка при вставке изображения: " + ex.Message);
+            }
+        }
+
+        // Метод получения инпута и вставки цены 
+        public void PriceInput(string price)
+        {
+            try
+            {
+                // Найти элемент <input type="file>
+                IWebElement priceInput = _driver.FindElement(By.Name("price"));
+
+                ScrollToElement(priceInput);
+                ClearAndEnterText(priceInput, price);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Произошла ошибка при вставке изображения: " + ex.Message);
+            }
+        }
+
+        // Метод получения кнопки выбора состояния (новое или б/у)
+        public void StateBtn()
+        {
+            try
+            {
+                IWebElement stateButton = _driver.FindElement(By.XPath("//label[text()='Новый']"));
+
+                // Выполнить клик на элементе с использованием JavaScript
+                IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)_driver;
+                jsExecutor.ExecuteScript("arguments[0].click();", stateButton);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Произошла ошибка при вставке изображения: " + ex.Message);
+            }
+        }
+
+        // Метод получения инпута и вставки описания 
+        public void DescriptionTextInput(string description)
+        {
+            try
+            {
+                // Найти элемент <input type="file>
+                IWebElement descriptionTextInput = _driver.FindElement(By.Name("text"));
+
+                ScrollToElement(descriptionTextInput);
+
+                ClearAndEnterText(descriptionTextInput, description);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Произошла ошибка при вставке изображения: " + ex.Message);
+            }
+        }
+
+        // Метод получения кнопки наличия или под заказ
+        public void PresentPartBtn()
+        {
+            try
+            {
+
+                IWebElement presentPartBtn = _driver.FindElement(By.XPath("//label[text()='В наличии']"));
+
+                // Выполнить клик на элементе с использованием JavaScript
+                IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)_driver;
+                jsExecutor.ExecuteScript("arguments[0].click();", presentPartBtn);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Произошла ошибка при вставке изображения: " + ex.Message);
+            }
+        }
 
         // Метод публицкации объявления
         public void ClickPublishButton()
@@ -205,6 +313,9 @@ namespace DromAutoTrader.DromManager
             {
                 // Нахождение и клик по элементу по ID
                 IWebElement bulletinPublicationFree = _driver.FindElement(By.Id("bulletin_publication_free"));
+
+                ScrollToElement(bulletinPublicationFree);
+
                 bulletinPublicationFree.Click();
             }
             catch (Exception ex)
@@ -213,21 +324,32 @@ namespace DromAutoTrader.DromManager
             }
         }
 
-        public void PublishAd(string adTitle)
+        // Метод ввода текста в Input, сначала отчищаем, потом вводим
+        private static void ClearAndEnterText(IWebElement element, string text)
         {
-            OpenGoodsPage();
-            SetWindowSize();
-           
-            //ClickSubjectField();
-            TitleInput(adTitle);
-            PressEnterKey();
-            ClickDirControlVariant();
-            ClickBulletinTypeVariant();
-            InsertImage();
-            //ClickPublishButton();
+            Random random = new Random();
 
-        }       
-       
+            element.Clear(); // Очищаем элемент перед вводом текста
+
+            foreach (char letter in text)
+            {
+                if (letter == '\b')
+                {
+                    // Если символ является символом backspace, удаляем следующий символ
+                    element.SendKeys(Keys.Delete);
+                }
+                else
+                {
+                    // Вводим символ
+                    element.SendKeys(letter.ToString());
+                }
+
+                Thread.Sleep(random.Next(10, 20));  // Добавляем небольшую паузу между вводом каждого символа
+            }
+
+            element.Submit();
+            Thread.Sleep(random.Next(100, 200));
+        }
     }
 }
 
