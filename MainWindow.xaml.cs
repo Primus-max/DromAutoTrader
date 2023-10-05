@@ -64,12 +64,7 @@ namespace DromAutoTrader
 
             }
         }
-
-        private void Edit_Click(object sender, RoutedEventArgs e)
-        {
-            ChannelFrame.Navigate(new EditeChannelPage());
-        }
-
+              
 
         //public void TestParsing()
         //{
