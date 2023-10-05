@@ -1,5 +1,4 @@
 ﻿using System.Windows.Controls;
-using Channel = DromAutoTrader.Models.Channel;
 
 namespace DromAutoTrader.Views.Pages
 {
@@ -8,13 +7,12 @@ namespace DromAutoTrader.Views.Pages
     /// </summary>
     public partial class EditeChannelPage : Page
     {
-        private Channel _selectedChannel;
 
-        public EditeChannelPage(Channel channel)
+        public EditeChannelPage()
         {
-            _selectedChannel = channel;
 
             InitializeComponent();
+
         }
 
 

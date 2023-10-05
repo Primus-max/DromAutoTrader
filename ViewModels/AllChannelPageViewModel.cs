@@ -40,15 +40,15 @@ namespace DromAutoTrader.ViewModels
 
         private void OnOpenEditChannelPageCommandExecuted(object sender)
         {
-            Channel? channel = sender as Channel;
-            OpenEditChannelPage(channel);
+            SelectedChannel = sender as Channel;
+            OpenEditChannelPage();
         }
         #endregion
         public AllChannelPageViewModel()
         {
             // Получаю через Locator Frame от MainWindow
             ChannelFrame = LocatorService.Current.ChannelFrame;
-
+            
             #region Инициализация команд
             OpenEditChannelPageCommand = new LambdaCommand(OnOpenEditChannelPageCommandExecuted, CanOpenEditChannelPageCommandExecute); 
             #endregion
@@ -68,9 +68,12 @@ namespace DromAutoTrader.ViewModels
         }
 
         #region Методы
-        private void OpenEditChannelPage(Channel channel) 
+        private void OpenEditChannelPage() 
         {
-            ChannelFrame.Navigate(new EditeChannelPage(channel));
+            // Передаю выбранный Channel черерз локатор в EditChannelPageViewModel
+            LocatorService.Current.SelectedChannel = SelectedChannel;
+
+            ChannelFrame.Navigate(new EditeChannelPage());
         }
         #endregion
     }
