@@ -267,7 +267,7 @@
                     <StackPanel>
 
                         <Frame Name="ChannelFrame" NavigationUIVisibility="Hidden"/>
-                        <Button Click="Edit_Click"/>
+                        <!--<Button Click="Edit_Click"/>-->
                     </StackPanel>
                     
                    
