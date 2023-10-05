@@ -5,9 +5,6 @@ using DromAutoTrader.Views;
 using DromAutoTrader.Views.Pages;
 using OfficeOpenXml;
 using OpenQA.Selenium;
-using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
 
 namespace DromAutoTrader
 {
@@ -42,7 +39,7 @@ namespace DromAutoTrader
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             // Устанавливаем начальное содержимое Frame при загрузке окна
-            ChannelFrame.Navigate(new AllChannelPage()); 
+            ChannelFrame.Navigate(new AllChannelPage());
         }
 
         public async void TestProfileName()
@@ -64,7 +61,7 @@ namespace DromAutoTrader
 
             }
         }
-              
+
 
         //public void TestParsing()
         //{

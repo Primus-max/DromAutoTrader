@@ -1,10 +1,5 @@
-﻿using DromAutoTrader.Models;
-using DromAutoTrader.Views;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.ObjectModel;
-using System.Windows.Input;
-using AppContext = DromAutoTrader.Data.Connection.AppContext;
+﻿using DromAutoTrader.Views;
+
 
 namespace DromAutoTrader.ViewModels
 {
@@ -45,6 +40,14 @@ namespace DromAutoTrader.ViewModels
             AddRowTablePriceOfIncreases();
         }
 
+        public ICommand SaveTablePriceOfIncreasesCommand { get; } = null!;
+
+        private bool CanSaveTablePriceOfIncreasesCommandExecute(object p) => true;
+
+        private void OnSaveTablePriceOfIncreasesCommandExecuted(object sender)
+        {
+
+        }
 
         #endregion
 
@@ -61,6 +64,7 @@ namespace DromAutoTrader.ViewModels
 
             #region Инициализация команд
             AddRowTablePriceOfIncreasesCommand = new LambdaCommand(OnAddRowTablePriceOfIncreasesCommandExecuted, CanAddRowTablePriceOfIncreasesCommandExecute);
+            SaveTablePriceOfIncreasesCommand = new LambdaCommand(OnSaveTablePriceOfIncreasesCommandExecuted, CanSaveTablePriceOfIncreasesCommandExecute);
             #endregion
         }
 
@@ -68,6 +72,18 @@ namespace DromAutoTrader.ViewModels
         private void AddRowTablePriceOfIncreases()
         {
             TablePriceOfIncreases.Add(new TablePriceOfIncrease() { ChannelId = 3345, From = 244, To = 3453, PriceIncrease = 234543 });
+        }
+
+        public void SaveTablePriceOfIncreases()
+        {
+            try
+            {
+                _db.TablePriceOfIncreases.AddRange(TablePriceOfIncreases);
+                _db.SaveChanges();
+            }
+            catch (Exception)
+            {
+            }
         }
 
         // Инициализирую базу данных

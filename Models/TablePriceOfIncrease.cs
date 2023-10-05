@@ -5,7 +5,7 @@ namespace DromAutoTrader.Models
 {
     public class TablePriceOfIncrease
     {
-        [PrimaryKey, AutoIncrement]
+        [SQLite.PrimaryKey, AutoIncrement]
         public int Id { get; set; }
         public int From { get; set; }
         public int To { get; set; }

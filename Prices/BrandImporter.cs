@@ -1,11 +1,4 @@
-﻿
-using System;
-using System.Linq;
-using DromAutoTrader.Models;
-using DromAutoTrader.Prices;
-using Microsoft.EntityFrameworkCore;
-using AppContext = DromAutoTrader.Data.Connection.AppContext;
-
+﻿using DromAutoTrader.Prices;
 
 /// <summary>
 /// Класс для импорта брендов из прайс-листа в базу данных.

@@ -71,7 +71,7 @@
                         Width="200"
                         Margin="20,16,0,30"
                         HorizontalAlignment="Left"
-                        Command="{Binding AddRowTablePriceOfIncreasesCommand}"
+                        Command="{Binding SaveTablePriceOfIncreasesCommand}"
                         Content="Сохранить" />
                 </StackPanel>
 
