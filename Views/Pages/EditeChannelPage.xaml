@@ -48,6 +48,7 @@
                 </StackPanel>
             </StackPanel>
 
+            
             <StackPanel Grid.Row="1" Margin="20">
                 <TextBlock
                     Margin="20,20"
@@ -57,38 +58,61 @@
                     Text="Таблица цен накрутки" />
 
                 <!--  Кнопка добавления нового поставщика  -->
-                <Button
-                    Width="200"
-                    Margin="20,16,0,30"
-                    HorizontalAlignment="Left"
-                    Command="{Binding AddSupplierCommand}"
-                    Content="Добавить" />
+                <StackPanel Orientation="Horizontal">
+                    <Button
+                        Width="200"
+                        Margin="20,16,0,30"
+                        HorizontalAlignment="Left"
+                        Command="{Binding AddRowTablePriceOfIncreasesCommand}"
+                        Content="Добавить" >
+                        
+                    </Button>
+                    <Button
+                        Width="200"
+                        Margin="20,16,0,30"
+                        HorizontalAlignment="Left"
+                        Command="{Binding AddRowTablePriceOfIncreasesCommand}"
+                        Content="Сохранить" />
+                </StackPanel>
 
-                <!--  Контейнер для списка поставщиков  -->
+                <!--  Таблица накрутки цен  -->
                 <DataGrid
-    x:Name="SupplierDataGrid"
-    AutoGenerateColumns="False"
-    ItemsSource="{Binding Suppliers}"
-    SelectedItem="{Binding SelectedSupplier}">
+                    x:Name="SupplierDataGrid"
+                    AutoGenerateColumns="False"
+                    ItemsSource="{Binding TablePriceOfIncreases}">
                     <DataGrid.InputBindings>
                         <KeyBinding Key="Enter" Command="{Binding EnterKeyPressedCommand}" />
                     </DataGrid.InputBindings>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Binding="{Binding Id}" Header="ОТ" Width="2*">
+                        <DataGridTextColumn
+                            Width="3*"
+                            Binding="{Binding From}"
+                            Header="ОТ">
                             <DataGridTextColumn.MinWidth>100</DataGridTextColumn.MinWidth>
                         </DataGridTextColumn>
-                        <DataGridTextColumn Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Header="ДО" Width="2*">
+                        <DataGridTextColumn
+                            Width="3*"
+                            Binding="{Binding To, UpdateSourceTrigger=PropertyChanged}"
+                            Header="ДО">
                             <DataGridTextColumn.MinWidth>100</DataGridTextColumn.MinWidth>
                         </DataGridTextColumn>
-                        <DataGridTextColumn Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Header="НА" Width="2*">
+                        <DataGridTextColumn
+                            Width="3*"
+                            Binding="{Binding PriceIncrease, UpdateSourceTrigger=PropertyChanged}"
+                            Header="НА">
                             <DataGridTextColumn.MinWidth>100</DataGridTextColumn.MinWidth>
                         </DataGridTextColumn>
 
-                        <DataGridTemplateColumn Header="Удалить" Width="3*">
+                        <DataGridTemplateColumn Width="1*" Header="Удалить">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Command="{Binding DataContext.DeleteSuplierCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
-                                        <materialDesign:PackIcon Width="16" Height="16" Kind="Delete" />
+                                    <Button Command="{Binding DataContext.DeleteSuplierCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}" 
+                                            Background="Transparent"
+                                            BorderBrush="Transparent">
+                                        <materialDesign:PackIcon
+                                            Width="32"
+                                            Height="32"
+                                            Kind="Delete" />
                                     </Button>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
