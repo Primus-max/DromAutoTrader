@@ -1,10 +1,10 @@
 ﻿using AdsPowerManager;
 using DromAutoTrader.DromManager;
 using DromAutoTrader.ViewModels;
+using DromAutoTrader.Views.Pages;
 using OfficeOpenXml;
 using OpenQA.Selenium;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace DromAutoTrader
@@ -25,19 +25,26 @@ namespace DromAutoTrader
             DataContext = viewModel;
             viewModel.SupplierDataGrid = SupplierDataGrid;
 
-            TestProfileName();
+            Loaded += MainWindow_Loaded;
+            //TestProfileName();
         }
-               
+
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Устанавливаем начальное содержимое Frame при загрузке окна
+            ChannelFrame.Navigate(new AllChannelPage()); 
+        }
+
         public async void TestProfileName()
         {
-            ProfileManager profileManager = new ProfileManager();
-            List<Profile> profiles = await profileManager.GetProfiles();
+            List<Profile> profiles = await ProfileManager.GetProfiles();
             BrowserManager browserManager = new BrowserManager();
-         
+
 
             foreach (Profile profile in profiles)
             {
-                if(profile.Name == "MainCraftIrk")
+                if (profile.Name == "MainCraftIrk")
                 {
                     var profileName = profile.Name;
                     IWebDriver driver = await browserManager.InitializeDriver(profileName);
@@ -45,10 +52,15 @@ namespace DromAutoTrader
                     DromAdPublisher dromAdPublisher = new DromAdPublisher(driver);
                     dromAdPublisher.PublishAd("Защитный комплект амортизатора 16F F10066 (2шт/упак)");
                 }
-                
+
             }
         }
-        
+
+        private void Edit_Click(object sender, RoutedEventArgs e)
+        {
+            ChannelFrame.Navigate(new EditeChannelPage());
+        }
+
 
         //public void TestParsing()
         //{

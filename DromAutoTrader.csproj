@@ -23,7 +23,6 @@
 
   <ItemGroup>
     <Folder Include="DromManager\AngleSharp\" />
-    <Folder Include="Views\" />
   </ItemGroup>
 
   <ItemGroup>
