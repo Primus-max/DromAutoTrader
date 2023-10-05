@@ -1,5 +1,8 @@
 ﻿using DromAutoTrader.Models;
+using DromAutoTrader.Views;
+using DromAutoTrader.Views.Pages;
 using System.Collections.ObjectModel;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace DromAutoTrader.ViewModels
@@ -9,6 +12,7 @@ namespace DromAutoTrader.ViewModels
         #region Приватные свойства
         private ObservableCollection<Channel> _channels = null!;
         private Channel _selectedChannel = null!;
+        private Frame _channelFrame = null!;
         #endregion
 
         #region Публичные свойства
@@ -22,21 +26,28 @@ namespace DromAutoTrader.ViewModels
             get => _selectedChannel;
             set => Set(ref _selectedChannel, value);
         }
+        public Frame ChannelFrame
+        {
+            get => _channelFrame;
+            set => Set(ref _channelFrame, value);
+        }
         #endregion
 
         #region Команды
-        public ICommand OpenEditChannelWindowCommand { get; } = null!;
+        public ICommand OpenEditChannelPageCommand { get; } = null!;
 
-        private bool CanOpenEditChannelWindowCommandExecute(object p) => true;
+        private bool CanOpenEditChannelPageCommandExecute(object p) => true;
 
-        private void OnOpenEditChannelWindowCommandExecuted(object sender)
+        private void OnOpenEditChannelPageCommandExecuted(object sender)
         {
-
+            OpenEditChannelPage();
         }
         #endregion
         public AllChannelPageViewModel()
         {
-            OpenEditChannelWindowCommand = new LambdaCommand(OnOpenEditChannelWindowCommandExecuted, CanOpenEditChannelWindowCommandExecute);
+            ChannelFrame = LocatorService.Current.ChannelFrame;
+
+            OpenEditChannelPageCommand = new LambdaCommand(OnOpenEditChannelPageCommandExecuted, CanOpenEditChannelPageCommandExecute);
 
             // Тестовые данные
             Channels = new ObservableCollection<Channel>();
@@ -51,5 +62,12 @@ namespace DromAutoTrader.ViewModels
                 Channels.Add(channel);
             }
         }
+
+        #region Методы
+        private void OpenEditChannelPage() 
+        {
+            ChannelFrame.Navigate(new EditeChannelPage());
+        }
+        #endregion
     }
 }

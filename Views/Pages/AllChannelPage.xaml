@@ -49,8 +49,8 @@
                                     <Button
                                         Background="Transparent"
                                         BorderBrush="Transparent"
-                                        Command="{Binding DataContext.EditeSuplierCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
-                                        CommandParameter="{Binding}">
+                                        Command="{Binding DataContext.OpenEditChannelPageCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}"
+                                        CommandParameter="{Binding}" >
                                         <materialDesign:PackIcon
                                             Width="16"
                                             Height="16"

@@ -1,11 +1,13 @@
 ﻿using AdsPowerManager;
 using DromAutoTrader.DromManager;
 using DromAutoTrader.ViewModels;
+using DromAutoTrader.Views;
 using DromAutoTrader.Views.Pages;
 using OfficeOpenXml;
 using OpenQA.Selenium;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace DromAutoTrader
 {
@@ -14,6 +16,10 @@ namespace DromAutoTrader
     /// </summary>
     public partial class MainWindow : Window
     {
+        public Frame ChannelFrameInstance
+        {
+            get { return ChannelFrame; }
+        }
 
         public MainWindow()
         {
@@ -24,6 +30,9 @@ namespace DromAutoTrader
             var viewModel = new MainWindowViewModel();
             DataContext = viewModel;
             viewModel.SupplierDataGrid = SupplierDataGrid;
+
+            // Передаю Frame черерз локатор
+            LocatorService.Current.ChannelFrame = ChannelFrame;
 
             Loaded += MainWindow_Loaded;
             //TestProfileName();
