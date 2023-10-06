@@ -1,4 +1,6 @@
-﻿namespace DromAutoTrader.DromManager
+﻿using DromAutoTrader.Data;
+
+namespace DromAutoTrader.DromManager
 {
     public class ChannelManager
     {
@@ -9,11 +11,10 @@
         {
             List<Profile> profiles = await ProfileManager.GetProfiles();
 
-            using AppContext db = new();
+            using AppContext db = AppContextFactory.GetInstance();
 
             try
-            {
-                db.Database.EnsureCreated();
+            {                
                 db.Channels.Load();
 
                 foreach (var profile in profiles)
