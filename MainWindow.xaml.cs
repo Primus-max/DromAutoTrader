@@ -22,6 +22,7 @@ namespace DromAutoTrader
         {
             InitializeComponent();
 
+            // Объявляю какакую версию EPPlus использую
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
             var viewModel = new MainWindowViewModel();

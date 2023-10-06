@@ -1,4 +1,5 @@
-﻿using DromAutoTrader.Prices;
+﻿using DromAutoTrader.Data;
+using DromAutoTrader.Prices;
 
 /// <summary>
 /// Класс для импорта брендов из прайс-листа в базу данных.
@@ -47,13 +48,9 @@ public class BrandImporter
     {
         try
         {
-            // Экземпляр базы данных
-            _db = new AppContext();
-            // Гарантируем, что база данных создана
-            _db.Database.EnsureCreated();
-            // Загружаем данные о поставщиках из БД (по вашей логике).
+            _db = AppContextFactory.GetInstance();
         }
-        catch (Exception ex)
+        catch (Exception )
         {
             // TODO: Добавить запись логов
             //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
