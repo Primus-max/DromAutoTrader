@@ -1,4 +1,6 @@
-﻿namespace DromAutoTrader.ViewModels
+﻿using DromAutoTrader.Data;
+
+namespace DromAutoTrader.ViewModels
 {
     class MainWindowViewModel : BaseViewModel
     {
@@ -175,13 +177,11 @@
             try
             {
                 // Экземпляр базы данных
-                _db = new AppContext();
-                // гарантируем, что база данных создана
-                _db.Database.EnsureCreated();
+                _db = AppContextFactory.GetInstance();
                 // загружаем данные о поставщиках из БД
                 _db.Suppliers.Load();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // TODO сделать запись логов
                 //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
