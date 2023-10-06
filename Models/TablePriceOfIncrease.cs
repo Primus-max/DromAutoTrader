@@ -1,5 +1,4 @@
-﻿using SQLite;
-using SQLiteNetExtensions.Attributes;
+﻿using SQLiteNetExtensions.Attributes;
 
 namespace DromAutoTrader.Models
 {

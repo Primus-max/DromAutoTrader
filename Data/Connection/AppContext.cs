@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DromAutoTrader.Data.Connection
 {
-    internal class AppContext : DbContext
+    public class AppContext : DbContext
     {
         public DbSet<Supplier> Suppliers { get; set; } = null!;
         public DbSet<Brand> Brands { get; set; } = null!;

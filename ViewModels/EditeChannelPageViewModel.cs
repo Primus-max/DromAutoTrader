@@ -1,4 +1,6 @@
-﻿using DromAutoTrader.Views;
+﻿using DromAutoTrader.Data;
+using DromAutoTrader.Views;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace DromAutoTrader.ViewModels
@@ -71,7 +73,7 @@ namespace DromAutoTrader.ViewModels
         #region Методы
         private void AddRowTablePriceOfIncreases()
         {
-            TablePriceOfIncreases.Add(new TablePriceOfIncrease() { ChannelId = 3345, From = 244, To = 3453, PriceIncrease = 234543 });
+            TablePriceOfIncreases.Add(new TablePriceOfIncrease());
         }
 
         // Сохраняем таблицу накрутки цен
@@ -101,9 +103,7 @@ namespace DromAutoTrader.ViewModels
             try
             {
                 // Экземпляр базы данных
-                _db = new AppContext();
-                // гарантируем, что база данных создана
-                _db.Database.EnsureCreated();
+                _db =  AppContextFactory.GetInstance();              
                 // загружаем данные о поставщиках из БД
                 _db.TablePriceOfIncreases.Load();
             }

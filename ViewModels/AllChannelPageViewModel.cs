@@ -1,4 +1,5 @@
-﻿using DromAutoTrader.Models;
+﻿using DromAutoTrader.Data;
+using DromAutoTrader.Models;
 using DromAutoTrader.Views;
 using DromAutoTrader.Views.Pages;
 using System.Collections.ObjectModel;
@@ -53,8 +54,7 @@ namespace DromAutoTrader.ViewModels
             OpenEditChannelPageCommand = new LambdaCommand(OnOpenEditChannelPageCommandExecuted, CanOpenEditChannelPageCommandExecute); 
             #endregion
 
-            using AppContext db = new();
-            db.Database.EnsureCreated();
+            var db =  AppContextFactory.GetInstance();
             db.Channels.Load();
             // Тестовые данные
             Channels = new ObservableCollection<Channel>(db.Channels.ToList());
