@@ -13,10 +13,10 @@ namespace DromAutoTrader
     /// </summary>
     public partial class MainWindow : Window
     {
-        public Frame ChannelFrameInstance
-        {
-            get { return ChannelFrame; }
-        }
+        //public Frame ChannelFrameInstance
+        //{
+        //    get { return ChannelFrame; }
+        //}
 
         public MainWindow()
         {
@@ -32,7 +32,7 @@ namespace DromAutoTrader
             LocatorService.Current.ChannelFrame = ChannelFrame;
 
             Loaded += MainWindow_Loaded;
-            //TestProfileName();
+            TestProfileName();
         }
 
 
@@ -44,22 +44,24 @@ namespace DromAutoTrader
 
         public async void TestProfileName()
         {
-            List<Profile> profiles = await ProfileManager.GetProfiles();
-            BrowserManager browserManager = new BrowserManager();
+           await ChannelManager.GetChannelsAsync();
+
+            //List<Profile> profiles = await ProfileManager.GetProfiles();
+            //BrowserManager browserManager = new BrowserManager();
 
 
-            foreach (Profile profile in profiles)
-            {
-                if (profile.Name == "MainCraftIrk")
-                {
-                    var profileName = profile.Name;
-                    IWebDriver driver = await browserManager.InitializeDriver(profileName);
+            //foreach (Profile profile in profiles)
+            //{
+            //    if (profile.Name == "MainCraftIrk")
+            //    {
+            //        var profileName = profile.Name;
+            //        IWebDriver driver = await browserManager.InitializeDriver(profileName);
 
-                    DromAdPublisher dromAdPublisher = new DromAdPublisher(driver);
-                    dromAdPublisher.PublishAd("Защитный комплект амортизатора 16F F10066 (2шт/упак)");
-                }
+            //        DromAdPublisher dromAdPublisher = new DromAdPublisher(driver);
+            //        dromAdPublisher.PublishAd("Защитный комплект амортизатора 16F F10066 (2шт/упак)");
+            //    }
 
-            }
+            //}
         }
 
 

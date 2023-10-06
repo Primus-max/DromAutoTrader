@@ -46,7 +46,7 @@ namespace DromAutoTrader.ViewModels
 
         private void OnSaveTablePriceOfIncreasesCommandExecuted(object sender)
         {
-
+            SaveTablePriceOfIncreases();
         }
 
         #endregion
@@ -59,7 +59,7 @@ namespace DromAutoTrader.ViewModels
             SelectedChannel = LocatorService.Current.SelectedChannel;
 
             #region Инициализация источников данных
-            TablePriceOfIncreases = new ObservableCollection<TablePriceOfIncrease>();
+            TablePriceOfIncreases = new ObservableCollection<TablePriceOfIncrease>(_db.TablePriceOfIncreases.ToList());
             #endregion
 
             #region Инициализация команд
@@ -78,7 +78,11 @@ namespace DromAutoTrader.ViewModels
         {
             try
             {
-                _db.TablePriceOfIncreases.AddRange(TablePriceOfIncreases);
+                foreach (var price in TablePriceOfIncreases)
+                {
+                    _db.TablePriceOfIncreases.Add(price);
+                }
+
                 _db.SaveChanges();
             }
             catch (Exception)
