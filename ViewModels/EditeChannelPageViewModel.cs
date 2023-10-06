@@ -74,12 +74,15 @@ namespace DromAutoTrader.ViewModels
             TablePriceOfIncreases.Add(new TablePriceOfIncrease() { ChannelId = 3345, From = 244, To = 3453, PriceIncrease = 234543 });
         }
 
+        // Сохраняем таблицу накрутки цен
         public void SaveTablePriceOfIncreases()
         {
             try
             {
                 foreach (var price in TablePriceOfIncreases)
                 {
+                    // Устанавливаем ChannelId в соответствии с выбранным каналом
+                    price.ChannelId = SelectedChannel.Id;
                     _db.TablePriceOfIncreases.Add(price);
                 }
 
@@ -87,8 +90,10 @@ namespace DromAutoTrader.ViewModels
             }
             catch (Exception)
             {
+                // Обработка ошибок сохранения данных
             }
         }
+
 
         // Инициализирую базу данных
         private void InitializeDatabase()

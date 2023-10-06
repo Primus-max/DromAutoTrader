@@ -8,10 +8,10 @@ namespace DromAutoTrader.Models
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         // Навигационное свойство для связи с ценами повышения
-        [OneToOne(CascadeOperations = CascadeOperation.All)]
+        [OneToOne]
         public TablePriceOfIncrease? PriceIncrease { get; set; }
     }
 }

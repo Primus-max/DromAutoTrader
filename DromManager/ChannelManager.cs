@@ -9,7 +9,7 @@
         {
             List<Profile> profiles = await ProfileManager.GetProfiles();
 
-            using AppContext db = new AppContext();
+            using AppContext db = new();
 
             try
             {

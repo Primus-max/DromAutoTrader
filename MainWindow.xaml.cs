@@ -32,7 +32,7 @@ namespace DromAutoTrader
             LocatorService.Current.ChannelFrame = ChannelFrame;
 
             Loaded += MainWindow_Loaded;
-            TestProfileName();
+            //TestProfileName();
         }
 
 

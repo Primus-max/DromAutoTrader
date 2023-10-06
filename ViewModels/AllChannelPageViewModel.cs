@@ -53,18 +53,11 @@ namespace DromAutoTrader.ViewModels
             OpenEditChannelPageCommand = new LambdaCommand(OnOpenEditChannelPageCommandExecuted, CanOpenEditChannelPageCommandExecute); 
             #endregion
 
+            using AppContext db = new();
+            db.Database.EnsureCreated();
+            db.Channels.Load();
             // Тестовые данные
-            Channels = new ObservableCollection<Channel>();
-            for (int i = 0; i < 5; i++)
-            {
-                Channel channel = new Channel
-                {
-                    Id = i,
-                    Name = "Имя канала" + i.ToString(),
-                };
-
-                Channels.Add(channel);
-            }
+            Channels = new ObservableCollection<Channel>(db.Channels.ToList());
         }
 
         #region Методы
