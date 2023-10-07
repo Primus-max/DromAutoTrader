@@ -74,7 +74,10 @@
                                 FontWeight="Bold"
                                 Foreground="White"
                                 Text="1." />
-                            <Button Width="240" Content="Выбрать прайс" />
+                            <Button
+                                Width="240"
+                                Command="{Binding SelectFilePriceCommand}"
+                                Content="Выбрать прайс" Cursor="Hand" />
                         </StackPanel>
 
                         <StackPanel
@@ -262,11 +265,11 @@
                 <TabItem Header="Каналы">
                     <StackPanel>
 
-                        <Frame Name="ChannelFrame" NavigationUIVisibility="Hidden"/>
+                        <Frame Name="ChannelFrame" NavigationUIVisibility="Hidden" />
                         <!--<Button Click="Edit_Click"/>-->
                     </StackPanel>
-                    
-                   
+
+
 
                 </TabItem>
                 <TabItem Header="Брэнды">

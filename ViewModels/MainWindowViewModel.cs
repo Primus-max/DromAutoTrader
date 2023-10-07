@@ -1,4 +1,5 @@
 ﻿using DromAutoTrader.Data;
+using Microsoft.Win32;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -8,7 +9,9 @@ namespace DromAutoTrader.ViewModels
         #region Базовые
         private string? _title = string.Empty;
         private AppContext _db = null!;
+        private string? _pathFilePrice = string.Empty;
         #endregion
+        
 
         #region Поставщики
         private ObservableCollection<Supplier> _suppliers = null!;
@@ -38,6 +41,11 @@ namespace DromAutoTrader.ViewModels
         {
             get => _db;
             set => Set(ref _db, value);
+        }
+        public string PathFilePrice
+        {
+            get => _pathFilePrice;
+            set => Set(ref _pathFilePrice, value);
         }
         #endregion
 
@@ -128,7 +136,15 @@ namespace DromAutoTrader.ViewModels
             }
         }
 
+        public ICommand SelectFilePriceCommand { get; } = null!;
 
+        private bool CanSelectFilePriceCommandExecute(object p) => true;
+
+        private void OnSelectFilePriceCommandExecuted(object sender)
+        {
+            SelectFilePrice();
+        }
+       
         #endregion
 
         #region Каналы
@@ -150,6 +166,7 @@ namespace DromAutoTrader.ViewModels
             EnterKeyPressedCommand = new LambdaCommand(OnEnterKeyPressedCommandExecuted, CanEnterKeyPressedCommandExecute);
             EditeSuplierCommand = new LambdaCommand(OnEditeSuplierCommandExecuted, CanEditeSuplierCommandExecute);
             DeleteSuplierCommand = new LambdaCommand(OnDeleteSuplierCommandExecuted, CanDeleteSuplierCommandExecute);
+            SelectFilePriceCommand = new LambdaCommand(OnSelectFilePriceCommandExecuted, CanSelectFilePriceCommandExecute);
             #endregion
 
             #endregion
@@ -171,6 +188,23 @@ namespace DromAutoTrader.ViewModels
         #region Методы
 
         #region Базовые
+        // Метод выбора файла для парсинга
+        private void SelectFilePrice()
+        {
+            // Создаем диалоговое окно выбора файла
+            OpenFileDialog openFileDialog = new()
+            {
+                // Устанавливаем фильтры для типов файлов, которые вы хотите разрешить выбирать
+                Filter = "Excel Files (*.xlsx)|*.xlsx|CSV Files (*.csv)|*.csv|All Files (*.*)|*.*"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                // Получаем путь к выбранному файлу
+                PathFilePrice = openFileDialog.FileName;                
+            }
+        }
+
         // Метод инициализации базы данных
         private void InitializeDatabase()
         {
