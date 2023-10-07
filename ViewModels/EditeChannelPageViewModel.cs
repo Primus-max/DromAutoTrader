@@ -1,6 +1,6 @@
 ﻿using DromAutoTrader.Data;
 using DromAutoTrader.Views;
-
+using OpenQA.Selenium.DevTools.V115.Page;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -69,7 +69,16 @@ namespace DromAutoTrader.ViewModels
             }
             RemoveTablePriceOfIncreases(tablePriceOfIncrease);
         }
-                
+
+        public ICommand GoBackAllChannelsCommand { get; } = null!;
+
+        private bool CanGoBackAllChannelsCommandExecute(object p) => true;
+
+        private void OnGoBackAllChannelsCommandExecuted(object sender)
+        {
+            LocatorService.Current.ChannelFrame.GoBack();
+        }
+
         #endregion
 
         public EditeChannelPageViewModel()
@@ -87,6 +96,7 @@ namespace DromAutoTrader.ViewModels
             AddRowTablePriceOfIncreasesCommand = new LambdaCommand(OnAddRowTablePriceOfIncreasesCommandExecuted, CanAddRowTablePriceOfIncreasesCommandExecute);
             SaveTablePriceOfIncreasesCommand = new LambdaCommand(OnSaveTablePriceOfIncreasesCommandExecuted, CanSaveTablePriceOfIncreasesCommandExecute);
             RemoveTablePriceOfIncreasesCommand = new LambdaCommand(OnRemoveTablePriceOfIncreasesCommandExecuted, CanRemoveTablePriceOfIncreasesCommandExecute);
+            GoBackAllChannelsCommand = new LambdaCommand(OnGoBackAllChannelsCommandExecuted, CanGoBackAllChannelsCommandExecute);
             #endregion
 
             #region Вызов методов

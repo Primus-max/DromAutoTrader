@@ -29,7 +29,16 @@
                     FontWeight="Heavy"
                     Foreground="#8a8a8a"
                     Text="Настройки канала" />
-
+                <Button
+                    Width="120"
+                    Height="20"
+                    Margin="8,0,0,17"
+                    Padding="0"
+                    HorizontalAlignment="Left"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    Content="Список каналов" 
+                    Command="{Binding GoBackAllChannelsCommand}"/>
                 <StackPanel>
                     <TextBlock
                         FontSize="14"
