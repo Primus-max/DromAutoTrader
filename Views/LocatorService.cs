@@ -1,7 +1,4 @@
-﻿using DromAutoTrader.Models;
-using System.Windows.Controls;
-
-namespace DromAutoTrader.Views
+﻿namespace DromAutoTrader.Views
 {
     internal class LocatorService
     {

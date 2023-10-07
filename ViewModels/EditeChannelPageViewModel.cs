@@ -80,14 +80,43 @@ namespace DromAutoTrader.ViewModels
         {
             try
             {
+                List<TablePriceOfIncrease> newList = new List<TablePriceOfIncrease>();
+                int maxId = 0; // Начальное значение maxId
+                
+                
                 foreach (var price in TablePriceOfIncreases)
                 {
+                    if (_db.TablePriceOfIncreases.Any())
+                    {
+                        maxId = _db.TablePriceOfIncreases.Max(x => x.Id);
+                    }
                     // Устанавливаем ChannelId в соответствии с выбранным каналом
                     price.ChannelId = SelectedChannel.Id;
-                    
 
-                    _db.ChangeTracker.TrackGraph(price, node =>
-                        node.Entry.State = !node.Entry.IsKeySet ? EntityState.Added : EntityState.Unchanged);
+                    // Проверяем, существует ли запись с таким Id
+                    var existingRecord = _db.TablePriceOfIncreases.FirstOrDefault(x => x.Id == price.Id);
+
+                    if (existingRecord != null)
+                    {
+                        // Запись с таким Id существует
+
+                        // Проверяем, изменились ли какие-либо поля
+                        if (existingRecord.From != price.From || existingRecord.To != price.To || existingRecord.PriceIncrease != price.PriceIncrease)
+                        {
+                            // Если есть изменения, обновляем запись
+                            existingRecord.From = price.From;
+                            existingRecord.To = price.To;
+                            existingRecord.PriceIncrease = price.PriceIncrease;                            
+                        }
+                        // Иначе ничего не делаем, запись уже существует и не изменилась
+                    }
+                    else
+                    {
+                        // Запись с таким Id не существует, добавляем ее с новым Id
+                        //price.Id = maxId + 1;
+                        newList.Add(price);
+                        _db.TablePriceOfIncreases.Add(price);
+                    }
                 }
 
                 _db.SaveChanges();
@@ -97,6 +126,9 @@ namespace DromAutoTrader.ViewModels
                 // Обработка ошибок сохранения данных
             }
         }
+
+
+
 
 
         // Инициализирую базу данных
