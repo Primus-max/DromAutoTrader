@@ -56,6 +56,20 @@ namespace DromAutoTrader.ViewModels
             SaveTablePriceOfIncreases();
         }
 
+        public ICommand RemoveTablePriceOfIncreasesCommand { get; } = null!;
+
+        private bool CanRemoveTablePriceOfIncreasesCommandExecute(object p) => true;
+
+        private void OnRemoveTablePriceOfIncreasesCommandExecuted(object sender)
+        {
+            TablePriceOfIncrease tablePriceOfIncrease = sender as TablePriceOfIncrease;
+            if (tablePriceOfIncrease == null)
+            {
+                return; // Если объект не является TablePriceOfIncrease, просто выйдем из метода
+            }
+            RemoveTablePriceOfIncreases(tablePriceOfIncrease);
+        }
+                
         #endregion
 
         public EditeChannelPageViewModel()
@@ -72,6 +86,7 @@ namespace DromAutoTrader.ViewModels
             #region Инициализация команд
             AddRowTablePriceOfIncreasesCommand = new LambdaCommand(OnAddRowTablePriceOfIncreasesCommandExecuted, CanAddRowTablePriceOfIncreasesCommandExecute);
             SaveTablePriceOfIncreasesCommand = new LambdaCommand(OnSaveTablePriceOfIncreasesCommandExecuted, CanSaveTablePriceOfIncreasesCommandExecute);
+            RemoveTablePriceOfIncreasesCommand = new LambdaCommand(OnRemoveTablePriceOfIncreasesCommandExecuted, CanRemoveTablePriceOfIncreasesCommandExecute);
             #endregion
 
             #region Вызов методов
@@ -90,7 +105,7 @@ namespace DromAutoTrader.ViewModels
         {
             try
             {                
-                foreach (var price in TablePriceOfIncreases)
+                foreach (var price in FilteredTablePriceOfIncreases)
                 {                   
                     // Проверяем, существует ли запись с таким Id
                     var existingRecord = _db.TablePriceOfIncreases.FirstOrDefault(x => x.Id == price.Id);
@@ -119,7 +134,7 @@ namespace DromAutoTrader.ViewModels
 
                 _db.SaveChanges();
 
-                UpdateFilteredTablePriceOfIncreases();
+                //UpdateFilteredTablePriceOfIncreases();
             }
             catch (Exception)
             {
@@ -144,6 +159,25 @@ namespace DromAutoTrader.ViewModels
             }
         }
 
+        // Метод удаления записей из таблицы накрутки цен
+        private void RemoveTablePriceOfIncreases(TablePriceOfIncrease selectedPrice)
+        {
+            try
+            {
+                // Удалите запись из коллекции
+                FilteredTablePriceOfIncreases.Remove(selectedPrice);
+
+                // Удалите запись из базы данных
+                _db.TablePriceOfIncreases.Remove(selectedPrice);               
+                _db.SaveChanges();
+
+                //UpdateFilteredTablePriceOfIncreases();
+            }
+            catch (Exception)
+            {
+                // Обработка ошибок удаления данных
+            }
+        }
 
         // Инициализирую базу данных
         private void InitializeDatabase()

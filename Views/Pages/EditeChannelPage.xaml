@@ -111,7 +111,7 @@
                                     <Button
                                         Background="Transparent"
                                         BorderBrush="Transparent"
-                                        Command="{Binding DataContext.DeleteSuplierCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                        Command="{Binding DataContext.RemoveTablePriceOfIncreasesCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}"
                                         CommandParameter="{Binding}">
                                         <materialDesign:PackIcon
                                             Width="32"
