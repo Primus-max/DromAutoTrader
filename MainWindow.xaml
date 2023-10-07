@@ -201,7 +201,7 @@
 
 
                 </TabItem>
-                <TabItem Header="Поставщики">
+                <!--<TabItem Header="Поставщики">
 
                     <StackPanel Margin="20">
                         <TextBlock
@@ -210,7 +210,7 @@
                             Text="Этот раздел отвечает за добавление, удаление, или изменения данных о поставщике" />
 
 
-                        <!--  Кнопка добавления нового поставщика  -->
+                        --><!--  Кнопка добавления нового поставщика  --><!--
                         <Button
                             Width="200"
                             Margin="20,16,0,30"
@@ -218,7 +218,7 @@
                             Command="{Binding AddSupplierCommand}"
                             Content="Добавить" />
 
-                        <!--  Контейнер для списка поставщиков  -->
+                        --><!--  Контейнер для списка поставщиков  --><!--
                         <DataGrid
                             x:Name="SupplierDataGrid"
                             AutoGenerateColumns="False"
@@ -263,7 +263,7 @@
 
                     </StackPanel>
 
-                </TabItem>
+                </TabItem>-->
                 <TabItem Header="Каналы">
                     <StackPanel>
 

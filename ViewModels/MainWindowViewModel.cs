@@ -6,7 +6,7 @@ namespace DromAutoTrader.ViewModels
 {
     class MainWindowViewModel : BaseViewModel
     {
-        #region Приватные поля
+        #region ПРИВАТНЫЕ ПОЛЯ
         #region Базовые
         private string? _title = string.Empty;
         private AppContext _db = null!;
@@ -31,7 +31,7 @@ namespace DromAutoTrader.ViewModels
 
         #endregion
 
-        #region Публичный поля
+        #region ПУБЛИЧНЫЕ ПОЛЯ
         #region Базовые
         public string Title
         {
@@ -80,6 +80,7 @@ namespace DromAutoTrader.ViewModels
             set => Set(ref _brands, value);
         }
         #endregion
+
         #region Каналы
         public Channel SelectedChannel
         {
@@ -196,7 +197,7 @@ namespace DromAutoTrader.ViewModels
         }
 
 
-        #region Методы
+        #region МЕТОДЫ
 
         // Метод запускающий всю работу
         public void RunAllWork()
