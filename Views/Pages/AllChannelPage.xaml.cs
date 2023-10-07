@@ -23,11 +23,6 @@ namespace DromAutoTrader.Views.Pages
         public AllChannelPage()
         {
             InitializeComponent();
-        }
-
-        private void OpenEditChannelPage_Click(object sender, RoutedEventArgs e)
-        {
-            
-        }
+        }               
     }
 }

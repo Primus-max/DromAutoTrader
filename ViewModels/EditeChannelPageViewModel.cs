@@ -1,6 +1,5 @@
 ﻿using DromAutoTrader.Data;
 using DromAutoTrader.Views;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace DromAutoTrader.ViewModels
@@ -85,7 +84,10 @@ namespace DromAutoTrader.ViewModels
                 {
                     // Устанавливаем ChannelId в соответствии с выбранным каналом
                     price.ChannelId = SelectedChannel.Id;
-                    _db.TablePriceOfIncreases.Add(price);
+                    
+
+                    _db.ChangeTracker.TrackGraph(price, node =>
+                        node.Entry.State = !node.Entry.IsKeySet ? EntityState.Added : EntityState.Unchanged);
                 }
 
                 _db.SaveChanges();
@@ -103,7 +105,7 @@ namespace DromAutoTrader.ViewModels
             try
             {
                 // Экземпляр базы данных
-                _db =  AppContextFactory.GetInstance();              
+                _db = AppContextFactory.GetInstance();
                 // загружаем данные о поставщиках из БД
                 _db.TablePriceOfIncreases.Load();
             }
