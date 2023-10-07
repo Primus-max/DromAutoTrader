@@ -11,6 +11,7 @@ namespace DromAutoTrader.ViewModels
         private Channel _selectedChannel = null!;
         private AppContext _db = null!;
         private ObservableCollection<TablePriceOfIncrease> _tablePriceOfIncreases = null!;
+        private ObservableCollection<TablePriceOfIncrease> _filteredTablePriceOfIncreases = null!;
         #endregion
 
         #region Публичные поля
@@ -28,6 +29,11 @@ namespace DromAutoTrader.ViewModels
         {
             get => _tablePriceOfIncreases;
             set => Set(ref _tablePriceOfIncreases, value);
+        }
+        public ObservableCollection<TablePriceOfIncrease> FilteredTablePriceOfIncreases
+        {
+            get => _filteredTablePriceOfIncreases;
+            set => Set(ref _filteredTablePriceOfIncreases, value);
         }
         #endregion
 
@@ -66,6 +72,10 @@ namespace DromAutoTrader.ViewModels
             #region Инициализация команд
             AddRowTablePriceOfIncreasesCommand = new LambdaCommand(OnAddRowTablePriceOfIncreasesCommandExecuted, CanAddRowTablePriceOfIncreasesCommandExecute);
             SaveTablePriceOfIncreasesCommand = new LambdaCommand(OnSaveTablePriceOfIncreasesCommandExecuted, CanSaveTablePriceOfIncreasesCommandExecute);
+            #endregion
+
+            #region Вызов методов
+            UpdateFilteredTablePriceOfIncreases();
             #endregion
         }
 
@@ -108,10 +118,29 @@ namespace DromAutoTrader.ViewModels
                 }
 
                 _db.SaveChanges();
+
+                UpdateFilteredTablePriceOfIncreases();
             }
             catch (Exception)
             {
                 // Обработка ошибок сохранения данных
+            }
+        }
+
+        // Метод фильтрации по каналам
+        private void UpdateFilteredTablePriceOfIncreases()
+        {
+            if (SelectedChannel != null)
+            {
+                // Фильтруем записи по выбранному каналу
+                FilteredTablePriceOfIncreases = new ObservableCollection<TablePriceOfIncrease>(
+                    TablePriceOfIncreases.Where(price => price.ChannelId == SelectedChannel.Id)
+                );
+            }
+            else
+            {
+                // Если канал не выбран, показываем все записи
+                FilteredTablePriceOfIncreases = new ObservableCollection<TablePriceOfIncrease>(TablePriceOfIncreases);
             }
         }
 
