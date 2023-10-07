@@ -1,4 +1,5 @@
 ﻿using DromAutoTrader.Data;
+using DromAutoTrader.Prices;
 using Microsoft.Win32;
 
 namespace DromAutoTrader.ViewModels
@@ -11,7 +12,7 @@ namespace DromAutoTrader.ViewModels
         private AppContext _db = null!;
         private string? _pathFilePrice = string.Empty;
         #endregion
-        
+
 
         #region Поставщики
         private ObservableCollection<Supplier> _suppliers = null!;
@@ -144,7 +145,16 @@ namespace DromAutoTrader.ViewModels
         {
             SelectFilePrice();
         }
-       
+
+        public ICommand RunAllWorkCommand { get; } = null!;
+
+        private bool CanRunAllWorkCommandExecute(object p) => true;
+
+        private void OnRunAllWorkCommandExecuted(object sender)
+        {
+            RunAllWork();
+        }
+
         #endregion
 
         #region Каналы
@@ -167,6 +177,7 @@ namespace DromAutoTrader.ViewModels
             EditeSuplierCommand = new LambdaCommand(OnEditeSuplierCommandExecuted, CanEditeSuplierCommandExecute);
             DeleteSuplierCommand = new LambdaCommand(OnDeleteSuplierCommandExecuted, CanDeleteSuplierCommandExecute);
             SelectFilePriceCommand = new LambdaCommand(OnSelectFilePriceCommandExecuted, CanSelectFilePriceCommandExecute);
+            RunAllWorkCommand = new LambdaCommand(OnRunAllWorkCommandExecuted, CanRunAllWorkCommandExecute);
             #endregion
 
             #endregion
@@ -187,6 +198,23 @@ namespace DromAutoTrader.ViewModels
 
         #region Методы
 
+        // Метод запускающий всю работу
+        public void RunAllWork()
+        {
+            PriceProcessor priceProcessor = new();
+            BrandImporter brandImporter = new();
+
+            if (string.IsNullOrEmpty(PathFilePrice))
+                MessageBox.Show("Для начала работы необходимо выбрать прайс");
+
+            PriceList price = priceProcessor.ProcessExcelPrice(PathFilePrice);
+
+            // Добавляю брэнды в базу
+            brandImporter.ImportBrandsFromPrices(price);
+            Brands.Clear();
+            Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); // Обновляю свойство
+        }
+
         #region Базовые
         // Метод выбора файла для парсинга
         private void SelectFilePrice()
@@ -201,7 +229,7 @@ namespace DromAutoTrader.ViewModels
             if (openFileDialog.ShowDialog() == true)
             {
                 // Получаем путь к выбранному файлу
-                PathFilePrice = openFileDialog.FileName;                
+                PathFilePrice = openFileDialog.FileName;
             }
         }
 
@@ -269,7 +297,7 @@ namespace DromAutoTrader.ViewModels
             try
             {
                 _db.SaveChanges();
-                
+
                 MessageBox.Show($"Поставщик: {name} сохранен");
             }
             catch (Exception)

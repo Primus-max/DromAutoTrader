@@ -77,7 +77,8 @@
                             <Button
                                 Width="240"
                                 Command="{Binding SelectFilePriceCommand}"
-                                Content="Выбрать прайс" Cursor="Hand" />
+                                Content="Выбрать прайс"
+                                Cursor="Hand" />
                         </StackPanel>
 
                         <StackPanel
@@ -169,6 +170,7 @@
                             Margin="50,20,0,0"
                             HorizontalAlignment="Left"
                             Background="#877200"
+                            Command="{Binding RunAllWorkCommand}"
                             Content="Поехали" />
 
                         <DataGrid
