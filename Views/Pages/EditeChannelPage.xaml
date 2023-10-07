@@ -74,10 +74,14 @@
                 </StackPanel>
 
                 <!--  Таблица накрутки цен  -->
+
+
                 <DataGrid
                     x:Name="SupplierDataGrid"
+                    MaxHeight="300"
                     AutoGenerateColumns="False"
-                    ItemsSource="{Binding FilteredTablePriceOfIncreases}">
+                    ItemsSource="{Binding FilteredTablePriceOfIncreases}"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto">
                     <DataGrid.InputBindings>
                         <KeyBinding Key="Enter" Command="{Binding EnterKeyPressedCommand}" />
                     </DataGrid.InputBindings>
