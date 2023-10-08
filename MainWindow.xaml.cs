@@ -27,7 +27,7 @@ namespace DromAutoTrader
 
             var viewModel = new MainWindowViewModel();
             DataContext = viewModel;
-            viewModel.SupplierDataGrid = SupplierDataGrid;
+            //viewModel.SupplierDataGrid = SupplierDataGrid;
 
             // Передаю Frame черерз локатор
             LocatorService.Current.ChannelFrame = ChannelFrame;

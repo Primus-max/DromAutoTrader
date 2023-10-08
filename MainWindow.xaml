@@ -210,7 +210,9 @@
                             Text="Этот раздел отвечает за добавление, удаление, или изменения данных о поставщике" />
 
 
-                        --><!--  Кнопка добавления нового поставщика  --><!--
+                -->
+                <!--  Кнопка добавления нового поставщика  -->
+                <!--
                         <Button
                             Width="200"
                             Margin="20,16,0,30"
@@ -218,7 +220,9 @@
                             Command="{Binding AddSupplierCommand}"
                             Content="Добавить" />
 
-                        --><!--  Контейнер для списка поставщиков  --><!--
+                -->
+                <!--  Контейнер для списка поставщиков  -->
+                <!--
                         <DataGrid
                             x:Name="SupplierDataGrid"
                             AutoGenerateColumns="False"
@@ -275,57 +279,76 @@
 
                 </TabItem>
                 <TabItem Header="Брэнды">
-                    <StackPanel Margin="20">
-                        <TextBlock
-                            Margin="20,20"
-                            FontSize="14"
-                            Text="Этот раздел отвечает за добавление, удаление, или изменения данных о поставщике" />
+                    <DockPanel Margin="20">
+                        <StackPanel DockPanel.Dock="Top">
+                            <TextBlock
+                                Margin="20,20"
+                                FontSize="14"
+                                Text="Этот раздел отвечает за добавление, удаление, или изменения данных о поставщике" />
+                            <Button
+                                Width="200"
+                                Margin="20,16,0,30"
+                                HorizontalAlignment="Left"
+                                Command="{Binding AddSupplierCommand}"
+                                Content="Добавить" />
+                        </StackPanel>
 
-                        <!--  Кнопка добавления нового поставщика  -->
-                        <Button
-                            Width="200"
-                            Margin="20,16,0,30"
-                            HorizontalAlignment="Left"
-                            Command="{Binding AddSupplierCommand}"
-                            Content="Добавить" />
-
+                        <StackPanel
+                            Height="60"
+                            Margin="10,10,0,10"
+                            VerticalAlignment="Center"
+                            DockPanel.Dock="Top"
+                            Orientation="Horizontal">
+                            <!--<materialDesign:PackIcon
+                                Width="40"
+                                Height="40"
+                                Margin="10"
+                                Foreground="Black"
+                                Kind="Magnify" />-->
+                            <TextBox
+                                MinWidth="300"
+                                Margin="0"
+                                Padding="10"
+                                VerticalAlignment="Center"
+                                materialDesign:HintAssist.Hint="Поиск про брэнду"
+                                materialDesign:TextFieldAssist.DecorationVisibility="Visible"
+                                materialDesign:TextFieldAssist.HasClearButton="True"
+                                materialDesign:TextFieldAssist.HasFilledTextField="True"
+                                materialDesign:TextFieldAssist.HasLeadingIcon="True"
+                                materialDesign:TextFieldAssist.LeadingIcon="Search"
+                                BorderThickness="0"
+                                FontSize="16" />
+                        </StackPanel>
                         <!--  Контейнер для списка поставщиков  -->
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <ListView
-                                x:Name="BrandsListView"
-                                Width="Auto"
-                                MinHeight="100"
-                                ItemsSource="{Binding Brands}">
-                                <ListView.View>
-                                    <GridView>
-                                        <GridViewColumn Width="150" Header="Название">
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding Name}" />
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                        <GridViewColumn Width="150" Header="Адрес шаблона">
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding FindImageService}" />
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                        <GridViewColumn Width="150" Header="Заглушка">
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding DefaultImage}" />
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                    </GridView>
-                                </ListView.View>
-                            </ListView>
-                        </ScrollViewer>
+                        <DataGrid
+                            x:Name="BrandsDataGrid"
+                            AutoGenerateColumns="False"
+                            DockPanel.Dock="Top"
+                            IsReadOnly="False"
+                            ItemsSource="{Binding Brands}"
+                            VirtualizingPanel.IsVirtualizing="True"
+                            VirtualizingPanel.VirtualizationMode="Recycling">
+                            <DataGrid.Columns>
+                                <!--  Определите ваши колонки здесь  -->
+                                <DataGridTextColumn
+                                    Width="150"
+                                    Binding="{Binding Name}"
+                                    Header="Название" />
+                                <DataGridTemplateColumn Width="150" Header="Адрес шаблона">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <!--  Здесь можете разместить ComboBox для адреса шаблона  -->
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Width="150"
+                                    Binding="{Binding DefaultImage}"
+                                    Header="Заглушка" />
+                            </DataGrid.Columns>
+                        </DataGrid>
 
-
-                    </StackPanel>
+                    </DockPanel>
                 </TabItem>
                 <TabItem Header="Ставки">
                     <TextBlock Margin="10" Text="Раздел ставок" />
