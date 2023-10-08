@@ -280,6 +280,9 @@
                 </TabItem>
                 <TabItem Header="Брэнды">
                     <DockPanel Margin="20">
+                        <DockPanel.Resources>
+                            <CollectionViewSource x:Key="BrandsCollection" Source="{Binding Brands}" />
+                        </DockPanel.Resources>
                         <StackPanel DockPanel.Dock="Top">
                             <TextBlock
                                 Margin="20,20"
@@ -325,7 +328,7 @@
                             AutoGenerateColumns="False"
                             DockPanel.Dock="Top"
                             IsReadOnly="False"
-                            ItemsSource="{Binding Brands}"
+                            ItemsSource="{Binding Source={StaticResource BrandsCollection}}"
                             VirtualizingPanel.IsVirtualizing="True"
                             VirtualizingPanel.VirtualizationMode="Recycling">
                             <DataGrid.Columns>
