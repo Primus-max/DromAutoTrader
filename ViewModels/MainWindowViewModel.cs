@@ -13,7 +13,6 @@ namespace DromAutoTrader.ViewModels
         private string? _pathFilePrice = string.Empty;
         #endregion
 
-
         #region Поставщики
         private ObservableCollection<Supplier> _suppliers = null!;
         private Supplier _selectedSupplier = null!;
@@ -23,6 +22,7 @@ namespace DromAutoTrader.ViewModels
 
         #region Бренды
         private ObservableCollection<Brand> _brands = null!;
+        private int  _totalBrandCount = 0;
         #endregion
 
         #region Каналы
@@ -79,6 +79,13 @@ namespace DromAutoTrader.ViewModels
             get => _brands;
             set => Set(ref _brands, value);
         }
+
+        public int TotalBrandCount
+        {
+            get => _totalBrandCount;
+            set => Set(ref _totalBrandCount, value);
+        }
+
         #endregion
 
         #region Каналы
@@ -191,6 +198,7 @@ namespace DromAutoTrader.ViewModels
 
             #region Бренды
             Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
+            TotalBrandCount = Brands.Count; 
             #endregion
 
             #endregion

@@ -66,6 +66,9 @@ namespace DromAutoTrader
             //}
         }
 
+        #region ФИЛЬТРЫ
+        #region Брэнды       
+
         private void BrandCollection_Filter(object sender, System.Windows.Data.FilterEventArgs e)
         {
             if (e.Item is not Brand brand) return;
@@ -87,6 +90,9 @@ namespace DromAutoTrader
             collection.View.Refresh();
         }
 
+        #endregion
+
+        #endregion
 
         //public void TestParsing()
         //{

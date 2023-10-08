@@ -275,14 +275,12 @@
                         <!--<Button Click="Edit_Click"/>-->
                     </StackPanel>
 
-
-
                 </TabItem>
                 <TabItem Header="Брэнды">
                     <DockPanel Margin="20">
                         <DockPanel.Resources>
                             <CollectionViewSource
-                                x:Key="BrandsCollection"                                
+                                x:Key="BrandsCollection"
                                 Filter="BrandCollection_Filter"
                                 Source="{Binding Brands}" />
                         </DockPanel.Resources>
@@ -326,6 +324,23 @@
                                 BorderThickness="0"
                                 FontSize="16"
                                 TextChanged="FilterSearchParameterTextBox_TextChanged" />
+
+                            <StackPanel
+                                Margin="40,0,0,0"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal">
+                                <TextBlock
+                                    Margin="0,0,10,0"
+                                    FontSize="14"
+                                    FontWeight="Heavy"
+                                    Foreground="#4b4b4b"
+                                    Text="Всего брэндов:" />
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="Heavy"
+                                    Foreground="#8a8a8a"
+                                    Text="{Binding TotalBrandCount}" />
+                            </StackPanel>
                         </StackPanel>
                         <!--  Контейнер для списка поставщиков  -->
                         <DataGrid
