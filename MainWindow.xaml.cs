@@ -35,6 +35,7 @@ namespace DromAutoTrader
 
             Loaded += MainWindow_Loaded;
             //TestProfileName();
+            
         }
 
 
@@ -50,8 +51,16 @@ namespace DromAutoTrader
 
             //List<Profile> profiles = await ProfileManager.GetProfiles();
             //BrowserManager browserManager = new BrowserManager();
+            BrowserManager browserManager = new BrowserManager();
+            List<Profile> profileList = await ProfileManager.GetProfiles(); 
 
+            foreach (var profile in profileList)
+            {
+                IWebDriver driver = await browserManager.InitializeDriver(profile.UserId);
 
+            }
+
+           // DromAdPublisher dromAdPublisher = new DromAdPublisher();
             //foreach (Profile profile in profiles)
             //{
             //    if (profile.Name == "MainCraftIrk")
