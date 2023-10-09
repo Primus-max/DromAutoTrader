@@ -1,13 +1,11 @@
 ﻿namespace DromAutoTrader.Prices
 {
-    public class PublishedPrice
+    public class PublishedPrice: BasePrice
     {
-        public int Id { get; set; }
-        public string? Brand { get; set; } = string.Empty;
-        public string? Artikul { get; set; } = string.Empty;
-        public string? Description { get; set; } = string.Empty;
-        public decimal PriceBuy { get; set; }
-        public int Count { get; set; }
-        public string? KatalogName { get; set; } = string.Empty;
+        public int Id { get; set; }       
+        public decimal InputPrice { get; set; }
+        public decimal OutputPrice { get; set; }
+        public DateTime DatePublished { get; set; }
+        public bool IsArchived { get; set; }
     }
 }
