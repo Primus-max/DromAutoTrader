@@ -27,7 +27,6 @@
     </Window.DataContext>
     <Grid>
         <Border Padding="16">
-
             <TabControl
                 HorizontalContentAlignment="Left"
                 ScrollViewer.CanContentScroll="True"
