@@ -17,7 +17,8 @@ namespace DromAutoTrader.Prices
             if (formattedPrice != null) return;
             try
             {
-                _db.FormattedPrices.Add(formattedPrice);
+                // TODO Выбрать правильную таблицу
+               // _db.FormattedPrices.Add(formattedPrice);
                 _db.SaveChanges();
             }
             catch (Exception)
@@ -35,7 +36,9 @@ namespace DromAutoTrader.Prices
                 // Экземпляр базы данных
                 _db = AppContextFactory.GetInstance();
                 // загружаем данные о поставщиках из БД
-                _db.FormattedPrices.Load();
+
+                // TODO Выбрать правильную таблицу
+               // _db.FormattedPrices.Load();
             }
             catch (Exception)
             {
