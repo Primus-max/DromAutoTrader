@@ -27,6 +27,8 @@ namespace DromAutoTrader.ViewModels
 
         #region Каналы
         private Channel _selectedChannel = null!;
+        private ObservableCollection<Channel> _channels = null!;
+        private ObservableCollection<Channel> _selectedChannels = null!;
         #endregion
 
         #endregion
@@ -94,6 +96,17 @@ namespace DromAutoTrader.ViewModels
             get => _selectedChannel;
             set => Set(ref _selectedChannel, value);
         }
+        public ObservableCollection<Channel> Channels
+        {
+            get => _channels;
+            set => Set(ref _channels, value);
+        }
+        public ObservableCollection<Channel> SelectedChannels
+        {
+            get => _selectedChannels;
+            set => Set(ref _selectedChannels, value);
+        }
+
         #endregion
 
         #endregion
@@ -196,6 +209,11 @@ namespace DromAutoTrader.ViewModels
             Suppliers = GetAllSuppliers();
             #endregion
 
+            #region Каналы
+            Channels = new ObservableCollection<Channel>(_db.Channels.ToList());
+            SelectedChannels = new ObservableCollection<Channel>();
+            #endregion
+
             #region Бренды
             Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
             TotalBrandCount = Brands.Count; 
@@ -258,6 +276,7 @@ namespace DromAutoTrader.ViewModels
                 _db = AppContextFactory.GetInstance();
                 // загружаем данные о поставщиках из БД
                 _db.Suppliers.Load();
+                _db.Channels.Load();
             }
             catch (Exception)
             {

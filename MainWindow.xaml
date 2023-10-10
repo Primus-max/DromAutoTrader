@@ -6,6 +6,7 @@
     xmlns:local="clr-namespace:DromAutoTrader"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:multicombo="clr-namespace:DromAutoTrader.Views.Controls"
     xmlns:vm="clr-namespace:DromAutoTrader.ViewModels"
     Title="{Binding Title}"
     Width="800"
@@ -80,7 +81,7 @@
                                 Cursor="Hand" />
                         </StackPanel>
 
-                        <StackPanel
+                        <!--<StackPanel
                             Height="60"
                             Margin="20,20,0,0"
                             HorizontalAlignment="Left"
@@ -107,13 +108,15 @@
                                 <ComboBoxItem>
                                     <TextBlock>Компания 2</TextBlock>
                                 </ComboBoxItem>
-                                <!--  Добавьте остальные элементы как ComboBoxItem  -->
+                        -->
+                        <!--  Добавьте остальные элементы как ComboBoxItem  -->
+                        <!--
                             </ComboBox>
-                        </StackPanel>
+                        </StackPanel>-->
 
 
                         <StackPanel
-                            Height="60"
+                            Height="Auto"
                             Margin="20,20,0,0"
                             HorizontalAlignment="Left"
                             Orientation="Horizontal">
@@ -123,82 +126,108 @@
                                 FontSize="20"
                                 FontWeight="Bold"
                                 Foreground="White"
-                                Text="3." />
-                            <ComboBox
-                                Width="240"
-                                IsEditable="True"
-                                StaysOpenOnEdit="False"
-                                Style="{StaticResource MaterialDesignOutlinedComboBox}">
-                                <ComboBoxItem IsSelected="True">Выбрать каналы</ComboBoxItem>
-                                <ListBox SelectionMode="Multiple">
-                                    <ListBoxItem>Канал 1</ListBoxItem>
-                                    <ListBoxItem>Канал 2</ListBoxItem>
-                                    <ListBoxItem>Канал 3</ListBoxItem>
-                                </ListBox>
-                            </ComboBox>
-                        </StackPanel>
-
-                        <StackPanel
-                            Height="60"
-                            Margin="20,20,0,0"
-                            HorizontalAlignment="Left"
-                            Orientation="Horizontal">
+                                Text="2." />
                             <TextBlock
                                 Margin="0,0,20,0"
                                 VerticalAlignment="Center"
                                 FontSize="20"
                                 FontWeight="Bold"
                                 Foreground="White"
-                                Text="4." />
-                            <StackPanel>
-                                <TextBlock Foreground="White">
-                                    <Run Text="Убирать в архив старые объявления и доставать из архива ранее загруженные?" />
-                                    <LineBreak />
-                                    <Run Text="По умолчанию Да" />
-                                </TextBlock>
-                                <CheckBox
-                                    Width="Auto"
-                                    Margin="10"
-                                    HorizontalAlignment="Left">
-                                    <Label Content="Нет" />
-                                </CheckBox>
+                                Text="Выбрать канал:" />
+                            <ListBox
+                                x:Name="RadioButtonGroupChoiceChip"
+                                DisplayMemberPath="Name"
+                                ItemsSource="{Binding Channels}"
+                                SelectionMode="Multiple"
+                                Style="{StaticResource MaterialDesignFilterChipPrimaryListBox}" />
+
+
+
+                            <!--  Добавьте остальные элементы как ComboBoxItem  -->
+
+
+                            <!--<Expander Header="Выбрать канал" IsExpanded="True" Width="300" >
+                                <DockPanel>
+                                    <TextBox
+                                        x:Name="SearchBox"
+                                        Margin="5"
+                                        DockPanel.Dock="Top" />
+
+                                    <ListBox
+                                        x:Name="ListBox"
+                                        Margin="5"
+                                        DockPanel.Dock="Bottom"
+                                        ItemsSource="{Binding Channels}"
+                                        SelectionMode="Multiple">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}" />
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </DockPanel>
+                            </Expander>-->
+                        </StackPanel>
+
+                        <StackPanel>
+                            <StackPanel
+                                Height="60"
+                                Margin="20,20,0,0"
+                                HorizontalAlignment="Left"
+                                Orientation="Horizontal">
+                                <TextBlock
+                                    Margin="0,0,20,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="20"
+                                    FontWeight="Bold"
+                                    Foreground="White"
+                                    Text="4." />
+                                <StackPanel>
+                                    <TextBlock Foreground="White">
+                                        <Run Text="Убирать в архив старые объявления и доставать из архива ранее загруженные?" />
+                                        <LineBreak />
+                                        <Run Text="По умолчанию Да" />
+                                    </TextBlock>
+                                    <CheckBox
+                                        Width="Auto"
+                                        Margin="10"
+                                        HorizontalAlignment="Left">
+                                        <Label Content="Нет" />
+                                    </CheckBox>
+                                </StackPanel>
                             </StackPanel>
+                            <Button
+                                Width="270"
+                                Margin="50,20,0,0"
+                                HorizontalAlignment="Left"
+                                Background="#877200"
+                                Command="{Binding RunAllWorkCommand}"
+                                Content="Поехали" />
+
+                            <DataGrid
+                                x:Name="ProcessPostingDataGrid"
+                                Margin="30"
+                                AutoGenerateColumns="False"
+                                ItemsSource="{Binding Suppliers}"
+                                SelectedItem="{Binding SelectedSupplier}">
+                                <DataGrid.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding EnterKeyPressedCommand}" />
+                                </DataGrid.InputBindings>
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Binding="{Binding Id}" Header="Файл" />
+                                    <DataGridTextColumn
+                                        MinWidth="300"
+                                        Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                        Header="Статус" />
+                                    <DataGridTemplateColumn Header="Канал" />
+                                    <DataGridTemplateColumn Header="Процесс" />
+                                    <DataGridTemplateColumn Header="Всего" />
+                                    <DataGridTemplateColumn Header="Дата размещения" />
+                                    <DataGridTemplateColumn Header="Получить файл" />
+                                </DataGrid.Columns>
+                            </DataGrid>
                         </StackPanel>
-                        <Button
-                            Width="270"
-                            Margin="50,20,0,0"
-                            HorizontalAlignment="Left"
-                            Background="#877200"
-                            Command="{Binding RunAllWorkCommand}"
-                            Content="Поехали" />
-
-                        <DataGrid
-                            x:Name="ProcessPostingDataGrid"
-                            Margin="30"
-                            AutoGenerateColumns="False"
-                            ItemsSource="{Binding Suppliers}"
-                            SelectedItem="{Binding SelectedSupplier}">
-                            <DataGrid.InputBindings>
-                                <KeyBinding Key="Enter" Command="{Binding EnterKeyPressedCommand}" />
-                            </DataGrid.InputBindings>
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Binding="{Binding Id}" Header="Файл" />
-                                <DataGridTextColumn
-                                    MinWidth="300"
-                                    Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
-                                    Header="Статус" />
-                                <DataGridTemplateColumn Header="Канал" />
-                                <DataGridTemplateColumn Header="Процесс" />
-                                <DataGridTemplateColumn Header="Всего" />
-                                <DataGridTemplateColumn Header="Дата размещения" />
-                                <DataGridTemplateColumn Header="Получить файл" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-
-
                     </StackPanel>
-
-
                 </TabItem>
                 <!--<TabItem Header="Поставщики">
 

@@ -16,6 +16,7 @@
     <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.11" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Sdl.MultiSelectComboBox" Version="1.0.73" />
     <PackageReference Include="Selenium.Support" Version="4.13.1" />
     <PackageReference Include="Selenium.WebDriver" Version="4.13.1" />
     <PackageReference Include="SQLite" Version="3.13.0" />
@@ -25,6 +26,7 @@
 
   <ItemGroup>
     <Folder Include="DromManager\AngleSharp\" />
+    <Folder Include="Resources\" />
   </ItemGroup>
 
   <ItemGroup>
