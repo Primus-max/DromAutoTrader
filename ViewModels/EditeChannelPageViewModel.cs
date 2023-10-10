@@ -54,8 +54,8 @@ namespace DromAutoTrader.ViewModels
         private void OnSaveTablePriceOfIncreasesCommandExecuted(object sender)
         {
             SaveTablePriceOfIncreases();
-        }
-
+            SaveDescriptionChannel();
+        }      
         public ICommand RemoveTablePriceOfIncreasesCommand { get; } = null!;
 
         private bool CanRemoveTablePriceOfIncreasesCommandExecute(object p) => true;
@@ -136,7 +136,7 @@ namespace DromAutoTrader.ViewModels
                     else
                     {
                         // Запись с таким Id не существует, добавляем ее с новым Id
-                        // Устанавливаем ChannelId только для новых записей
+                        // Устанавливаем ChannelId только для новых записей                       
                         price.ChannelId = SelectedChannel.Id;
                         _db.TablePriceOfIncreases.Add(price);
                     }
@@ -151,6 +151,13 @@ namespace DromAutoTrader.ViewModels
                 // Обработка ошибок сохранения данных
             }
         }
+
+        // Метод сохранения описания к каналу
+        private void SaveDescriptionChannel()
+        {
+            
+        }
+
 
         // Метод фильтрации по каналам
         private void UpdateFilteredTablePriceOfIncreases()

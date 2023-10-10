@@ -250,6 +250,10 @@ namespace DromAutoTrader.ViewModels
             Brands.Clear();
             Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); // Обновляю свойство
 
+
+            // 1. PathFilePrice;
+            // 2. SelectedChannel;
+
             // TODO в этом месте нобходимо вызывать метод для записи в базу данных
             // необхоимо создать класс и методы для это работы.
             // Класс и метод должны отвечать только за запись в базу, из переданного объекта.

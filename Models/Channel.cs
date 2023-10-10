@@ -12,5 +12,9 @@ namespace DromAutoTrader.Models
         // Навигационное свойство для связи с ценами повышения
         [OneToMany]
         public List<TablePriceOfIncrease>? PriceIncreases { get; set; }
+
+        // Брэнды для этого канала
+        [OneToMany]
+        public List<Brand>? Brands { get; set; }
     }
 }

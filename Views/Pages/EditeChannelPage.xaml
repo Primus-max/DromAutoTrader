@@ -37,23 +37,51 @@
                     HorizontalAlignment="Left"
                     Background="Transparent"
                     BorderBrush="Transparent"
-                    Content="Список каналов" 
-                    Command="{Binding GoBackAllChannelsCommand}"/>
-                <StackPanel>
+                    Command="{Binding GoBackAllChannelsCommand}"
+                    Content="Список каналов" />
+                <StackPanel Margin="0,0,0,20" Orientation="Horizontal">
                     <TextBlock
-                        FontSize="14"
-                        Foreground="White"
+                        Margin="0,0,15,0"
+                        VerticalAlignment="Bottom"
+                        FontSize="18"
+                        Foreground="#939393"
                         Text="Название канала:" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="18"
+                        Foreground="White"
+                        Text="{Binding SelectedChannel.Name}" />
                 </StackPanel>
                 <StackPanel Margin="0,15,0,0">
-                    <TextBlock
+                    <!--<TextBlock
+                        VerticalAlignment="Bottom"
                         FontSize="14"
-                        Foreground="White"
-                        Text="Текст сообщения о продаже:" />
-                    <RichTextBox
-                        Width="400"
-                        Height="120"
-                        HorizontalAlignment="Left" />
+                        Foreground="#939393"
+                        Text="Текст сообщения о продаже:" />-->
+                    <StackPanel>
+                        <CheckBox
+                            x:Name="MaterialDesignOutlinedTextBoxTextCountComboBox"
+                            Width="0"
+                            Height="0"
+                            IsChecked="True" />
+                        <TextBox
+                            Width="350"
+                            MinHeight="100"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            materialDesign:HintAssist.Foreground="#939393"
+                            materialDesign:HintAssist.HelperTextFontSize="16"
+                            materialDesign:HintAssist.Hint="Текст объявления"
+                            materialDesign:TextFieldAssist.CharacterCounterVisibility="{Binding Path=IsChecked, ElementName=MaterialDesignOutlinedTextBoxTextCountComboBox, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            materialDesign:TextFieldAssist.HasClearButton="True"
+                            FontSize="18"
+                            Foreground="White"
+                            MaxLength="1000"
+                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                            Text="{Binding SelectedChannel.Description}"
+                            TextWrapping="Wrap"
+                            VerticalScrollBarVisibility="Auto" />
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
 
