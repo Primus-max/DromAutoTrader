@@ -27,7 +27,9 @@ namespace DromAutoTrader.ViewModels
             // Получаю базу данных
             InitializeDatabase();
 
-            Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
+            #region Инициализация источников данных
+            Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); 
+            #endregion
         }
 
 

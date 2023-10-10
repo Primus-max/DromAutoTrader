@@ -24,7 +24,10 @@
             </Grid.RowDefinitions>
             <DockPanel Grid.Row="0">
                 <DockPanel.Resources>
-                    <CollectionViewSource x:Key="BrandsCollenctionViewSoiurce" Source="{Binding Brands}" />
+                    <CollectionViewSource
+                        x:Key="BrandsCollenctionViewSoiurce"
+                        Filter="BrandCollection_Filter"
+                        Source="{Binding Brands}" />
                 </DockPanel.Resources>
                 <TextBox
                     x:Name="FilterSearchParameterTextBox"
@@ -40,7 +43,8 @@
                     materialDesign:TextFieldAssist.LeadingIcon="Search"
                     BorderThickness="0"
                     DockPanel.Dock="Top"
-                    FontSize="16" />
+                    FontSize="16"
+                    TextChanged="FilterSearchParameterTextBox_TextChanged" />
                 <ListBox
                     x:Name="BrandsListBox"
                     DisplayMemberPath="Name"
