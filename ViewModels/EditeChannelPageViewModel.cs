@@ -174,7 +174,9 @@ namespace DromAutoTrader.ViewModels
         // Метод открытия окна для выбора брэндов для каналов
         private void OpenAddBrandToChannelWindow()
         {
-            AddBrandsToChannelaWindow addBrands = new();
+            int selectedChannelId = SelectedChannel.Id;
+
+            AddBrandsToChannelaWindow addBrands = new(selectedChannelId);
             addBrands.Show();
         }
 

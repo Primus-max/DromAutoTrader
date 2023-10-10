@@ -65,7 +65,7 @@
                     Width="Auto"
                     Margin="10,0"
                     Content="OK"
-                    Style="{StaticResource MaterialDesignOutlinedButton}" />
+                    Style="{StaticResource MaterialDesignOutlinedButton}" Click="AcceptButton_Click" />
             </StackPanel>
         </Grid>
     </Grid>

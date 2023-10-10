@@ -22,10 +22,15 @@ namespace DromAutoTrader.Views.Windows
     /// </summary>
     public partial class AddBrandsToChannelaWindow : Window
     {
-       
-        public AddBrandsToChannelaWindow()
+        public int _selectedCHannelId;
+        private AddBrandsToChannelaWindowViewModel _brandsToChannelaWindowViewModel = null!;
+        public AddBrandsToChannelaWindow(int channelId)
         {
             InitializeComponent();
+
+            _selectedCHannelId = channelId;
+
+            _brandsToChannelaWindowViewModel = new AddBrandsToChannelaWindowViewModel();
 
             Loaded += Window_Loaded;
 
@@ -57,6 +62,13 @@ namespace DromAutoTrader.Views.Windows
             //Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
             //BrandsListBox.ItemsSource = Brands;
             //BrandsListBox.DisplayMemberPath = "Name";
+        }
+
+        private void AcceptButton_Click(object sender, RoutedEventArgs e)
+        {
+            List<Brand> selectedBrands = BrandsListBox.SelectedItems.Cast<Brand>().ToList();
+
+            _brandsToChannelaWindowViewModel.AddBrandsToChannelInDb(_selectedCHannelId, selectedBrands, this);
         }
     }
 }
