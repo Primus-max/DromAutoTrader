@@ -13,6 +13,7 @@ namespace DromAutoTrader.ViewModels
         private AppContext _db = null!;
         private ObservableCollection<TablePriceOfIncrease> _tablePriceOfIncreases = null!;
         private ObservableCollection<TablePriceOfIncrease> _filteredTablePriceOfIncreases = null!;
+        private int _totalBrandCount = 0;
         #endregion
 
         #region Публичные поля
@@ -35,6 +36,11 @@ namespace DromAutoTrader.ViewModels
         {
             get => _filteredTablePriceOfIncreases;
             set => Set(ref _filteredTablePriceOfIncreases, value);
+        }
+        public int TotalBrandCount
+        {
+            get => _totalBrandCount;
+            set => Set(ref _totalBrandCount, value);
         }
         #endregion
 
@@ -102,6 +108,7 @@ namespace DromAutoTrader.ViewModels
 
             #region Инициализация источников данных
             TablePriceOfIncreases = new ObservableCollection<TablePriceOfIncrease>(_db.TablePriceOfIncreases.ToList());
+            TotalBrandCount = SelectedChannel.BrandsCount;
             #endregion
 
             #region Инициализация команд

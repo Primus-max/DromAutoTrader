@@ -1,4 +1,5 @@
-﻿using SQLiteNetExtensions.Attributes;
+﻿using SQLite;
+using SQLiteNetExtensions.Attributes;
 
 namespace DromAutoTrader.Models
 {
@@ -16,5 +17,8 @@ namespace DromAutoTrader.Models
         // Брэнды для этого канала
         [OneToMany]
         public List<Brand>? Brands { get; set; }
+
+        [Ignore] // Используем атрибут Ignore, чтобы это свойство не сохранялось в базу данных
+        public int BrandsCount => Brands?.Count ?? 0;
     }
 }

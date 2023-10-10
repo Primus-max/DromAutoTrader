@@ -84,12 +84,12 @@
                     </StackPanel>
 
                     <!--  Выбор брэндов для канала  -->
-                    <StackPanel Margin="0,30,0,0">
+                    <StackPanel Margin="0,30,0,0" Orientation="Horizontal">
                         <Button
-                            Padding="10"
                             Width="Auto"
                             Height="Auto"
                             Margin="0,0,15,0"
+                            Padding="10"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Bottom"
                             HorizontalContentAlignment="Left"
@@ -97,8 +97,30 @@
                             Content="Выбрать брэнды для канала"
                             FontSize="18"
                             Foreground="#FFFFFF"
-                            Style="{StaticResource  MaterialDesignPaperButton}" />
+                            Style="{StaticResource MaterialDesignPaperButton}" />
 
+                        <StackPanel
+                            Margin="40,0,0,0"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <TextBlock
+                                Margin="0,0,10,0"
+                                FontSize="14"
+                                FontWeight="Heavy"
+                                Foreground="#4b4b4b"
+                                Text="Всего в канале:" />
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="Heavy"
+                                Foreground="#8a8a8a"
+                                Text="{Binding TotalBrandCount}" />
+                            <TextBlock
+                                Margin="10,0,0,0"
+                                FontSize="14"
+                                FontWeight="Heavy"
+                                Foreground="#4b4b4b"
+                                Text="брэндов" />
+                        </StackPanel>
                     </StackPanel>
 
                 </StackPanel>

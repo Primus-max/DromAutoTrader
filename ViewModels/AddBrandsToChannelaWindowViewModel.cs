@@ -1,4 +1,5 @@
 ﻿using DromAutoTrader.Data;
+using MaterialDesignThemes.MahApps;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -57,16 +58,14 @@ namespace DromAutoTrader.ViewModels
                 try
                 {
                     _db.SaveChanges();
-                    curWindow.Close();
-                       
+                    curWindow.Close();                    
                 }
-                catch (Exception)
-                {
-                    // Обработка ошибок сохранения, если необходимо
+                catch (Exception ex)
+                {                    
+                    MessageBox.Show($"Ошибка при сохранении: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
-
 
 
         // Метод получения базы данных
