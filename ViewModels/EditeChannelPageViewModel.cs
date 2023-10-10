@@ -1,5 +1,6 @@
 ﻿using DromAutoTrader.Data;
 using DromAutoTrader.Views;
+using DromAutoTrader.Views.Windows;
 using OpenQA.Selenium.DevTools.V115.Page;
 
 namespace DromAutoTrader.ViewModels
@@ -79,6 +80,17 @@ namespace DromAutoTrader.ViewModels
             LocatorService.Current.ChannelFrame.GoBack();
         }
 
+        #region Брэнды
+        public ICommand OpenAddBrandToChannelWindowCommand { get; } = null!;
+
+        private bool CanOpenAddBrandToChannelWindowExecute(object p) => true;
+
+        private void OnOpenAddBrandToChannelWindowExecuted(object sender)
+        {
+            OpenAddBrandToChannelWindow();
+        }      
+        #endregion
+
         #endregion
 
         public EditeChannelPageViewModel()
@@ -97,6 +109,7 @@ namespace DromAutoTrader.ViewModels
             SaveTablePriceOfIncreasesCommand = new LambdaCommand(OnSaveTablePriceOfIncreasesCommandExecuted, CanSaveTablePriceOfIncreasesCommandExecute);
             RemoveTablePriceOfIncreasesCommand = new LambdaCommand(OnRemoveTablePriceOfIncreasesCommandExecuted, CanRemoveTablePriceOfIncreasesCommandExecute);
             GoBackAllChannelsCommand = new LambdaCommand(OnGoBackAllChannelsCommandExecuted, CanGoBackAllChannelsCommandExecute);
+            OpenAddBrandToChannelWindowCommand = new LambdaCommand(OnOpenAddBrandToChannelWindowExecuted, CanOpenAddBrandToChannelWindowExecute);
             #endregion
 
             #region Вызов методов
@@ -158,6 +171,12 @@ namespace DromAutoTrader.ViewModels
             
         }
 
+        // Метод открытия окна для выбора брэндов для каналов
+        private void OpenAddBrandToChannelWindow()
+        {
+            AddBrandsToChannelaWindow addBrands = new();
+            addBrands.Show();
+        }
 
         // Метод фильтрации по каналам
         private void UpdateFilteredTablePriceOfIncreases()

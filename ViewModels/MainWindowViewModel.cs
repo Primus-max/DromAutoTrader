@@ -187,7 +187,7 @@ namespace DromAutoTrader.ViewModels
         {
             Channel channel = SelectedChannel;
         }
-        #endregion
+        #endregion        
 
         #endregion
 
