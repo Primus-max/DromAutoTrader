@@ -1,5 +1,8 @@
-﻿using System;
+﻿using DromAutoTrader.Data;
+using DromAutoTrader.ViewModels;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,9 +22,21 @@ namespace DromAutoTrader.Views.Windows
     /// </summary>
     public partial class AddBrandsToChannelaWindow : Window
     {
+       
         public AddBrandsToChannelaWindow()
         {
             InitializeComponent();
+
+            Loaded += Window_Loaded;
+
+        }
+
+       
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            //Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
+            //BrandsListBox.ItemsSource = Brands;
+            //BrandsListBox.DisplayMemberPath = "Name";
         }
     }
 }
