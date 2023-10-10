@@ -18,7 +18,7 @@ namespace DromAutoTrader
         //{
         //    get { return ChannelFrame; }
         //}
-
+        private MainWindowViewModel _mainViewModel = null!;
         public MainWindow()
         {
             InitializeComponent();
@@ -27,7 +27,8 @@ namespace DromAutoTrader
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
             var viewModel = new MainWindowViewModel();
-            DataContext = viewModel;
+            _mainViewModel = viewModel;
+            DataContext = _mainViewModel;
             //viewModel.SupplierDataGrid = SupplierDataGrid;
 
             // Передаю Frame черерз локатор
@@ -97,6 +98,13 @@ namespace DromAutoTrader
             var collection = (CollectionViewSource)textBox.FindResource("BrandsCollection");
 
             collection.View.Refresh();
+        }
+
+        private void RadioButtonGroupChoiceChip_Selected(object sender, RoutedEventArgs e)
+        {
+            List<Channel> channels = RadioButtonGroupChoiceChip.SelectedItems.Cast<Channel>().ToList();
+
+            _mainViewModel.OnSelectChannel(channels);
         }
 
         #endregion

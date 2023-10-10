@@ -28,7 +28,7 @@ namespace DromAutoTrader.ViewModels
         #region Каналы
         private Channel _selectedChannel = null!;
         private ObservableCollection<Channel> _channels = null!;
-        private ObservableCollection<Channel> _selectedChannels = null!;
+        private List<Channel> _selectedChannels = null!;
         #endregion
 
         #endregion
@@ -101,7 +101,7 @@ namespace DromAutoTrader.ViewModels
             get => _channels;
             set => Set(ref _channels, value);
         }
-        public ObservableCollection<Channel> SelectedChannels
+        public List<Channel> SelectedChannels
         {
             get => _selectedChannels;
             set => Set(ref _selectedChannels, value);
@@ -179,7 +179,14 @@ namespace DromAutoTrader.ViewModels
         #endregion
 
         #region Каналы
+        public ICommand SelectChannelCommand { get; } = null!;
 
+        private bool CanSelectChannelCommandExecute(object p) => true;
+
+        private void OnSelectChannelCommandExecuted(object sender)
+        {
+            Channel channel = SelectedChannel;
+        }
         #endregion
 
         #endregion
@@ -201,6 +208,9 @@ namespace DromAutoTrader.ViewModels
             RunAllWorkCommand = new LambdaCommand(OnRunAllWorkCommandExecuted, CanRunAllWorkCommandExecute);
             #endregion
 
+            #region Каналы
+            SelectChannelCommand = new LambdaCommand(OnSelectChannelCommandExecuted, CanSelectChannelCommandExecute);
+            #endregion
             #endregion
 
             #region Инициализация источников данных
@@ -210,8 +220,7 @@ namespace DromAutoTrader.ViewModels
             #endregion
 
             #region Каналы
-            Channels = new ObservableCollection<Channel>(_db.Channels.ToList());
-            SelectedChannels = new ObservableCollection<Channel>();
+            Channels = new ObservableCollection<Channel>(_db.Channels.ToList());            
             #endregion
 
             #region Бренды
@@ -285,6 +294,13 @@ namespace DromAutoTrader.ViewModels
             }
         }
 
+        #endregion
+
+        #region Каналы
+        public void OnSelectChannel(List<Channel>  selectedChannels)
+        {
+            SelectedChannels = selectedChannels;
+        }
         #endregion
 
         #region Поставщики

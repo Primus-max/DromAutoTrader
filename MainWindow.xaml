@@ -134,10 +134,13 @@
                                 FontWeight="Bold"
                                 Foreground="White"
                                 Text="Выбрать канал:" />
+
                             <ListBox
                                 x:Name="RadioButtonGroupChoiceChip"
                                 DisplayMemberPath="Name"
                                 ItemsSource="{Binding Channels}"
+                                SelectedItem="{Binding SelectedChannel}"
+                                SelectionChanged="RadioButtonGroupChoiceChip_Selected"
                                 SelectionMode="Multiple"
                                 Style="{StaticResource MaterialDesignFilterChipPrimaryListBox}" />
 
