@@ -23,6 +23,9 @@
                 <RowDefinition Height="13*" />
             </Grid.RowDefinitions>
             <DockPanel Grid.Row="0">
+                <DockPanel.Resources>
+                    <CollectionViewSource x:Key="BrandsCollenctionViewSoiurce" Source="{Binding Brands}" />
+                </DockPanel.Resources>
                 <TextBox
                     x:Name="FilterSearchParameterTextBox"
                     MinWidth="300"
@@ -42,7 +45,7 @@
                     x:Name="BrandsListBox"
                     DisplayMemberPath="Name"
                     DockPanel.Dock="Top"
-                    ItemsSource="{Binding Brands}"
+                    ItemsSource="{Binding Source={StaticResource BrandsCollenctionViewSoiurce}}"
                     SelectionMode="Multiple" />
             </DockPanel>
             <StackPanel
