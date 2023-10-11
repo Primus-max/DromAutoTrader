@@ -105,17 +105,20 @@
                             Orientation="Horizontal">
                             <TextBlock
                                 Margin="0,0,10,0"
+                                VerticalAlignment="Bottom"
                                 FontSize="14"
                                 FontWeight="Heavy"
                                 Foreground="#4b4b4b"
                                 Text="Всего в канале:" />
                             <TextBlock
-                                FontSize="16"
+                                VerticalAlignment="Bottom"
+                                FontSize="18"
                                 FontWeight="Heavy"
-                                Foreground="#8a8a8a"
+                                Foreground="#b6b6b6"
                                 Text="{Binding TotalBrandCount}" />
                             <TextBlock
                                 Margin="10,0,0,0"
+                                VerticalAlignment="Bottom"
                                 FontSize="14"
                                 FontWeight="Heavy"
                                 Foreground="#4b4b4b"

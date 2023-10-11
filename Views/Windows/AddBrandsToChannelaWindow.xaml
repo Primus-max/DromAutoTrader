@@ -37,7 +37,6 @@
                     VerticalAlignment="Center"
                     materialDesign:HintAssist.Hint="Поиск про брэнду"
                     materialDesign:TextFieldAssist.DecorationVisibility="Visible"
-                    materialDesign:TextFieldAssist.HasClearButton="True"
                     materialDesign:TextFieldAssist.HasFilledTextField="True"
                     materialDesign:TextFieldAssist.HasLeadingIcon="True"
                     materialDesign:TextFieldAssist.LeadingIcon="Search"
@@ -50,9 +49,9 @@
                     DisplayMemberPath="Name"
                     DockPanel.Dock="Top"
                     ItemsSource="{Binding Source={StaticResource BrandsCollenctionViewSoiurce}}"
-                    SelectionMode="Multiple" />
-
-
+                    Loaded="BrandsListBox_Loaded"
+                    SelectionMode="Multiple"
+                    VirtualizingPanel.IsVirtualizing="False" />
             </DockPanel>
             <StackPanel
                 Grid.Row="1"

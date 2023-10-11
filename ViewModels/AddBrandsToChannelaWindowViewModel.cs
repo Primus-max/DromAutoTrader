@@ -44,8 +44,8 @@ namespace DromAutoTrader.ViewModels
             InitializeDatabase();
 
             #region Инициализация источников данных
-            Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
             ChannelId = LocatorService.Current.SelectedChannel.Id;
+            Brands = new ObservableCollection<Brand>(_db.Brands.OrderBy(brand => brand.ChannelId != ChannelId).ThenBy(brand => brand.Name).ToList());            
             #endregion
         }
 
@@ -70,6 +70,10 @@ namespace DromAutoTrader.ViewModels
                     _db.Brands.Add(brand);
                 }
             }
+
+            // Добавляем новые бренды, которых ранее не было
+            var newBrands = brands.Where(brand => !_db.Brands.Any(b => b.Id == brand.Id));
+            _db.Brands.AddRange(newBrands);
 
             try
             {
@@ -99,7 +103,6 @@ namespace DromAutoTrader.ViewModels
                 MessageBox.Show($"Ошибка при удалении связей: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
 
         // Метод получения базы данных
         private void InitializeDatabase()

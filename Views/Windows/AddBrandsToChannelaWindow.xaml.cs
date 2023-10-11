@@ -49,7 +49,7 @@ namespace DromAutoTrader.Views.Windows
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             
-            SelectItemsForChannel();
+            
         }
 
         private void AcceptButton_Click(object sender, RoutedEventArgs e)
@@ -61,6 +61,11 @@ namespace DromAutoTrader.Views.Windows
             SelectItemsForChannel();
         }
 
+        private void BrandsListBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            SelectItemsForChannel();
+        }
+
         // Метод отображения выбранных брэндов для канала
         private void SelectItemsForChannel()
         {
@@ -68,16 +73,23 @@ namespace DromAutoTrader.Views.Windows
             {
                 if (brand.ChannelId == _selectedCHannelId)
                 {
-                    ListBoxItem listBoxItem = BrandsListBox.ItemContainerGenerator.ContainerFromItem(brand) as ListBoxItem;
+                    // Получите индекс элемента в коллекции
+                    int index = BrandsListBox.Items.IndexOf(brand);
 
-                    if (listBoxItem != null)
+                    // Если элемент находится в видимой области, выделите его
+                    if (index >= 0 && index < BrandsListBox.Items.Count)
                     {
-                        listBoxItem.IsSelected = true;
+
+                        ListBoxItem listBoxItem = BrandsListBox.ItemContainerGenerator.ContainerFromIndex(index) as ListBoxItem;
+
+                        if (listBoxItem != null)
+                        {
+                            listBoxItem.IsSelected = true;
+                        }
                     }
                 }
             }
         }
-
 
     }
 }
