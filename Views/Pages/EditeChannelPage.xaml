@@ -78,7 +78,7 @@
                             Foreground="White"
                             MaxLength="1000"
                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                            Text="{Binding SelectedChannel.Description}"
+                            Text="{Binding DescriptionChannel}"
                             TextWrapping="Wrap"
                             VerticalScrollBarVisibility="Auto" />
                     </StackPanel>
@@ -101,7 +101,7 @@
 
                         <StackPanel
                             Margin="40,0,0,0"
-                            VerticalAlignment="Center"
+                            VerticalAlignment="Bottom"
                             Orientation="Horizontal">
                             <TextBlock
                                 Margin="0,0,10,0"

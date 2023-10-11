@@ -40,6 +40,7 @@
                     materialDesign:TextFieldAssist.HasFilledTextField="True"
                     materialDesign:TextFieldAssist.HasLeadingIcon="True"
                     materialDesign:TextFieldAssist.LeadingIcon="Search"
+                    Background="#727272"
                     BorderThickness="0"
                     DockPanel.Dock="Top"
                     FontSize="16"

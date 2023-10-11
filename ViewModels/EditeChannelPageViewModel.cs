@@ -2,7 +2,6 @@
 using DromAutoTrader.Services;
 using DromAutoTrader.Views;
 using DromAutoTrader.Views.Windows;
-using OpenQA.Selenium.DevTools.V115.Page;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -15,6 +14,7 @@ namespace DromAutoTrader.ViewModels
         private ObservableCollection<TablePriceOfIncrease> _tablePriceOfIncreases = null!;
         private ObservableCollection<TablePriceOfIncrease> _filteredTablePriceOfIncreases = null!;
         private int _totalBrandCount = 0;
+        private string? _descriptionChannel = string.Empty;
         #endregion
 
         #region Публичные поля
@@ -43,6 +43,11 @@ namespace DromAutoTrader.ViewModels
             get => _totalBrandCount;
             set => Set(ref _totalBrandCount, value);
         }
+        public string? DescriptionChannel
+        {
+            get => _descriptionChannel;
+            set => Set(ref _descriptionChannel, value);
+        }
         #endregion
 
         #region Команды
@@ -63,7 +68,7 @@ namespace DromAutoTrader.ViewModels
         {
             SaveTablePriceOfIncreases();
             SaveDescriptionChannel();
-        }      
+        }
         public ICommand RemoveTablePriceOfIncreasesCommand { get; } = null!;
 
         private bool CanRemoveTablePriceOfIncreasesCommandExecute(object p) => true;
@@ -95,7 +100,7 @@ namespace DromAutoTrader.ViewModels
         private void OnOpenAddBrandToChannelWindowExecuted(object sender)
         {
             OpenAddBrandToChannelWindow();
-        }      
+        }
         #endregion
 
         #endregion
@@ -110,6 +115,7 @@ namespace DromAutoTrader.ViewModels
             #region Инициализация источников данных
             TablePriceOfIncreases = new ObservableCollection<TablePriceOfIncrease>(_db.TablePriceOfIncreases.ToList());
             TotalBrandCount = SelectedChannel.BrandsCount;
+            DescriptionChannel = SelectedChannel.Description;
             #endregion
 
             #region Инициализация команд
@@ -129,12 +135,12 @@ namespace DromAutoTrader.ViewModels
             #endregion
         }
 
+        #region Методы
+        // Обновляю колличество выбранных каналов
         private void UpdateAddedBrandsCount()
         {
             TotalBrandCount = SelectedChannel.BrandsCount;
         }
-
-        #region Методы
         private void AddRowTablePriceOfIncreases()
         {
             TablePriceOfIncreases.Add(new TablePriceOfIncrease());
@@ -144,14 +150,14 @@ namespace DromAutoTrader.ViewModels
         public void SaveTablePriceOfIncreases()
         {
             try
-            {                
+            {
                 foreach (var price in FilteredTablePriceOfIncreases)
-                {                   
+                {
                     // Проверяем, существует ли запись с таким Id
                     var existingRecord = _db.TablePriceOfIncreases.FirstOrDefault(x => x.Id == price.Id);
 
                     if (existingRecord != null)
-                    {                        
+                    {
 
                         // Проверяем, изменились ли какие-либо поля
                         if (existingRecord.From != price.From || existingRecord.To != price.To || existingRecord.PriceIncrease != price.PriceIncrease)
@@ -185,6 +191,20 @@ namespace DromAutoTrader.ViewModels
         // Метод сохранения описания к каналу
         private void SaveDescriptionChannel()
         {
+            var curChannel = _db.Channels.FirstOrDefault(x => x.Id == SelectedChannel.Id);
+
+            if (curChannel == null) return;
+            curChannel.Description = DescriptionChannel;
+
+            try
+            {
+                _db.Channels.Update(curChannel);
+                _db.SaveChanges();
+            }
+            catch (Exception)
+            {
+
+            }
             
         }
 
@@ -223,7 +243,7 @@ namespace DromAutoTrader.ViewModels
                 FilteredTablePriceOfIncreases.Remove(selectedPrice);
 
                 // Удалите запись из базы данных
-                _db.TablePriceOfIncreases.Remove(selectedPrice);               
+                _db.TablePriceOfIncreases.Remove(selectedPrice);
                 _db.SaveChanges();
 
                 //UpdateFilteredTablePriceOfIncreases();
