@@ -53,37 +53,53 @@ namespace DromAutoTrader.ViewModels
         #region Методы
         // Метод записи и соотношения брэндов к каналу
         public void AddBrandsToChannelInDb(int selectedChannelId, List<Brand> brands, Window curWindow)
-        {           
-
+        {
             foreach (var brand in brands)
             {
                 Brand? existedBrand = _db.Brands.FirstOrDefault(b => b.Id == brand.Id);
 
                 if (existedBrand != null)
                 {
-                    existedBrand.Id = brand.Id;
+                    // Обновляем только ChannelId, не изменяя Id
                     existedBrand.ChannelId = selectedChannelId;
                 }
                 else
                 {
-                    // Создайте новый объект Brand, если он не существует
+                    // Создаем новый объект Brand, если он не существует
                     brand.ChannelId = selectedChannelId;
                     _db.Brands.Add(brand);
                 }
+            }
 
-                try
-                {
-                    _db.SaveChanges();
-                    curWindow.Close();                    
-                }
-                catch (Exception ex)
-                {                    
-                    MessageBox.Show($"Ошибка при сохранении: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }            
+            try
+            {
+                _db.SaveChanges();
+                curWindow.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при сохранении: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            // Удаляем связи с брендами, которые больше не выбраны
+            var allBrandIds = brands.Select(b => b.Id).ToList();
+            var brandsToRemoveChannel = _db.Brands.Where(b => b.ChannelId == selectedChannelId && !allBrandIds.Contains(b.Id)).ToList();
+
+            foreach (var unselectedBrand in brandsToRemoveChannel)
+            {
+                unselectedBrand.ChannelId = null;
+            }
+
+            try
+            {
+                _db.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при удалении связей: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-              
 
         // Метод получения базы данных
         private void InitializeDatabase()
