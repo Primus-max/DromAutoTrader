@@ -51,6 +51,8 @@
                     DockPanel.Dock="Top"
                     ItemsSource="{Binding Source={StaticResource BrandsCollenctionViewSoiurce}}"
                     SelectionMode="Multiple" />
+
+
             </DockPanel>
             <StackPanel
                 Grid.Row="1"
@@ -64,8 +66,9 @@
                 <Button
                     Width="Auto"
                     Margin="10,0"
+                    Click="AcceptButton_Click"
                     Content="OK"
-                    Style="{StaticResource MaterialDesignOutlinedButton}" Click="AcceptButton_Click" />
+                    Style="{StaticResource MaterialDesignOutlinedButton}" />
             </StackPanel>
         </Grid>
     </Grid>

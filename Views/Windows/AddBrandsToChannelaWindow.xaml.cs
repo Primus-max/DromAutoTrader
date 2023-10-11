@@ -1,19 +1,6 @@
-﻿using DromAutoTrader.Data;
-using DromAutoTrader.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
+﻿using DromAutoTrader.ViewModels;
+using System.Drawing;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace DromAutoTrader.Views.Windows
 {
@@ -24,6 +11,7 @@ namespace DromAutoTrader.Views.Windows
     {
         public int _selectedCHannelId;
         private AddBrandsToChannelaWindowViewModel _brandsToChannelaWindowViewModel = null!;
+
         public AddBrandsToChannelaWindow(int channelId)
         {
             InitializeComponent();
@@ -34,6 +22,7 @@ namespace DromAutoTrader.Views.Windows
 
             Loaded += Window_Loaded;
 
+            LocatorService.Current.BrandsListBox = BrandsListBox;
         }
 
         private void BrandCollection_Filter(object sender, System.Windows.Data.FilterEventArgs e)
@@ -59,9 +48,8 @@ namespace DromAutoTrader.Views.Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
-            //BrandsListBox.ItemsSource = Brands;
-            //BrandsListBox.DisplayMemberPath = "Name";
+            
+            SelectItemsForChannel();
         }
 
         private void AcceptButton_Click(object sender, RoutedEventArgs e)
@@ -69,6 +57,27 @@ namespace DromAutoTrader.Views.Windows
             List<Brand> selectedBrands = BrandsListBox.SelectedItems.Cast<Brand>().ToList();
 
             _brandsToChannelaWindowViewModel.AddBrandsToChannelInDb(_selectedCHannelId, selectedBrands, this);
+
+            SelectItemsForChannel();
         }
+
+        // Метод отображения выбранных брэндов для канала
+        private void SelectItemsForChannel()
+        {
+            foreach (Brand brand in BrandsListBox.Items)
+            {
+                if (brand.ChannelId == _selectedCHannelId)
+                {
+                    ListBoxItem listBoxItem = BrandsListBox.ItemContainerGenerator.ContainerFromItem(brand) as ListBoxItem;
+
+                    if (listBoxItem != null)
+                    {
+                        listBoxItem.IsSelected = true;
+                    }
+                }
+            }
+        }
+
+
     }
 }

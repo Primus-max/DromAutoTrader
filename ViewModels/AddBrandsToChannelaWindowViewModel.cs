@@ -1,5 +1,8 @@
 ﻿using DromAutoTrader.Data;
+using DromAutoTrader.Views;
+using DromAutoTrader.Views.Windows;
 using MaterialDesignThemes.MahApps;
+using System.Drawing;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -8,6 +11,8 @@ namespace DromAutoTrader.ViewModels
         #region Приватные свойства
         private AppContext _db = null!;
         private ObservableCollection<Brand> _brands = null!;
+        private int _channelId;
+        private ListBox _brandsListBox = null!;
         #endregion
 
         #region Публичные свойства
@@ -15,6 +20,16 @@ namespace DromAutoTrader.ViewModels
         {
             get => _brands;
             set => Set(ref _brands, value); 
+        }  
+        public int ChannelId
+        {
+            get => _channelId;
+            set => Set(ref _channelId, value);
+        }
+        public ListBox BrandsListBox
+        {
+            get => _brandsListBox;
+            set => Set(ref _brandsListBox, value);
         }
         #endregion
 
@@ -29,7 +44,8 @@ namespace DromAutoTrader.ViewModels
             InitializeDatabase();
 
             #region Инициализация источников данных
-            Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); 
+            Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
+            ChannelId = LocatorService.Current.SelectedChannel.Id;
             #endregion
         }
 
@@ -37,7 +53,7 @@ namespace DromAutoTrader.ViewModels
         #region Методы
         // Метод записи и соотношения брэндов к каналу
         public void AddBrandsToChannelInDb(int selectedChannelId, List<Brand> brands, Window curWindow)
-        {
+        {           
 
             foreach (var brand in brands)
             {
@@ -64,9 +80,10 @@ namespace DromAutoTrader.ViewModels
                 {                    
                     MessageBox.Show($"Ошибка при сохранении: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-            }
+            }            
         }
 
+              
 
         // Метод получения базы данных
         private void InitializeDatabase()

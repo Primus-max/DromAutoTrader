@@ -1,4 +1,5 @@
 ﻿using DromAutoTrader.Models.Interfaces;
+using SQLite;
 using SQLiteNetExtensions.Attributes;
 
 namespace DromAutoTrader.Models
@@ -12,6 +13,7 @@ namespace DromAutoTrader.Models
         public string? DefaultImage { get; set; } = string.Empty;
 
         [ForeignKey(typeof(Channel))]
-        public int? ChannelId { get; set; }
+        public int? ChannelId { get; set; }        
+      
     }
 }
