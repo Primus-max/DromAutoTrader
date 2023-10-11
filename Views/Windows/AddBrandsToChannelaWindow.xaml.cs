@@ -1,4 +1,5 @@
-﻿using DromAutoTrader.ViewModels;
+﻿using DromAutoTrader.Services;
+using DromAutoTrader.ViewModels;
 using System.Drawing;
 using System.Windows.Data;
 
@@ -59,6 +60,8 @@ namespace DromAutoTrader.Views.Windows
             _brandsToChannelaWindowViewModel.AddBrandsToChannelInDb(_selectedCHannelId, selectedBrands, this);
 
             SelectItemsForChannel();
+
+            EventAggregator.PublishAddedBrandsCountChanged();           
         }
 
         private void BrandsListBox_Loaded(object sender, RoutedEventArgs e)
@@ -90,6 +93,5 @@ namespace DromAutoTrader.Views.Windows
                 }
             }
         }
-
     }
 }

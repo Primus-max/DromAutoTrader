@@ -1,4 +1,5 @@
 ﻿using DromAutoTrader.Data;
+using DromAutoTrader.Services;
 using DromAutoTrader.Views;
 using DromAutoTrader.Views.Windows;
 using OpenQA.Selenium.DevTools.V115.Page;
@@ -122,6 +123,15 @@ namespace DromAutoTrader.ViewModels
             #region Вызов методов
             UpdateFilteredTablePriceOfIncreases();
             #endregion
+
+            #region Подписка на события
+            EventAggregator.AddedBrandsCountChanged += UpdateAddedBrandsCount;
+            #endregion
+        }
+
+        private void UpdateAddedBrandsCount()
+        {
+            TotalBrandCount = SelectedChannel.BrandsCount;
         }
 
         #region Методы

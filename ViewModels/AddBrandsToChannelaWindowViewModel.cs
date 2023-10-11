@@ -13,6 +13,7 @@ namespace DromAutoTrader.ViewModels
         private ObservableCollection<Brand> _brands = null!;
         private int _channelId;
         private ListBox _brandsListBox = null!;
+        private int _addedBrandsCount = 0;
         #endregion
 
         #region Публичные свойства
@@ -30,6 +31,11 @@ namespace DromAutoTrader.ViewModels
         {
             get => _brandsListBox;
             set => Set(ref _brandsListBox, value);
+        }
+        public int AddedBrandsCount
+        {
+            get => _addedBrandsCount;
+            set => Set(ref _addedBrandsCount, value);
         }
         #endregion
 
