@@ -1,6 +1,7 @@
 ﻿using DromAutoTrader.Data;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
+using System.IO;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -214,7 +215,6 @@ namespace DromAutoTrader.ViewModels
 
         #endregion
 
-
         public MainWindowViewModel()
         {
             // Инициализация базы данных
@@ -255,9 +255,7 @@ namespace DromAutoTrader.ViewModels
             PriceChannelMappings = new List<PriceChannelMapping>();
             #endregion
 
-            #endregion
-            AdPublishingInfo adPublishingInfo = new AdPublishingInfo();
-            adPublishingInfo.
+            #endregion            
         }
 
 
@@ -269,20 +267,73 @@ namespace DromAutoTrader.ViewModels
             //PriceProcessor priceProcessor = new();
             BrandImporter brandImporter = new();
 
-            if (string.IsNullOrEmpty(""))
-                MessageBox.Show("Для начала работы необходимо выбрать прайс");
+            foreach (var path in PathsFilePrices)
+            {
+                if (string.IsNullOrEmpty(path))
+                    MessageBox.Show("Для начала работы необходимо выбрать прайс");
 
-            PriceList price = await ProcessPriceAsync("");
+                PriceList prices = await ProcessPriceAsync(path);
 
-            if (price == null) return;
+                if (prices == null) return;
 
-            // Добавляю брэнды в базу
-            brandImporter.ImportBrandsFromPrices(price);
-            Brands.Clear();
-            Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); // Обновляю свойство
+                // Добавляю брэнды в базу
+                brandImporter.ImportBrandsFromPrices(prices);
+                Brands.Clear();
+                Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); // Обновляю свойство
+
+                // Модель для публикации объявления
+                AdPublishingInfo adPublishingInfo = new AdPublishingInfo();
+
+                // Получаем к этому прайсу выбранные каналы
+                string fileName = Path.GetFileNameWithoutExtension(path);
+                PriceChannelMapping? priceChannels = PriceChannelMappings?.FirstOrDefault(mapping => mapping?.Price.Name == fileName);
+
+                if (priceChannels == null)
+                {
+                    MessageBox.Show("Что-то пошло не так, попробуйте выбрать прайс и каналы для него", "Внимание",
+                       MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                    return;
+                }                
+                   
+                
+
+                foreach (var price in prices)
+                {
+                    #region Проверка на наличие брэнда в выбранном канале
+                    bool hasMatchingBrand = false;
+
+                    foreach (var channel in priceChannels?.SelectedChannels)
+                    {
+                        // Проверяю, есть ли бренд из price в текущем канале
+                        if (channel.Brands.Any(brand => brand.Name == price.Brand))
+                        {
+                            hasMatchingBrand = true;
+                            break; // Если нашли совпадение, выходим из цикла
+                        }
+                    }
+
+                    if (!hasMatchingBrand)
+                        continue; // Если не соответствует ни одному каналу, пропускаем итерацию 
+                    #endregion
 
 
-            // 1. PathFilePrice;
+                    adPublishingInfo.Brand = price.Brand; // Имя брэнда
+                    adPublishingInfo.Artikul = price.Artikul; // Артикул
+                    adPublishingInfo.Description = price.Description; // Описание товара (из прайса) Пока нигде не потребовалось
+                    adPublishingInfo.KatalogName = price.KatalogName; // Это попадает в заголовок объявления
+
+
+                    adPublishingInfo.InputPrice = price.PriceBuy; // Цена из прайса (не рассчитанная)
+                }
+
+
+            }
+
+
+
+
+            // Что необходимо
             // 2. SelectedChannel;
             // 3. SelectedBrands
             // 4. 

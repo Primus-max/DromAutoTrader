@@ -114,7 +114,7 @@ namespace DromAutoTrader
         {
             if (!isPriceSelected)
             {
-                MessageBox.Show("Пожалуйста, выберите прайс кликнув на его имя, затем выберите каналы для этого прайса");
+                MessageBox.Show("Пожалуйста, выберите прайс кликнув на его имя, затем выберите каналы для этого прайса", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -134,7 +134,7 @@ namespace DromAutoTrader
                     }
                     else
                     {
-                        MessageBox.Show("Пожалуйста, выберите прайс кликнув на его имя, затем выберите каналы для этого прайса");
+                        MessageBox.Show("Пожалуйста, выберите прайс кликнув на его имя, затем выберите каналы для этого прайса", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                     break;
                 }

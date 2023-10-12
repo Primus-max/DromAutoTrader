@@ -75,11 +75,11 @@
                                 Foreground="White"
                                 Text="1." />
                             <Button
-                                Style="{StaticResource MaterialDesignPaperButton}"
                                 Width="290"
                                 Command="{Binding SelectFilePriceCommand}"
                                 Content="Выбрать прайс"
-                                Cursor="Hand" />
+                                Cursor="Hand"
+                                Style="{StaticResource MaterialDesignPaperButton}" />
                         </StackPanel>
 
                         <!--<StackPanel
