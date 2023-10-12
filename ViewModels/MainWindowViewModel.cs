@@ -1,8 +1,6 @@
 ﻿using DromAutoTrader.Data;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
-using System.Net;
-using System.Printing;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -15,6 +13,7 @@ namespace DromAutoTrader.ViewModels
         private List<string>? _pathsFilePrices = null!;
         private List<string>? _prices = null!;
         private Price _selectedPrice = null!;
+        private List<PriceChannelMapping> _priceChannelMappings = null!;
         #endregion
 
         #region Поставщики
@@ -26,7 +25,7 @@ namespace DromAutoTrader.ViewModels
 
         #region Бренды
         private ObservableCollection<Brand> _brands = null!;
-        private int  _totalBrandCount = 0;
+        private int _totalBrandCount = 0;
         #endregion
 
         #region Каналы
@@ -64,6 +63,11 @@ namespace DromAutoTrader.ViewModels
         {
             get => _selectedPrice;
             set => Set(ref _selectedPrice, value);
+        }
+        public List<PriceChannelMapping> PriceChannelMappings
+        {
+            get => _priceChannelMappings;
+            set => Set(ref _priceChannelMappings, value);
         }
         #endregion
 
@@ -239,15 +243,21 @@ namespace DromAutoTrader.ViewModels
             #endregion
 
             #region Каналы
-            Channels = new ObservableCollection<Channel>(_db.Channels.ToList());            
+            Channels = new ObservableCollection<Channel>(_db.Channels.ToList());
             #endregion
 
             #region Бренды
             Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
-            TotalBrandCount = Brands.Count; 
+            TotalBrandCount = Brands.Count;
+            #endregion
+
+            #region Прайсы
+            PriceChannelMappings = new List<PriceChannelMapping>();
             #endregion
 
             #endregion
+            AdPublishingInfo adPublishingInfo = new AdPublishingInfo();
+            adPublishingInfo.
         }
 
 
@@ -390,10 +400,24 @@ namespace DromAutoTrader.ViewModels
         #endregion
 
         #region Каналы
-        public void OnSelectChannel(Price price, List<Channel>  selectedChannels)
+        public void OnSelectChannel(Price price, List<Channel> selectedChannels)
         {
             SelectedPrice = price;
             SelectedChannels = selectedChannels;
+
+            // Найдите соответствующий объект PriceChannelMapping по имени прайса или создайте новый, если его нет
+            var mapping = PriceChannelMappings.FirstOrDefault(m => m.Price.Name == price.Name);
+            if (mapping == null)
+            {
+                mapping = new PriceChannelMapping(price);
+                PriceChannelMappings.Add(mapping);
+            }
+
+            // Обновите список выбранных каналов для данного прайса
+            mapping.SelectedChannels = selectedChannels;
+
+            if (!PriceChannelMappings.Contains(mapping))
+                PriceChannelMappings.Add(mapping);
         }
         #endregion
 

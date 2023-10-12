@@ -21,6 +21,8 @@ namespace DromAutoTrader
         //    get { return ChannelFrame; }
         //}
         private MainWindowViewModel _mainViewModel = null!;
+        private bool isPriceSelected = false;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -102,17 +104,22 @@ namespace DromAutoTrader
             collection.View.Refresh();
         }
 
+        #region Выбор прайса и каналов для него
+        private void PriceListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            isPriceSelected = PriceListBox.SelectedItem != null;
+        }
+
         private void RadioButtonGroupChoiceChip_Selected(object sender, RoutedEventArgs e)
         {
-            DependencyObject obj = (DependencyObject)e.OriginalSource;
-            if(PriceListBox?.SelectedItem == null)
+            if (!isPriceSelected)
             {
                 MessageBox.Show("Пожалуйста, выберите прайс кликнув на его имя, затем выберите каналы для этого прайса");
                 return;
             }
 
-            string selectedPrice = PriceListBox?.SelectedItem?.ToString(); 
-
+            DependencyObject obj = (DependencyObject)e.OriginalSource;
+            string selectedPrice = PriceListBox.SelectedItem?.ToString();
             Price price = new() { Name = selectedPrice };
 
             while (obj != null && obj != PriceListBox)
@@ -127,13 +134,17 @@ namespace DromAutoTrader
                     }
                     else
                     {
-                        MessageBox.Show("Пожалуйста, выберите прайс кликнув на его имя, затем выберите каналы для этого прайса");                        
+                        MessageBox.Show("Пожалуйста, выберите прайс кликнув на его имя, затем выберите каналы для этого прайса");
                     }
                     break;
                 }
                 obj = VisualTreeHelper.GetParent(obj);
             }
+            isPriceSelected = false;    
         }
+        #endregion
+
+
 
 
         #endregion

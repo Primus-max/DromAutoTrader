@@ -63,19 +63,20 @@
                             Foreground="White"
                             Text="В этом разделе происходит заргурзка файлаи дальнейшее размещение информации в каналах, для этого надо:" />
                         <StackPanel
-                            Height="60"
+                            Height="Auto"
                             Margin="20,20,0,0"
                             HorizontalAlignment="Left"
                             Orientation="Horizontal">
                             <TextBlock
-                                Margin="0,0,20,0"
+                                Margin="0,0,5,0"
                                 VerticalAlignment="Center"
                                 FontSize="20"
                                 FontWeight="Bold"
                                 Foreground="White"
                                 Text="1." />
                             <Button
-                                Width="240"
+                                Style="{StaticResource MaterialDesignPaperButton}"
+                                Width="290"
                                 Command="{Binding SelectFilePriceCommand}"
                                 Content="Выбрать прайс"
                                 Cursor="Hand" />
@@ -132,7 +133,8 @@
                                 x:Name="PriceListBox"
                                 Margin="10,30,0,0"
                                 ItemsSource="{Binding Prices}"
-                                SelectedItem="{Binding SelectedPrice}">
+                                SelectedItem="{Binding SelectedPrice}"
+                                SelectionChanged="PriceListBox_SelectionChanged">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <Grid>
@@ -152,8 +154,8 @@
                                                 Grid.Column="1"
                                                 DisplayMemberPath="Name"
                                                 ItemsSource="{Binding DataContext.Channels, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                SelectionChanged="RadioButtonGroupChoiceChip_Selected"
                                                 SelectedItem="{Binding DataContext.SelectedChannelsToView, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}"
+                                                SelectionChanged="RadioButtonGroupChoiceChip_Selected"
                                                 SelectionMode="Multiple"
                                                 Style="{StaticResource MaterialDesignFilterChipPrimaryListBox}" />
                                         </Grid>
