@@ -6,6 +6,7 @@ using System.IO;
 namespace DromAutoTrader.ViewModels
 {
     // TODO изменить тип данных в TablePriceOfIncrease на decimal
+    // TODO сделать появления 2 пункта в загрузке прайсов если в списке есть прайсы
     class MainWindowViewModel : BaseViewModel
     {
         #region ПРИВАТНЫЕ ПОЛЯ
@@ -334,22 +335,7 @@ namespace DromAutoTrader.ViewModels
                           });
                     }
                 }
-
-
             }
-
-
-
-
-            // Что необходимо
-            // 2. SelectedChannel;
-            // 3. SelectedBrands
-            // 4. 
-
-            // TODO в этом месте нобходимо вызывать метод для записи в базу данных
-            // необхоимо создать класс и методы для это работы.
-            // Класс и метод должны отвечать только за запись в базу, из переданного объекта.
-
         }
 
 
