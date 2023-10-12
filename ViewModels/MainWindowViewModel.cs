@@ -5,6 +5,7 @@ using System.IO;
 
 namespace DromAutoTrader.ViewModels
 {
+    // TODO изменить тип данных в TablePriceOfIncrease на decimal
     class MainWindowViewModel : BaseViewModel
     {
         #region ПРИВАТНЫЕ ПОЛЯ
@@ -294,9 +295,9 @@ namespace DromAutoTrader.ViewModels
                        MessageBoxButton.OK, MessageBoxImage.Warning);
 
                     return;
-                }                
-                   
-                
+                }
+
+
 
                 foreach (var price in prices)
                 {
@@ -306,7 +307,7 @@ namespace DromAutoTrader.ViewModels
                     foreach (var channel in priceChannels?.SelectedChannels)
                     {
                         // Проверяю, есть ли бренд из price в текущем канале
-                        if (channel.Brands.Any(brand => brand.Name == price.Brand))
+                        if (channel.Brands.Any(brand => brand.Name == price?.Brand))
                         {
                             hasMatchingBrand = true;
                             break; // Если нашли совпадение, выходим из цикла
@@ -317,34 +318,21 @@ namespace DromAutoTrader.ViewModels
                         continue; // Если не соответствует ни одному каналу, пропускаем итерацию 
                     #endregion
 
-
-                    adPublishingInfo.Brand = price.Brand; // Имя брэнда
-                    adPublishingInfo.Artikul = price.Artikul; // Артикул
-                    adPublishingInfo.Description = price.Description; // Описание товара (из прайса) Пока нигде не потребовалось
-                    adPublishingInfo.KatalogName = price.KatalogName; // Это попадает в заголовок объявления
-
-
-                    adPublishingInfo.InputPrice = price.PriceBuy; // Цена из прайса (не рассчитанная)
-
-                    #region Проверка, если цена в прайсе ниже установленный цены
-                    bool IsPriceBelowThreshold = false;
-
-                    double minTo = priceChannels.SelectedChannels.Min(channel => channel.PriceIncreases.Min(pi => pi.To));
-
-                    foreach (var channel in priceChannels.SelectedChannels)
+                    // Цикл по каждому канал в отдельном потоке
+                    foreach (var priceChannelMapping in priceChannels.SelectedChannels)
                     {
-                        // Проверяю, есть ли бренд из price в текущем канале
-                        if (channel.PriceIncreases.Any(pi => pi.To <= minTo))
-                        {
-                            IsPriceBelowThreshold = true;
-                            break; // Если нашли совпадение, выходим из цикла
-                        }
+                        // Для каждого канала создаем отдельную задачу
+                        await Task.Run(async () =>
+                          {
+                              // Создаем ChannelAdInfoBuilder для данного канала и цены
+                              var builder = new ChannelAdInfoBuilder(price, priceChannelMapping);
+
+                              // Строим AdPublishingInfo для данного канала
+                              var adInfo = await builder.Build();
+
+                              // Вы можете здесь использовать adInfo для дальнейших операций
+                          });
                     }
-
-                    if (!IsPriceBelowThreshold)
-                        continue; // Если не соответствует ни одному каналу, пропускаем итерацию 
-
-                    #endregion
                 }
 
 
@@ -466,8 +454,6 @@ namespace DromAutoTrader.ViewModels
                 //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
             }
         }
-
-
         #endregion
 
         #region Каналы
