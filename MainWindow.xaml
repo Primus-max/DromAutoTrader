@@ -131,7 +131,8 @@
                             <ListBox
                                 x:Name="PriceListBox"
                                 Margin="10,30,0,0"
-                                ItemsSource="{Binding Prices}">
+                                ItemsSource="{Binding Prices}"
+                                SelectedItem="{Binding SelectedPrice}">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <Grid>
@@ -151,6 +152,7 @@
                                                 Grid.Column="1"
                                                 DisplayMemberPath="Name"
                                                 ItemsSource="{Binding DataContext.Channels, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                SelectionChanged="RadioButtonGroupChoiceChip_Selected"
                                                 SelectedItem="{Binding DataContext.SelectedChannelsToView, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}"
                                                 SelectionMode="Multiple"
                                                 Style="{StaticResource MaterialDesignFilterChipPrimaryListBox}" />

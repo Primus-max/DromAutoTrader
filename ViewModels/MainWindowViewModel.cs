@@ -14,6 +14,7 @@ namespace DromAutoTrader.ViewModels
         private AppContext _db = null!;
         private List<string>? _pathsFilePrices = null!;
         private List<string>? _prices = null!;
+        private Price _selectedPrice = null!;
         #endregion
 
         #region Поставщики
@@ -58,6 +59,11 @@ namespace DromAutoTrader.ViewModels
         {
             get => _prices;
             set => Set(ref _prices, value);
+        }
+        public Price SelectedPrice
+        {
+            get => _selectedPrice;
+            set => Set(ref _selectedPrice, value);
         }
         #endregion
 
@@ -384,8 +390,9 @@ namespace DromAutoTrader.ViewModels
         #endregion
 
         #region Каналы
-        public void OnSelectChannel(List<Channel>  selectedChannels)
+        public void OnSelectChannel(Price price, List<Channel>  selectedChannels)
         {
+            SelectedPrice = price;
             SelectedChannels = selectedChannels;
         }
         #endregion

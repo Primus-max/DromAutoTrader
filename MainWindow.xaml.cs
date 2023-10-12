@@ -1,11 +1,13 @@
 ﻿using AdsPowerManager;
 using DromAutoTrader.DromManager;
+using DromAutoTrader.Prices;
 using DromAutoTrader.ViewModels;
 using DromAutoTrader.Views;
 using DromAutoTrader.Views.Pages;
 using OfficeOpenXml;
 using OpenQA.Selenium;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace DromAutoTrader
 {
@@ -102,10 +104,37 @@ namespace DromAutoTrader
 
         private void RadioButtonGroupChoiceChip_Selected(object sender, RoutedEventArgs e)
         {
-            //List<Channel> channels = RadioButtonGroupChoiceChip.SelectedItems.Cast<Channel>().ToList();
+            DependencyObject obj = (DependencyObject)e.OriginalSource;
+            if(PriceListBox?.SelectedItem == null)
+            {
+                MessageBox.Show("Пожалуйста, выберите прайс кликнув на его имя, затем выберите каналы для этого прайса");
+                return;
+            }
 
-            //_mainViewModel.OnSelectChannel(channels);
+            string selectedPrice = PriceListBox?.SelectedItem?.ToString(); 
+
+            Price price = new() { Name = selectedPrice };
+
+            while (obj != null && obj != PriceListBox)
+            {
+                if (obj is ListBox listBox)
+                {
+                    List<Channel> selectedChannels = listBox.SelectedItems.Cast<Channel>().ToList();
+
+                    if (!string.IsNullOrEmpty(price.Name))
+                    {
+                        _mainViewModel.OnSelectChannel(price, selectedChannels);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Пожалуйста, выберите прайс кликнув на его имя, затем выберите каналы для этого прайса");                        
+                    }
+                    break;
+                }
+                obj = VisualTreeHelper.GetParent(obj);
+            }
         }
+
 
         #endregion
 
