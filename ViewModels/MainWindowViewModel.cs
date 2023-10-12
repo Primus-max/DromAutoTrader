@@ -325,6 +325,26 @@ namespace DromAutoTrader.ViewModels
 
 
                     adPublishingInfo.InputPrice = price.PriceBuy; // Цена из прайса (не рассчитанная)
+
+                    #region Проверка, если цена в прайсе ниже установленный цены
+                    bool IsPriceBelowThreshold = false;
+
+                    double minTo = priceChannels.SelectedChannels.Min(channel => channel.PriceIncreases.Min(pi => pi.To));
+
+                    foreach (var channel in priceChannels.SelectedChannels)
+                    {
+                        // Проверяю, есть ли бренд из price в текущем канале
+                        if (channel.PriceIncreases.Any(pi => pi.To <= minTo))
+                        {
+                            IsPriceBelowThreshold = true;
+                            break; // Если нашли совпадение, выходим из цикла
+                        }
+                    }
+
+                    if (!IsPriceBelowThreshold)
+                        continue; // Если не соответствует ни одному каналу, пропускаем итерацию 
+
+                    #endregion
                 }
 
 
@@ -437,9 +457,8 @@ namespace DromAutoTrader.ViewModels
             {
                 // Экземпляр базы данных
                 _db = AppContextFactory.GetInstance();
-                // загружаем данные о поставщиках из БД
-                _db.Suppliers.Load();
-                _db.Channels.Load();
+                // загружаем данные о поставщиках из БД и включаем связанные данные (PriceIncreases и Brands)
+                _db.Channels.Include(c => c.PriceIncreases).Include(c => c.Brands).Load();
             }
             catch (Exception)
             {
@@ -447,6 +466,7 @@ namespace DromAutoTrader.ViewModels
                 //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
             }
         }
+
 
         #endregion
 
