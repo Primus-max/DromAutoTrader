@@ -11,7 +11,7 @@ namespace DromAutoTrader.ViewModels
         #region Базовые
         private string? _title = string.Empty;
         private AppContext _db = null!;
-        private string? _pathFilePrice = string.Empty;
+        private List<string>? _pathsFilePrices = null!;
         #endregion
 
         #region Поставщики
@@ -46,10 +46,10 @@ namespace DromAutoTrader.ViewModels
             get => _db;
             set => Set(ref _db, value);
         }
-        public string PathFilePrice
+        public List<string> PathsFilePrices
         {
-            get => _pathFilePrice;
-            set => Set(ref _pathFilePrice, value);
+            get => _pathsFilePrices;
+            set => Set(ref _pathsFilePrices, value);
         }
         #endregion
 
@@ -165,7 +165,7 @@ namespace DromAutoTrader.ViewModels
 
         private void OnSelectFilePriceCommandExecuted(object sender)
         {
-            SelectFilePrice();
+            GetSelectedFilePaths();
         }
 
         public ICommand RunAllWorkCommand { get; } = null!;
@@ -241,10 +241,10 @@ namespace DromAutoTrader.ViewModels
             //PriceProcessor priceProcessor = new();
             BrandImporter brandImporter = new();
 
-            if (string.IsNullOrEmpty(PathFilePrice))
+            if (string.IsNullOrEmpty(""))
                 MessageBox.Show("Для начала работы необходимо выбрать прайс");
 
-            PriceList price = await ProcessPriceAsync(PathFilePrice);
+            PriceList price = await ProcessPriceAsync("");
 
             if (price == null) return;
 
@@ -306,22 +306,41 @@ namespace DromAutoTrader.ViewModels
 
 
         #region Базовые
-        // Метод выбора файла для парсинга
-        private void SelectFilePrice()
+
+        private List<string> GetSelectedFilePaths()
         {
-            // Создаем диалоговое окно выбора файла
-            OpenFileDialog openFileDialog = new()
+            List<string> selectedFilePaths = new List<string>();
+
+            OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                // Устанавливаем фильтры для типов файлов, которые вы хотите разрешить выбирать
+                Multiselect = true, // Разрешить выбор нескольких файлов
                 Filter = "Excel Files (*.xlsx)|*.xlsx|CSV Files (*.csv)|*.csv|All Files (*.*)|*.*"
             };
 
             if (openFileDialog.ShowDialog() == true)
             {
-                // Получаем путь к выбранному файлу
-                PathFilePrice = openFileDialog.FileName;
+                selectedFilePaths.AddRange(openFileDialog.FileNames);
             }
+            PathsFilePrices = selectedFilePaths;
+            return PathsFilePrices;
         }
+
+        // Метод выбора файла для парсинга
+        //private void SelectFilePrice()
+        //{
+        //    // Создаем диалоговое окно выбора файла
+        //    OpenFileDialog openFileDialog = new()
+        //    {
+        //        // Устанавливаем фильтры для типов файлов, которые вы хотите разрешить выбирать
+        //        Filter = "Excel Files (*.xlsx)|*.xlsx|CSV Files (*.csv)|*.csv|All Files (*.*)|*.*"
+        //    };
+
+        //    if (openFileDialog.ShowDialog() == true)
+        //    {
+        //        // Получаем путь к выбранному файлу
+        //        PathsFilePrices = openFileDialog.FileName;
+        //    }
+        //}
 
         // Метод инициализации базы данных
         private void InitializeDatabase()
