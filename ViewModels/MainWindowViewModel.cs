@@ -1,6 +1,7 @@
 ﻿using DromAutoTrader.Data;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
+using System.Printing;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -171,9 +172,9 @@ namespace DromAutoTrader.ViewModels
 
         private bool CanRunAllWorkCommandExecute(object p) => true;
 
-        private void OnRunAllWorkCommandExecuted(object sender)
+        private async void OnRunAllWorkCommandExecuted(object sender)
         {
-            RunAllWork();
+            await RunAllWork();
         }
 
         #endregion
@@ -235,15 +236,17 @@ namespace DromAutoTrader.ViewModels
         #region МЕТОДЫ
 
         // Метод запускающий всю работу
-        public void RunAllWork()
+        public async Task RunAllWork()
         {
-            PriceProcessor priceProcessor = new();
+            //PriceProcessor priceProcessor = new();
             BrandImporter brandImporter = new();
 
             if (string.IsNullOrEmpty(PathFilePrice))
                 MessageBox.Show("Для начала работы необходимо выбрать прайс");
 
-            PriceList price = priceProcessor.ProcessExcelPrice(PathFilePrice);
+            PriceList price = await ProcessPriceAsync(PathFilePrice);
+
+            if (price == null) return;
 
             // Добавляю брэнды в базу
             brandImporter.ImportBrandsFromPrices(price);
@@ -253,6 +256,8 @@ namespace DromAutoTrader.ViewModels
 
             // 1. PathFilePrice;
             // 2. SelectedChannel;
+            // 3. SelectedBrands
+            // 4. 
 
             // TODO в этом месте нобходимо вызывать метод для записи в базу данных
             // необхоимо создать класс и методы для это работы.
@@ -261,6 +266,44 @@ namespace DromAutoTrader.ViewModels
 
 
         }
+
+        // Метод асинхронного получения прайса
+        public async Task<PriceList> ProcessPriceAsync(string pathToFile)
+        {
+            PriceProcessor priceProcessor = new();
+
+            var processTask = Task.Run(() =>
+            {
+                try
+                {
+                    return priceProcessor.ProcessExcelPrice(pathToFile);
+                }
+                catch (Exception ex)
+                {
+                    // Вывести сообщение об ошибке с указанием причины
+                    MessageBox.Show($"Ошибка при обработке прайса: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                    // Перебросить исключение для обработки в вызывающем коде, если это необходимо
+                    throw;
+                }
+            });
+
+            var timeoutTask = Task.Delay(TimeSpan.FromSeconds(15)); // Время ожидания задачи
+
+            if (await Task.WhenAny(processTask, timeoutTask) == processTask)
+            {
+                return await processTask;
+            }
+            else
+            {
+                // В этом случае прошло слишком много времени
+                MessageBox.Show("Обработка прайса заняла слишком много времени. Пожалуйста, попробуйте еще раз.", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return null; // или выберите другое значение по умолчанию
+            }
+        }
+
+
+
 
         #region Базовые
         // Метод выбора файла для парсинга
