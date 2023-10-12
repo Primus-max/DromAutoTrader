@@ -102,9 +102,9 @@ namespace DromAutoTrader
 
         private void RadioButtonGroupChoiceChip_Selected(object sender, RoutedEventArgs e)
         {
-            List<Channel> channels = RadioButtonGroupChoiceChip.SelectedItems.Cast<Channel>().ToList();
+            //List<Channel> channels = RadioButtonGroupChoiceChip.SelectedItems.Cast<Channel>().ToList();
 
-            _mainViewModel.OnSelectChannel(channels);
+            //_mainViewModel.OnSelectChannel(channels);
         }
 
         #endregion

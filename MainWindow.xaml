@@ -119,31 +119,45 @@
                             Height="Auto"
                             Margin="20,20,0,0"
                             HorizontalAlignment="Left"
-                            Orientation="Horizontal">
+                            Orientation="Vertical">
                             <TextBlock
                                 Margin="0,0,20,0"
                                 VerticalAlignment="Center"
                                 FontSize="20"
                                 FontWeight="Bold"
                                 Foreground="White"
-                                Text="2." />
-                            <TextBlock
-                                Margin="0,0,20,0"
-                                VerticalAlignment="Center"
-                                FontSize="20"
-                                FontWeight="Bold"
-                                Foreground="White"
-                                Text="Выбрать канал:" />
+                                Text="2. Выбрать каналы для прайсов:" />
 
                             <ListBox
-                                x:Name="RadioButtonGroupChoiceChip"
-                                DisplayMemberPath="Name"
-                                ItemsSource="{Binding Channels}"
-                                SelectedItem="{Binding SelectedChannel}"
-                                SelectionChanged="RadioButtonGroupChoiceChip_Selected"
-                                SelectionMode="Multiple"
-                                Style="{StaticResource MaterialDesignFilterChipPrimaryListBox}" />
+                                x:Name="PriceListBox"
+                                Margin="10,30,0,0"
+                                ItemsSource="{Binding Prices}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
 
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                Margin="5"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding}" />
+
+                                            <ListBox
+                                                x:Name="RadioButtonGroupChoiceChip"
+                                                Grid.Column="1"
+                                                DisplayMemberPath="Name"
+                                                ItemsSource="{Binding DataContext.Channels, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                SelectedItem="{Binding DataContext.SelectedChannelsToView, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}"
+                                                SelectionMode="Multiple"
+                                                Style="{StaticResource MaterialDesignFilterChipPrimaryListBox}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
 
 
                             <!--  Добавьте остальные элементы как ComboBoxItem  -->

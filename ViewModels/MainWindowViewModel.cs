@@ -1,6 +1,7 @@
 ﻿using DromAutoTrader.Data;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
+using System.Net;
 using System.Printing;
 
 namespace DromAutoTrader.ViewModels
@@ -12,6 +13,7 @@ namespace DromAutoTrader.ViewModels
         private string? _title = string.Empty;
         private AppContext _db = null!;
         private List<string>? _pathsFilePrices = null!;
+        private List<string>? _prices = null!;
         #endregion
 
         #region Поставщики
@@ -30,6 +32,7 @@ namespace DromAutoTrader.ViewModels
         private Channel _selectedChannel = null!;
         private ObservableCollection<Channel> _channels = null!;
         private List<Channel> _selectedChannels = null!;
+        private ObservableCollection<Channel> _selectedChannelsToView = null!;
         #endregion
 
         #endregion
@@ -50,6 +53,11 @@ namespace DromAutoTrader.ViewModels
         {
             get => _pathsFilePrices;
             set => Set(ref _pathsFilePrices, value);
+        }
+        public List<string>? Prices
+        {
+            get => _prices;
+            set => Set(ref _prices, value);
         }
         #endregion
 
@@ -107,7 +115,11 @@ namespace DromAutoTrader.ViewModels
             get => _selectedChannels;
             set => Set(ref _selectedChannels, value);
         }
-
+        public ObservableCollection<Channel> SelectedChannelsToView
+        {
+            get => _selectedChannelsToView;
+            set => Set(ref _selectedChannelsToView, value);
+        }
         #endregion
 
         #endregion
@@ -263,10 +275,13 @@ namespace DromAutoTrader.ViewModels
             // необхоимо создать класс и методы для это работы.
             // Класс и метод должны отвечать только за запись в базу, из переданного объекта.
 
-
-
         }
 
+
+
+        #region Асинхронные методы
+
+        #region Прайс
         // Метод асинхронного получения прайса
         public async Task<PriceList> ProcessPriceAsync(string pathToFile)
         {
@@ -301,12 +316,13 @@ namespace DromAutoTrader.ViewModels
                 return null; // или выберите другое значение по умолчанию
             }
         }
+        #endregion
 
-
-
+        #endregion
 
         #region Базовые
 
+        // Метод получения прайсов
         private List<string> GetSelectedFilePaths()
         {
             List<string> selectedFilePaths = new List<string>();
@@ -322,6 +338,11 @@ namespace DromAutoTrader.ViewModels
                 selectedFilePaths.AddRange(openFileDialog.FileNames);
             }
             PathsFilePrices = selectedFilePaths;
+
+            // Получаю имена прайсов для отображения в списке
+            Prices = PathsFilePrices.Select(path => System.IO.Path.GetFileNameWithoutExtension(path)).ToList();
+
+
             return PathsFilePrices;
         }
 
