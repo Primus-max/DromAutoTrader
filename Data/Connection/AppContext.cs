@@ -11,6 +11,7 @@ namespace DromAutoTrader.Data.Connection
         public DbSet<Channel> Channels { get; set; } = null!;
         public DbSet<TablePriceOfIncrease> TablePriceOfIncreases { get; set; } = null!;
         public DbSet<PublishedPrice> PublishedPrices  { get; set; } = null!;
+        public DbSet<ImageService> ImageServices { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

@@ -1,7 +1,6 @@
 ﻿using DromAutoTrader.Data;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
-using Newtonsoft.Json;
 using System.IO;
 
 namespace DromAutoTrader.ViewModels
@@ -258,7 +257,7 @@ namespace DromAutoTrader.ViewModels
             #endregion
 
             #region Бренды
-            Brands = new ObservableCollection<Brand>(_db.Brands.ToList());   
+            Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
             TotalBrandCount = Brands.Count;
             #endregion
 

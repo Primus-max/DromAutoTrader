@@ -10,6 +10,6 @@ namespace DromAutoTrader.Models
         public string? Name { get; set; } = string.Empty;
 
         [ForeignKey(typeof(Brand))]
-        public int BrandId { get; set; }
+        public int? BrandId { get; set; }
     }
 }
