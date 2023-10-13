@@ -1,5 +1,7 @@
 ﻿using DromAutoTrader.Data;
+using DromAutoTrader.DromManager;
 using DromAutoTrader.Models;
+using DromAutoTrader.Services;
 using DromAutoTrader.Views;
 using DromAutoTrader.Views.Pages;
 using System.Collections.ObjectModel;
@@ -14,6 +16,7 @@ namespace DromAutoTrader.ViewModels
         private ObservableCollection<Channel> _channels = null!;
         private Channel _selectedChannel = null!;
         private Frame _channelFrame = null!;
+        private AppContext _db = null!;
         #endregion
 
         #region Публичные свойства
@@ -51,13 +54,25 @@ namespace DromAutoTrader.ViewModels
             ChannelFrame = LocatorService.Current.ChannelFrame;
             
             #region Инициализация команд
-            OpenEditChannelPageCommand = new LambdaCommand(OnOpenEditChannelPageCommandExecuted, CanOpenEditChannelPageCommandExecute); 
+            OpenEditChannelPageCommand = new LambdaCommand(OnOpenEditChannelPageCommandExecuted, CanOpenEditChannelPageCommandExecute);
             #endregion
 
-            var db =  AppContextFactory.GetInstance();
-            db.Channels.Load();
+            InitializeDatabase();
             // Тестовые данные
-            Channels = new ObservableCollection<Channel>(db.Channels.ToList());
+            //Channels = new ObservableCollection<Channel>(_db.Channels.ToList());
+
+            //EventAggregator.AddedNewChannels += OnAddedNewChannels;
+
+            Task.Run(async () => await GetAndSetChannelNameFromPrifileAsync());
+        }
+
+
+
+        private async Task GetAndSetChannelNameFromPrifileAsync()
+        {
+            await ChannelManager.GetChannelsAsync();
+
+            Channels = new ObservableCollection<Channel>(_db.Channels.ToList());
         }
 
         #region Методы
@@ -67,6 +82,28 @@ namespace DromAutoTrader.ViewModels
             LocatorService.Current.SelectedChannel = SelectedChannel;
 
             ChannelFrame.Navigate(new EditeChannelPage());
+        }
+
+        private void OnAddedNewChannels()
+        {
+            Channels = new ObservableCollection<Channel>(_db.Channels.ToList());
+        }
+
+        // Инициализация базы данных
+        private void InitializeDatabase()
+        {
+            try
+            {
+                // Экземпляр базы данных
+                _db = AppContextFactory.GetInstance();
+                // загружаем данные о поставщиках из БД и включаем связанные данные (PriceIncreases и Brands)
+                _db.Channels.Include(c => c.PriceIncreases).Include(c => c.Brands).Load();
+            }
+            catch (Exception)
+            {
+                // TODO сделать запись логов
+                //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
+            }
         }
         #endregion
     }

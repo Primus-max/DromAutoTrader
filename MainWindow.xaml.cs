@@ -1,6 +1,7 @@
 ﻿using AdsPowerManager;
 using DromAutoTrader.DromManager;
 using DromAutoTrader.Prices;
+using DromAutoTrader.Services;
 using DromAutoTrader.ViewModels;
 using DromAutoTrader.Views;
 using DromAutoTrader.Views.Pages;
@@ -48,7 +49,11 @@ namespace DromAutoTrader
         {
             // Устанавливаем начальное содержимое Frame при загрузке окна
             ChannelFrame.Navigate(new AllChannelPage());
+
+            // Получаю имена каналов из профилей
+           // Task.Run(async () => await GetAndSetChannelNameFromPrifileAsync());
         }
+
 
         public async void TestProfileName()
         {
@@ -64,20 +69,16 @@ namespace DromAutoTrader
                 IWebDriver driver = await browserManager.InitializeDriver(profile.UserId);
 
             }
+         
+        }
 
-           // DromAdPublisher dromAdPublisher = new DromAdPublisher();
-            //foreach (Profile profile in profiles)
-            //{
-            //    if (profile.Name == "MainCraftIrk")
-            //    {
-            //        var profileName = profile.Name;
-            //        IWebDriver driver = await browserManager.InitializeDriver(profileName);
+        // Метод получения имени канала из имени профиля
+        private async Task GetAndSetChannelNameFromPrifileAsync()
+        {
+            await ChannelManager.GetChannelsAsync();
 
-            //        DromAdPublisher dromAdPublisher = new DromAdPublisher(driver);
-            //        dromAdPublisher.PublishAd("Защитный комплект амортизатора 16F F10066 (2шт/упак)");
-            //    }
-
-            //}
+            // Обновляю UI
+            EventAggregator.PublishAddedNewChannels();
         }
 
         #region ФИЛЬТРЫ
@@ -142,10 +143,9 @@ namespace DromAutoTrader
             }
             isPriceSelected = false;    
         }
+
+     
         #endregion
-
-
-
 
         #endregion
 

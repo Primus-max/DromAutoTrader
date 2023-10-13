@@ -11,26 +11,37 @@ namespace DromAutoTrader.DromManager
         {
             List<Profile> profiles = await ProfileManager.GetProfiles();
 
-            using AppContext db = AppContextFactory.GetInstance();
+             AppContext db = AppContextFactory.GetInstance();
 
             try
-            {                
+            {
                 db.Channels.Load();
 
                 foreach (var profile in profiles)
                 {
-                    Channel channel = new()
-                    {
-                        Name = profile?.Name
-                    };
+                    string channelName = profile?.Name;
 
-                    db.Channels.Add(channel);
+                    // Проверяем, существует ли канал с таким именем
+                    bool channelExists = db.Channels.Any(c => c.Name == channelName);
+
+                    if (!channelExists)
+                    {
+                        Channel channel = new()
+                        {
+                            Name = channelName
+                        };
+
+                        db.Channels.Add(channel);
+                    }
                 }
+
                 db.SaveChanges();
             }
             catch (Exception)
             {
+                // Обработка ошибок
             }
         }
+
     }
 }

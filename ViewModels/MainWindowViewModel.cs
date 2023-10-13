@@ -1,6 +1,7 @@
 ﻿using DromAutoTrader.Data;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
+using Newtonsoft.Json;
 using System.IO;
 
 namespace DromAutoTrader.ViewModels
@@ -29,6 +30,7 @@ namespace DromAutoTrader.ViewModels
         #region Бренды
         private ObservableCollection<Brand> _brands = null!;
         private int _totalBrandCount = 0;
+        private List<string>? _imageServices = null!;
         #endregion
 
         #region Каналы
@@ -110,6 +112,11 @@ namespace DromAutoTrader.ViewModels
             set => Set(ref _totalBrandCount, value);
         }
 
+        public List<string> ImageServices
+        {
+            get => _imageServices;
+            set => Set(ref _imageServices, value);
+        }
         #endregion
 
         #region Каналы
@@ -180,7 +187,7 @@ namespace DromAutoTrader.ViewModels
         {
             if (sender is Supplier selectedSupplier)
             {
-                DeleteSupplierFromDatabase(selectedSupplier.Id);
+                //DeleteSupplierFromDatabase(selectedSupplier.Id);
             }
         }
 
@@ -241,7 +248,7 @@ namespace DromAutoTrader.ViewModels
             #region Инициализация источников данных
 
             #region Поставщики
-            Suppliers = GetAllSuppliers();
+            //Suppliers = GetAllSuppliers();
             #endregion
 
             #region Каналы
@@ -249,7 +256,7 @@ namespace DromAutoTrader.ViewModels
             #endregion
 
             #region Бренды
-            Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
+            Brands = new ObservableCollection<Brand>(_db.Brands.ToList());   
             TotalBrandCount = Brands.Count;
             #endregion
 
@@ -477,17 +484,17 @@ namespace DromAutoTrader.ViewModels
         }
 
         // Метод для получения всех поставщиков из базы данных
-        public ObservableCollection<Supplier> GetAllSuppliers()
-        {
-            try
-            {
-                return new ObservableCollection<Supplier>(_db.Suppliers.ToList());
-            }
-            catch (Exception)
-            {
-                return new ObservableCollection<Supplier>(); // Вернуть пустой список или обработать ошибку иным способом
-            }
-        }
+        //public ObservableCollection<Supplier> GetAllSuppliers()
+        //{
+        //    try
+        //    {
+        //        return new ObservableCollection<Supplier>(_db.Suppliers.ToList());
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return new ObservableCollection<Supplier>(); // Вернуть пустой список или обработать ошибку иным способом
+        //    }
+        //}
 
         // Метод добавления нового или обновления существующего поставщика
         private void SaveSupplierToDatabase(int id, string name)
@@ -520,24 +527,24 @@ namespace DromAutoTrader.ViewModels
         }
 
         // Метод удаления поставщика
-        private void DeleteSupplierFromDatabase(int id)
-        {
-            var supplierToRemove = _db.Suppliers.FirstOrDefault(s => s.Id == id);
-            if (supplierToRemove != null)
-            {
-                try
-                {
-                    _db.Suppliers.Remove(supplierToRemove);
-                    _db.SaveChanges();
+        //private void DeleteSupplierFromDatabase(int id)
+        //{
+        //    var supplierToRemove = _db.Suppliers.FirstOrDefault(s => s.Id == id);
+        //    if (supplierToRemove != null)
+        //    {
+        //        try
+        //        {
+        //            _db.Suppliers.Remove(supplierToRemove);
+        //            _db.SaveChanges();
 
-                    Suppliers = GetAllSuppliers();
-                }
-                catch (Exception)
-                {
-                    MessageBox.Show("Не удалось удалить поставщика", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
+        //            Suppliers = GetAllSuppliers();
+        //        }
+        //        catch (Exception)
+        //        {
+        //            MessageBox.Show("Не удалось удалить поставщика", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+        //        }
+        //    }
+        //}
         #endregion
 
 

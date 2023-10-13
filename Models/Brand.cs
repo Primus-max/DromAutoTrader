@@ -9,11 +9,13 @@ namespace DromAutoTrader.Models
         [SQLite.PrimaryKey, SQLite.AutoIncrement]
         public int Id { get; set; }
         public string? Name { get; set; } = string.Empty;
-        public List<string>? FindImageService { get; set; } = null!;
+        public string? FindImageService { get; set; } = string.Empty;
         public string? DefaultImage { get; set; } = string.Empty;
 
         [ForeignKey(typeof(Channel))]
-        public int? ChannelId { get; set; }        
-      
+        public int? ChannelId { get; set; }
+
+        [OneToMany]
+        public List<ImageService>? ImageServices { get; set; }
     }
 }

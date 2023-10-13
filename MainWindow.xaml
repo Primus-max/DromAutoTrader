@@ -406,13 +406,19 @@
                                     Width="150"
                                     Binding="{Binding Name}"
                                     Header="Название" />
-                                <DataGridTemplateColumn Width="150" Header="Адрес шаблона">
+                                <DataGridTextColumn
+                                    Width="150"
+                                    Binding="{Binding FindImageService}"
+                                    Header="Адреса" />
+                                <!--<DataGridTemplateColumn Width="150" Header="Адрес шаблона">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <!--  Здесь можете разместить ComboBox для адреса шаблона  -->
+                                -->
+                                <!--  Здесь можете разместить ComboBox для адреса шаблона  -->
+                                <!--
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
+                                </DataGridTemplateColumn>-->
                                 <DataGridTextColumn
                                     Width="150"
                                     Binding="{Binding DefaultImage}"
