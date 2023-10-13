@@ -8,12 +8,6 @@
         {
             AddedBrandsCountChanged?.Invoke();
         }
-
-        // Уведомление об обновлении UI если загрузились новые каналы
-        public static event Action? AddedNewChannels;
-        public static void PublishAddedNewChannels()
-        {
-            AddedNewChannels?.Invoke();
-        }
+              
     }
 }

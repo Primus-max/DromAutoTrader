@@ -50,8 +50,6 @@ namespace DromAutoTrader
             // Устанавливаем начальное содержимое Frame при загрузке окна
             ChannelFrame.Navigate(new AllChannelPage());
 
-            // Получаю имена каналов из профилей
-           // Task.Run(async () => await GetAndSetChannelNameFromPrifileAsync());
         }
 
 
@@ -70,16 +68,7 @@ namespace DromAutoTrader
 
             }
          
-        }
-
-        // Метод получения имени канала из имени профиля
-        private async Task GetAndSetChannelNameFromPrifileAsync()
-        {
-            await ChannelManager.GetChannelsAsync();
-
-            // Обновляю UI
-            EventAggregator.PublishAddedNewChannels();
-        }
+        }       
 
         #region ФИЛЬТРЫ
         #region Брэнды       

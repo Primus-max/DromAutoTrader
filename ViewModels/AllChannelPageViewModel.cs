@@ -57,23 +57,12 @@ namespace DromAutoTrader.ViewModels
             OpenEditChannelPageCommand = new LambdaCommand(OnOpenEditChannelPageCommandExecuted, CanOpenEditChannelPageCommandExecute);
             #endregion
 
-            InitializeDatabase();
-            // Тестовые данные
-            //Channels = new ObservableCollection<Channel>(_db.Channels.ToList());
+            InitializeDatabase();            
 
-            //EventAggregator.AddedNewChannels += OnAddedNewChannels;
-
+            // Получаю имена каналов из профилей AdsPower
             Task.Run(async () => await GetAndSetChannelNameFromPrifileAsync());
         }
-
-
-
-        private async Task GetAndSetChannelNameFromPrifileAsync()
-        {
-            await ChannelManager.GetChannelsAsync();
-
-            Channels = new ObservableCollection<Channel>(_db.Channels.ToList());
-        }
+                
 
         #region Методы
         private void OpenEditChannelPage() 
@@ -82,10 +71,13 @@ namespace DromAutoTrader.ViewModels
             LocatorService.Current.SelectedChannel = SelectedChannel;
 
             ChannelFrame.Navigate(new EditeChannelPage());
-        }
+        }        
 
-        private void OnAddedNewChannels()
+        // Метод получения каналов из профилей 
+        private async Task GetAndSetChannelNameFromPrifileAsync()
         {
+            await ChannelManager.GetChannelsAsync();
+
             Channels = new ObservableCollection<Channel>(_db.Channels.ToList());
         }
 
