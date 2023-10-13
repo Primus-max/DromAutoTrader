@@ -406,19 +406,32 @@
                                     Width="150"
                                     Binding="{Binding Name}"
                                     Header="Название" />
-                                <DataGridTextColumn
-                                    Width="150"
-                                    Binding="{Binding FindImageService}"
-                                    Header="Адреса" />
-                                <!--<DataGridTemplateColumn Width="150" Header="Адрес шаблона">
+                                <DataGridTemplateColumn Width="150" Header="Адрес шаблона">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                -->
-                                <!--  Здесь можете разместить ComboBox для адреса шаблона  -->
-                                <!--
+                                            <ComboBox
+                                                DisplayMemberPath="Name"
+                                                ItemsSource="{Binding DataContext.ImageServices, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                                SelectedValue="{Binding Address}"
+                                                SelectedValuePath="Name">
+
+                                                <ComboBox.ItemContainerStyle>
+                                                    <Style TargetType="ComboBoxItem">
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="ComboBoxItem">
+                                                                    <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </ComboBox.ItemContainerStyle>
+                                            </ComboBox>
+
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>-->
+
+                                </DataGridTemplateColumn>
                                 <DataGridTextColumn
                                     Width="150"
                                     Binding="{Binding DefaultImage}"

@@ -1,4 +1,5 @@
 ﻿using DromAutoTrader.Data;
+using DromAutoTrader.Models;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
 using System.IO;
@@ -31,7 +32,7 @@ namespace DromAutoTrader.ViewModels
         #region Бренды
         private ObservableCollection<Brand> _brands = null!;
         private int _totalBrandCount = 0;
-        private List<string>? _imageServices = null!;
+        private ObservableCollection<ImageService>? _imageServices = null!;       
         #endregion
 
         #region Каналы
@@ -113,7 +114,7 @@ namespace DromAutoTrader.ViewModels
             set => Set(ref _totalBrandCount, value);
         }
 
-        public List<string> ImageServices
+        public ObservableCollection<ImageService> ImageServices
         {
             get => _imageServices;
             set => Set(ref _imageServices, value);
@@ -155,7 +156,7 @@ namespace DromAutoTrader.ViewModels
         private void OnAddSupplierCommandExecuted(object sender)
         {
 
-            AddNewSupplier();
+            
         }
 
         public ICommand EnterKeyPressedCommand { get; } = null!;
@@ -165,7 +166,7 @@ namespace DromAutoTrader.ViewModels
         private void OnEnterKeyPressedCommandExecuted(object sender)
         {
             // Записываю в базу
-            SaveSupplierToDatabase(SelectedSupplier.Id, SelectedSupplier?.Name);
+            
         }
 
         public ICommand EditeSuplierCommand { get; } = null!;
@@ -176,7 +177,7 @@ namespace DromAutoTrader.ViewModels
         {
             if (sender is Supplier selectedSupplier)
             {
-                SaveSupplierToDatabase(selectedSupplier.Id, selectedSupplier.Name);
+               
             }
         }
 
@@ -259,6 +260,7 @@ namespace DromAutoTrader.ViewModels
             #region Бренды
             Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
             TotalBrandCount = Brands.Count;
+            ImageServices = new ObservableCollection<ImageService>(_db.ImageServices.ToList());
             #endregion
 
             #region Прайсы
@@ -441,6 +443,7 @@ namespace DromAutoTrader.ViewModels
                 _db = AppContextFactory.GetInstance();
                 // загружаем данные о поставщиках из БД и включаем связанные данные (PriceIncreases и Brands)
                 _db.Channels.Include(c => c.PriceIncreases).Include(c => c.Brands).Load();
+                _db.ImageServices.Load();
             }
             catch (Exception)
             {
@@ -470,84 +473,7 @@ namespace DromAutoTrader.ViewModels
             if (!PriceChannelMappings.Contains(mapping))
                 PriceChannelMappings.Add(mapping);
         }
-        #endregion
-
-        #region Поставщики
-
-        public void AddNewSupplier()
-        {
-            // Создаем нового поставщика с пустым именем
-            var newSupplier = new Supplier { Id = Suppliers.Count + 1, };
-
-            // Добавляем его в список поставщиков
-            Suppliers.Add(newSupplier);
-
-        }
-
-        // Метод для получения всех поставщиков из базы данных
-        //public ObservableCollection<Supplier> GetAllSuppliers()
-        //{
-        //    try
-        //    {
-        //        return new ObservableCollection<Supplier>(_db.Suppliers.ToList());
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return new ObservableCollection<Supplier>(); // Вернуть пустой список или обработать ошибку иным способом
-        //    }
-        //}
-
-        // Метод добавления нового или обновления существующего поставщика
-        private void SaveSupplierToDatabase(int id, string name)
-        {
-            var supplierToUpdate = _db.Suppliers.FirstOrDefault(s => s.Id == id);
-
-            if (supplierToUpdate != null)
-            {
-                // Если поставщик с таким ID уже существует, обновляем его имя
-                supplierToUpdate.Name = name;
-            }
-            else
-            {
-                // Если поставщик с таким ID не существует, создаем нового поставщика
-                var newSupplier = new Supplier { Name = name };
-                _db.Suppliers.Add(newSupplier);
-            }
-
-            try
-            {
-                _db.SaveChanges();
-
-                MessageBox.Show($"Поставщик: {name} сохранен");
-            }
-            catch (Exception)
-            {
-                // Обработка ошибок сохранения в базе данных
-                MessageBox.Show("Произошла ошибка при сохранении поставщика в базе данных.");
-            }
-        }
-
-        // Метод удаления поставщика
-        //private void DeleteSupplierFromDatabase(int id)
-        //{
-        //    var supplierToRemove = _db.Suppliers.FirstOrDefault(s => s.Id == id);
-        //    if (supplierToRemove != null)
-        //    {
-        //        try
-        //        {
-        //            _db.Suppliers.Remove(supplierToRemove);
-        //            _db.SaveChanges();
-
-        //            Suppliers = GetAllSuppliers();
-        //        }
-        //        catch (Exception)
-        //        {
-        //            MessageBox.Show("Не удалось удалить поставщика", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-        //        }
-        //    }
-        //}
-        #endregion
-
+        #endregion       
 
         #endregion
     }
