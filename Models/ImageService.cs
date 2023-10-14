@@ -7,9 +7,6 @@ namespace DromAutoTrader.Models
     {
         [SQLite.PrimaryKey, SQLite.AutoIncrement]
         public int Id { get; set; }
-        public string? Name { get; set; } = string.Empty;
-
-        [ForeignKey(typeof(Brand))]
-        public int? BrandId { get; set; }
+        public string? Name { get; set; } = string.Empty;       
     }
 }

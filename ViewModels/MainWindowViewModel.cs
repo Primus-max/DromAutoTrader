@@ -1,8 +1,9 @@
 ﻿using DromAutoTrader.Data;
-using DromAutoTrader.Models;
+using DromAutoTrader.Infrastacture.Commands;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
 using System.IO;
+using System.Reflection.Metadata;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -31,8 +32,10 @@ namespace DromAutoTrader.ViewModels
 
         #region Бренды
         private ObservableCollection<Brand> _brands = null!;
+        private Brand _selectedBrand = null!;
         private int _totalBrandCount = 0;
-        private ObservableCollection<ImageService>? _imageServices = null!;       
+        private ObservableCollection<ImageService>? _imageServices = null!;
+        private ObservableCollection<ImageService> _selectedImageServices = null!;
         #endregion
 
         #region Каналы
@@ -107,6 +110,11 @@ namespace DromAutoTrader.ViewModels
             get => _brands;
             set => Set(ref _brands, value);
         }
+        public Brand SelectedBrand
+        {
+            get => _selectedBrand;
+            set => Set(ref _selectedBrand, value);
+        }
 
         public int TotalBrandCount
         {
@@ -118,6 +126,11 @@ namespace DromAutoTrader.ViewModels
         {
             get => _imageServices;
             set => Set(ref _imageServices, value);
+        }
+        public ObservableCollection<ImageService> SelectedImageService
+        {
+            get => _selectedImageServices;
+            set => Set(ref _selectedImageServices, value);
         }
         #endregion
 
@@ -148,6 +161,8 @@ namespace DromAutoTrader.ViewModels
 
         #region КОМАНДЫ
 
+       
+
         #region Поставщики
         public ICommand AddSupplierCommand { get; } = null!;
 
@@ -156,7 +171,7 @@ namespace DromAutoTrader.ViewModels
         private void OnAddSupplierCommandExecuted(object sender)
         {
 
-            
+
         }
 
         public ICommand EnterKeyPressedCommand { get; } = null!;
@@ -166,7 +181,7 @@ namespace DromAutoTrader.ViewModels
         private void OnEnterKeyPressedCommandExecuted(object sender)
         {
             // Записываю в базу
-            
+
         }
 
         public ICommand EditeSuplierCommand { get; } = null!;
@@ -177,7 +192,7 @@ namespace DromAutoTrader.ViewModels
         {
             if (sender is Supplier selectedSupplier)
             {
-               
+
             }
         }
 
@@ -222,16 +237,56 @@ namespace DromAutoTrader.ViewModels
         {
             Channel channel = SelectedChannel;
         }
-        #endregion        
+        #endregion
+
+        #region Брэнды
+        public ICommand SelectImageServiceCommand { get; } = null!;
+
+        private bool CanSelectImageServiceCommandExecute(object p) => true;
+        public ObservableCollection<ImageService> imageServices = new();
+        private void OnSelectImageServiceCommandExecuted(object sender)
+        {
+            if (sender is SelectImageServiceCommandParameters commandParameters)
+            {
+                Brand brand = commandParameters.Brand;
+                ImageService imageService = commandParameters.ImageService;
+
+                // Ваш код обработки здесь
+            }
+
+        }
+        #endregion
+
+        #region Команда для получения нескольких параметров
+        public RelayCommand MyCommand { get; }
+
+        // Метод выполнения команды
+        private void ExecuteMethod(object parameter)
+        {
+            // Ваш код выполнения команды
+        }
+
+        // Метод, определяющий, можно ли выполнить команду
+        private bool CanExecuteMethod(object parameter)
+        {
+            // Ваш код определения, можно ли выполнить команду
+            return true;
+        } 
+        #endregion
 
         #endregion
 
         public MainWindowViewModel()
         {
+            
             // Инициализация базы данных
             InitializeDatabase();
 
             #region Инициализация команд
+
+            #region Команда для получения нескольких параметров
+            MyCommand = new RelayCommand(ExecuteMethod, CanExecuteMethod);
+            #endregion
 
             #region Поставщики
             AddSupplierCommand = new LambdaCommand(OnAddSupplierCommandExecuted, CanAddSupplierCommandExecute);
@@ -244,6 +299,10 @@ namespace DromAutoTrader.ViewModels
 
             #region Каналы
             SelectChannelCommand = new LambdaCommand(OnSelectChannelCommandExecuted, CanSelectChannelCommandExecute);
+            #endregion
+
+            #region Брэнды
+            SelectImageServiceCommand = new LambdaCommand(OnSelectImageServiceCommandExecuted, CanSelectImageServiceCommandExecute);
             #endregion
             #endregion
 

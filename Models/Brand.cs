@@ -14,7 +14,7 @@ namespace DromAutoTrader.Models
         [ForeignKey(typeof(Channel))]
         public int? ChannelId { get; set; }
 
-        [OneToMany]
+        [ManyToMany(typeof(BrandImageServiceMapping))] // Многие-ко-многим через промежуточную таблицу
         public List<ImageService>? ImageServices { get; set; }
     }
 }

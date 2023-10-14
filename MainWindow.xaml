@@ -52,9 +52,9 @@
                 </TabControl.Template>
 
                 <!--  Здесь добавьте ваши TabItem  -->
-                <TabItem Header="Объявления">
+                <!--<TabItem Header="Объявления">
                     <TextBlock Margin="10" Text="Раздел объявлениЙ" />
-                </TabItem>
+                </TabItem>-->
                 <TabItem Header="Загрузить прайс">
                     <StackPanel>
                         <TextBlock
@@ -410,17 +410,25 @@
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <ComboBox
+                                                x:Name="ImageServicesCollectionCombobox"
                                                 DisplayMemberPath="Name"
+                                                IsEnabled="True"
                                                 ItemsSource="{Binding DataContext.ImageServices, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
-                                                SelectedValue="{Binding Address}"
-                                                SelectedValuePath="Name">
-
+                                                SelectedValue="{Binding DataContext.SelectedBrand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                                SelectedValuePath="Brand">
                                                 <ComboBox.ItemContainerStyle>
                                                     <Style TargetType="ComboBoxItem">
                                                         <Setter Property="Template">
                                                             <Setter.Value>
                                                                 <ControlTemplate TargetType="ComboBoxItem">
-                                                                    <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                                                    <StackPanel Orientation="Horizontal">
+                                                                        <CheckBox
+                                                                            Command="{Binding DataContext.SelectImageServiceCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                                                            CommandParameter="{Binding}"
+                                                                            Content="{Binding Name}"
+                                                                            IsChecked="{Binding IsSelected, RelativeSource={RelativeSource TemplatedParent}}" 
+                                                                           />
+                                                                    </StackPanel>
                                                                 </ControlTemplate>
                                                             </Setter.Value>
                                                         </Setter>

@@ -135,12 +135,30 @@ namespace DromAutoTrader
         }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+        #endregion
+
         #endregion
 
         #endregion
 
         #endregion
-        #endregion
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
 
