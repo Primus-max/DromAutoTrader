@@ -157,7 +157,7 @@ namespace DromAutoTrader
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
-
+            var asdf = sender;
         }
     }
 }

@@ -408,34 +408,25 @@
                                     Header="Название" />
                                 <DataGridTemplateColumn Width="150" Header="Адрес шаблона">
                                     <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
+                                        <DataTemplate>   
                                             <ComboBox
-                                                x:Name="ImageServicesCollectionCombobox"
-                                                DisplayMemberPath="Name"
-                                                IsEnabled="True"
+                                                IsEditable="True"
+                                                IsReadOnly="True"
                                                 ItemsSource="{Binding DataContext.ImageServices, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
                                                 SelectedValue="{Binding DataContext.SelectedBrand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
-                                                SelectedValuePath="Brand">
-                                                <ComboBox.ItemContainerStyle>
-                                                    <Style TargetType="ComboBoxItem">
-                                                        <Setter Property="Template">
-                                                            <Setter.Value>
-                                                                <ControlTemplate TargetType="ComboBoxItem">
-                                                                    <StackPanel Orientation="Horizontal">
-                                                                        <CheckBox
-                                                                            Command="{Binding DataContext.SelectImageServiceCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
-                                                                            CommandParameter="{Binding}"
-                                                                            Content="{Binding Name}"
-                                                                            IsChecked="{Binding IsSelected, RelativeSource={RelativeSource TemplatedParent}}" 
-                                                                           />
-                                                                    </StackPanel>
-                                                                </ControlTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </Style>
-                                                </ComboBox.ItemContainerStyle>
+                                                SelectedValuePath="IsChecked"
+                                                Text="{Binding Text}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <CheckBox
+                                                            Checked="CheckBox_Checked"
+                                                            Command="{Binding DataContext.SelectImageServiceCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                                            CommandParameter="{Binding}"
+                                                            Content="{Binding Name}"
+                                                            IsChecked="{Binding IsChecked}" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
                                             </ComboBox>
-
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
 
