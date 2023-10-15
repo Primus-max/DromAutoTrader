@@ -69,7 +69,6 @@
                             <TextBlock
                                 Margin="0,0,5,0"
                                 VerticalAlignment="Center"
-                                
                                 FontWeight="Bold"
                                 Foreground="White"
                                 Text="1." />
@@ -136,15 +135,14 @@
                                 <TextBlock
                                     Margin="0,0,9,0"
                                     VerticalAlignment="Center"
-                                 
                                     FontWeight="Bold"
                                     Foreground="White"
                                     Text="3." />
                                 <StackPanel>
                                     <TextBlock Foreground="White">
-                                        <Run Text="Убирать в архив старые объявления и доставать из архива ранее загруженные?" FontWeight="Bold"/>
+                                        <Run FontWeight="Bold" Text="Убирать в архив старые объявления и доставать из архива ранее загруженные?" />
                                         <LineBreak />
-                                        <Run Text="По умолчанию Да" FontWeight="Bold"/>
+                                        <Run FontWeight="Bold" Text="По умолчанию Да" />
                                     </TextBlock>
                                     <CheckBox
                                         Width="Auto"
@@ -196,7 +194,7 @@
                     </StackPanel>
                 </TabItem>
                 <TabItem Header="Брэнды">
-                    <DockPanel Margin="20">
+                    <DockPanel>
                         <DockPanel.Resources>
                             <CollectionViewSource
                                 x:Key="BrandsCollection"
@@ -204,7 +202,7 @@
                                 Source="{Binding Brands}" />
                         </DockPanel.Resources>
                         <StackPanel DockPanel.Dock="Top">
-                            <TextBlockDesc:PageDescriptionTextBlock Description="В этом разделе можно добавить брэнд, добавить сервис для поиска фото по брэнду, или поставить фото-заглушку" />
+                            <TextBlockDesc:PageDescriptionTextBlock Margin="0,20,0,0" Description="В этом разделе можно добавить брэнд, добавить сервис для поиска фото по брэнду, или поставить фото-заглушку" />
                             <Button
                                 Width="200"
                                 Margin="20,16,0,30"
@@ -212,7 +210,6 @@
                                 Command="{Binding AddSupplierCommand}"
                                 Content="Добавить" />
                         </StackPanel>
-
                         <StackPanel
                             Height="60"
                             Margin="10,10,0,10"
@@ -262,6 +259,7 @@
                         <DataGrid
                             x:Name="BrandsDataGrid"
                             AutoGenerateColumns="False"
+                            CanUserAddRows="False"
                             DockPanel.Dock="Top"
                             IsReadOnly="False"
                             ItemsSource="{Binding Source={StaticResource BrandsCollection}}"

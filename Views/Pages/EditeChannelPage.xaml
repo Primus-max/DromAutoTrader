@@ -15,190 +15,194 @@
     <Page.DataContext>
         <vm:EditeChannelPageViewModel />
     </Page.DataContext>
-    <Grid ScrollViewer.CanContentScroll="True">
-
+    <Grid>
         <Grid>
             <DockPanel>
-                <StackPanel Margin="20,0" DockPanel.Dock="Top">
+                <DockPanel DockPanel.Dock="Top">
                     <TextBlockDesc:PageDescriptionTextBlock
                         Margin="0,20,0,0"
-                        Description="В этом разделе происходит загрузка прайса(ов) и дальнейшее размещение информации в каналах, для этого надо:"
+                        Description="В этом разделе добавляется описание для объявления, выбираются брэнды и добавляются цены накруток для канала"
                         DockPanel.Dock="Top" />
-                    <StackPanel Margin="0,20,0,20" Orientation="Horizontal">
-                        <TextBlock
-                            Margin="0,0,15,0"
-                            VerticalAlignment="Bottom"
-                            FontSize="18"
-                            Foreground="#939393"
-                            Text="Название канала:" />
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            FontSize="18"
-                            Foreground="White"
-                            Text="{Binding SelectedChannel.Name}" />
-                    </StackPanel>
-                    <Button
-                        Width="150"
-                        Height="30"
-                        Padding="0"
-                        HorizontalAlignment="Left"
-                        Command="{Binding GoBackAllChannelsCommand}"
-                        Cursor="Hand"
-                        Style="{StaticResource MaterialDesignPaperButton}">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon VerticalAlignment="Center" Kind="ArrowBack" />
-                            <TextBlock
-                                Margin="5,0,0,0"
-                                VerticalAlignment="Center"
-                                Text="К списку каналов" />
-                        </StackPanel>
-                    </Button>
-                    <StackPanel Margin="0,15,0,0">
-                        <!--<TextBlock
-            VerticalAlignment="Bottom"
-            FontSize="14"
-            Foreground="#939393"
-            Text="Текст сообщения о продаже:" />-->
-                        <StackPanel>
-                            <CheckBox
-                                x:Name="MaterialDesignOutlinedTextBoxTextCountComboBox"
-                                Width="0"
-                                Height="0"
-                                IsChecked="True" />
-                            <TextBox
-                                Width="350"
-                                MinHeight="100"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Top"
-                                materialDesign:HintAssist.Foreground="#939393"
-                                materialDesign:HintAssist.HelperTextFontSize="16"
-                                materialDesign:HintAssist.Hint="Текст объявления"
-                                materialDesign:TextFieldAssist.CharacterCounterVisibility="{Binding Path=IsChecked, ElementName=MaterialDesignOutlinedTextBoxTextCountComboBox, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                materialDesign:TextFieldAssist.HasClearButton="True"
-                                FontSize="18"
-                                Foreground="White"
-                                MaxLength="1000"
-                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                Text="{Binding DescriptionChannel}"
-                                TextWrapping="Wrap"
-                                VerticalScrollBarVisibility="Auto" />
-                        </StackPanel>
-
-                        <!--  Выбор брэндов для канала  -->
-                        <StackPanel Margin="0,30,0,0" Orientation="Horizontal">
+                    <StackPanel Margin="20,0" DockPanel.Dock="Top">
+                        <StackPanel Margin="0,20,0,20" Orientation="Horizontal">
                             <Button
-                                Width="Auto"
-                                Height="Auto"
-                                Margin="0,0,15,0"
-                                Padding="10"
+                                Width="150"
+                                Height="30"
+                                Padding="0"
                                 HorizontalAlignment="Left"
-                                VerticalAlignment="Bottom"
-                                HorizontalContentAlignment="Left"
-                                Command="{Binding OpenAddBrandToChannelWindowCommand}"
-                                Content="Выбрать брэнды для канала"
-                                FontSize="18"
-                                Foreground="#FFFFFF"
-                                Style="{StaticResource MaterialDesignPaperButton}" />
-
-                            <StackPanel
-                                Margin="40,0,0,0"
-                                VerticalAlignment="Bottom"
-                                Orientation="Horizontal">
+                                Command="{Binding GoBackAllChannelsCommand}"
+                                Cursor="Hand"
+                                Style="{StaticResource MaterialDesignPaperButton}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon VerticalAlignment="Center" Kind="ArrowBack" />
+                                    <TextBlock
+                                        Margin="5,0,0,0"
+                                        VerticalAlignment="Center"
+                                        Text="К списку каналов" />
+                                </StackPanel>
+                            </Button>
+                            <StackPanel Margin="20,0,0,0" Orientation="Horizontal">
                                 <TextBlock
-                                    Margin="0,0,10,0"
-                                    VerticalAlignment="Bottom"
-                                    FontSize="14"
-                                    FontWeight="Heavy"
-                                    Foreground="#4b4b4b"
-                                    Text="Всего в канале брэндов:" />
-                                <TextBlock
-                                    VerticalAlignment="Bottom"
+                                    VerticalAlignment="Center"
                                     FontSize="18"
-                                    FontWeight="Heavy"
-                                    Foreground="#b6b6b6"
-                                    Text="{Binding TotalBrandCount}" />
+                                    Foreground="#939393"
+                                    Text="Канал:" />
+                                <TextBlock
+                                    Margin="20,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="18"
+                                    Foreground="White"
+                                    Text="{Binding SelectedChannel.Name}" />
                             </StackPanel>
                         </StackPanel>
 
-                    </StackPanel>
-                </StackPanel>
-                <StackPanel Margin="20" DockPanel.Dock="Top">
-                    <TextBlock
-                        Margin="20,20"
-                        FontSize="18"
-                        FontWeight="Heavy"
-                        Foreground="#8a8a8a"
-                        Text="Таблица цен накрутки" />
+                        <StackPanel Margin="0,15,0,0">
+                            <!--<TextBlock
+VerticalAlignment="Bottom"
+FontSize="14"
+Foreground="#939393"
+Text="Текст сообщения о продаже:" />-->
+                            <StackPanel>
+                                <CheckBox
+                                    x:Name="MaterialDesignOutlinedTextBoxTextCountComboBox"
+                                    Width="0"
+                                    Height="0"
+                                    IsChecked="True" />
+                                <TextBox
+                                    Width="350"
+                                    MinHeight="100"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    materialDesign:HintAssist.Foreground="#939393"
+                                    materialDesign:HintAssist.HelperTextFontSize="16"
+                                    materialDesign:HintAssist.Hint="Текст объявления"
+                                    materialDesign:TextFieldAssist.CharacterCounterVisibility="{Binding Path=IsChecked, ElementName=MaterialDesignOutlinedTextBoxTextCountComboBox, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                    materialDesign:TextFieldAssist.HasClearButton="True"
+                                    FontSize="18"
+                                    Foreground="White"
+                                    MaxLength="1000"
+                                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                    Text="{Binding DescriptionChannel}"
+                                    TextWrapping="Wrap"
+                                    VerticalScrollBarVisibility="Auto" />
+                            </StackPanel>
 
-                    <DockPanel>
-                        <!--  Кнопка добавления нового поставщика  -->
-                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-                            <Button
-                                Width="200"
-                                Margin="20,16,0,30"
-                                HorizontalAlignment="Left"
-                                Command="{Binding AddRowTablePriceOfIncreasesCommand}"
-                                Content="Добавить" />
-                            <Button
-                                Width="200"
-                                Margin="20,16,0,30"
-                                HorizontalAlignment="Left"
-                                Command="{Binding SaveTablePriceOfIncreasesCommand}"
-                                Content="Сохранить" />
+                            <!--  Выбор брэндов для канала  -->
+                            <StackPanel Margin="0,30,0,0" Orientation="Horizontal">
+                                <Button
+                                    Width="Auto"
+                                    Height="Auto"
+                                    Margin="0,0,15,0"
+                                    Padding="10"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Bottom"
+                                    HorizontalContentAlignment="Left"
+                                    Command="{Binding OpenAddBrandToChannelWindowCommand}"
+                                    Content="Выбрать брэнды для канала"
+                                    FontSize="18"
+                                    Foreground="#FFFFFF"
+                                    Style="{StaticResource MaterialDesignPaperButton}" />
+
+                                <StackPanel
+                                    Margin="40,0,0,0"
+                                    VerticalAlignment="Bottom"
+                                    Orientation="Horizontal">
+                                    <TextBlock
+                                        Margin="0,0,10,0"
+                                        VerticalAlignment="Bottom"
+                                        FontSize="14"
+                                        FontWeight="Heavy"
+                                        Foreground="#4b4b4b"
+                                        Text="Всего в канале брэндов:" />
+                                    <TextBlock
+                                        VerticalAlignment="Bottom"
+                                        FontSize="18"
+                                        FontWeight="Heavy"
+                                        Foreground="#b6b6b6"
+                                        Text="{Binding TotalBrandCount}" />
+                                </StackPanel>
+                            </StackPanel>
+
                         </StackPanel>
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Top">
+                        <TextBlock
+                            Margin="20,20"
+                            FontSize="18"
+                            FontWeight="Heavy"
+                            Foreground="#8a8a8a"
+                            Text="Таблица цен накрутки" />
 
-                        <!--  Таблица накрутки цен  -->
-                        <DataGrid
-                            x:Name="SupplierDataGrid"
-                            AutoGenerateColumns="False"
-                            Cursor=""
-                            DockPanel.Dock="Top"
-                            ItemsSource="{Binding FilteredTablePriceOfIncreases}"
-                            ScrollViewer.CanContentScroll="True"
-                            ScrollViewer.VerticalScrollBarVisibility="Auto">
-                            <!--<DataGrid.InputBindings>
-                 <KeyBinding Key="Enter" Command="{Binding EnterKeyPressedCommand}" />
-             </DataGrid.InputBindings>-->
-                            <DataGrid.Columns>
-                                <DataGridTextColumn
-                                    Width="3*"
-                                    Binding="{Binding From}"
-                                    Header="ОТ">
-                                    <DataGridTextColumn.MinWidth>100</DataGridTextColumn.MinWidth>
-                                </DataGridTextColumn>
-                                <DataGridTextColumn
-                                    Width="3*"
-                                    Binding="{Binding To, UpdateSourceTrigger=PropertyChanged}"
-                                    Header="ДО">
-                                    <DataGridTextColumn.MinWidth>100</DataGridTextColumn.MinWidth>
-                                </DataGridTextColumn>
-                                <DataGridTextColumn
-                                    Width="3*"
-                                    Binding="{Binding PriceIncrease, UpdateSourceTrigger=PropertyChanged}"
-                                    Header="НА">
-                                    <DataGridTextColumn.MinWidth>100</DataGridTextColumn.MinWidth>
-                                </DataGridTextColumn>
 
-                                <DataGridTemplateColumn Width="1*" Header="Удалить">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button
-                                                Background="Transparent"
-                                                BorderBrush="Transparent"
-                                                Command="{Binding DataContext.RemoveTablePriceOfIncreasesCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}"
-                                                CommandParameter="{Binding}">
-                                                <materialDesign:PackIcon
-                                                    Width="32"
-                                                    Height="32"
-                                                    Kind="Delete" />
-                                            </Button>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </DockPanel>
-                </StackPanel>
+                    </StackPanel>
+                    <!--  Кнопка добавления нового поставщика  -->
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                        <Button
+                            Width="200"
+                            Margin="20,16,0,30"
+                            HorizontalAlignment="Left"
+                            Command="{Binding AddRowTablePriceOfIncreasesCommand}"
+                            CommandParameter="{Binding ElementName=SupplierDataGrid}"
+                            Content="Добавить" />
+                        <Button
+                            Width="200"
+                            Margin="20,16,0,30"
+                            HorizontalAlignment="Left"
+                            Command="{Binding SaveTablePriceOfIncreasesCommand}"
+                            Content="Сохранить" />
+                    </StackPanel>
+                </DockPanel>
+                <!--  Таблица накрутки цен  -->
+
+                <DataGrid
+                    x:Name="SupplierDataGrid"
+                    MaxHeight="250"
+                    Margin="20,0,20,0"
+                    VerticalAlignment="Top"
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    DockPanel.Dock="Top"
+                    ItemsSource="{Binding FilteredTablePriceOfIncreases}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn
+                            Width="3*"
+                            Binding="{Binding From}"
+                            Header="ОТ">
+                            <DataGridTextColumn.MinWidth>100</DataGridTextColumn.MinWidth>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn
+                            Width="3*"
+                            Binding="{Binding To, UpdateSourceTrigger=PropertyChanged}"
+                            Header="ДО">
+                            <DataGridTextColumn.MinWidth>100</DataGridTextColumn.MinWidth>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn
+                            Width="3*"
+                            Binding="{Binding PriceIncrease, UpdateSourceTrigger=PropertyChanged}"
+                            Header="НА">
+                            <DataGridTextColumn.MinWidth>100</DataGridTextColumn.MinWidth>
+                        </DataGridTextColumn>
+
+                        <DataGridTemplateColumn Width="1*" Header="Удалить">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        Background="Transparent"
+                                        BorderBrush="Transparent"
+                                        Command="{Binding DataContext.RemoveTablePriceOfIncreasesCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}"
+                                        CommandParameter="{Binding}">
+                                        <materialDesign:PackIcon
+                                            Width="32"
+                                            Height="32"
+                                            Kind="Delete" />
+                                    </Button>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+
             </DockPanel>
 
 

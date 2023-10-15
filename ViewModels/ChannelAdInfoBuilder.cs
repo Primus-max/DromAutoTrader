@@ -30,10 +30,12 @@ namespace DromAutoTrader.ViewModels
             _adPublishingInfo.Artikul = _price?.Artikul; // Артикул
             _adPublishingInfo.Description = _price?.Description; // Описание товара (из прайса) Пока нигде не потребовалось
             _adPublishingInfo.KatalogName = _price?.KatalogName; // Это попадает в заголовок объявления
-            _adPublishingInfo.OutputPrice = CalcPrice.Calculate(_price.PriceBuy, _channel?.PriceIncreases); // Считаю ценю исходя из цены прайса
+            _adPublishingInfo.OutputPrice = CalcPrice.Calculate(_price.PriceBuy, _channel?.PriceIncreases); // Считаю цену исходя из цены прайса
 
             // Создаю дату регистрации объявления           
             _adPublishingInfo.DatePublished = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            // TODO получние адресов картинки (ок) 
 
 
 

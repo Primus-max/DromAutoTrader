@@ -450,7 +450,7 @@ namespace DromAutoTrader.ViewModels
                         continue; // Если не соответствует ни одному каналу, пропускаем итерацию 
                     #endregion
 
-                    // Цикл по каждому канал в отдельном потоке
+                    // Цикл по каждому каналу в отдельном потоке
                     foreach (var priceChannelMapping in priceChannels.SelectedChannels)
                     {
                         // Для каждого канала создаем отдельную задачу

@@ -57,7 +57,8 @@ namespace DromAutoTrader.ViewModels
 
         private void OnAddRowTablePriceOfIncreasesCommandExecuted(object sender)
         {
-            AddRowTablePriceOfIncreases();
+            if (sender is DataGrid TableOfIncreaseDataGrid)
+                AddRowTablePriceOfIncreases(TableOfIncreaseDataGrid);
         }
 
         public ICommand SaveTablePriceOfIncreasesCommand { get; } = null!;
@@ -141,14 +142,16 @@ namespace DromAutoTrader.ViewModels
         {
             TotalBrandCount = SelectedChannel.BrandsCount;
         }
-        private void AddRowTablePriceOfIncreases()
+        private void AddRowTablePriceOfIncreases(DataGrid dataGrid)
         {
-            TablePriceOfIncreases.Add(new TablePriceOfIncrease());
+            //SelectedChannel;
+            FilteredTablePriceOfIncreases.Add(new TablePriceOfIncrease());
+            dataGrid.ItemsSource = FilteredTablePriceOfIncreases;
         }
 
         // Сохраняем таблицу накрутки цен
         public void SaveTablePriceOfIncreases()
-        {
+        {            
             try
             {
                 foreach (var price in FilteredTablePriceOfIncreases)
@@ -205,7 +208,7 @@ namespace DromAutoTrader.ViewModels
             {
 
             }
-            
+
         }
 
         // Метод открытия окна для выбора брэндов для каналов
