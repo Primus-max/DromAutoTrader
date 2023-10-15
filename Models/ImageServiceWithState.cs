@@ -1,8 +1,8 @@
 ﻿namespace DromAutoTrader.Models
 {
-    public class SelectImageServiceCommandParameters
+    public class ImageServiceWithState
     {
-        public Brand? Brand { get; set; }
         public ImageService? ImageService { get; set; }
+        public bool IsSelected { get; set; }
     }
 }

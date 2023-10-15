@@ -3,7 +3,6 @@ using DromAutoTrader.Infrastacture.Commands;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
 using System.IO;
-using System.Reflection.Metadata;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -36,6 +35,8 @@ namespace DromAutoTrader.ViewModels
         private int _totalBrandCount = 0;
         private ObservableCollection<ImageService>? _imageServices = null!;
         private ObservableCollection<ImageService> _selectedImageServices = null!;
+        private List<BrandImageServiceMapping> _brandImageServiceMappings = null!;
+        private ObservableCollection<BrandWithSelectedImageServices> _brandWithSelectedImageServices = null!;
         #endregion
 
         #region Каналы
@@ -127,10 +128,16 @@ namespace DromAutoTrader.ViewModels
             get => _imageServices;
             set => Set(ref _imageServices, value);
         }
-        public ObservableCollection<ImageService> SelectedImageService
+        public ObservableCollection<ImageService> SelectedImageServices
         {
             get => _selectedImageServices;
             set => Set(ref _selectedImageServices, value);
+        }
+
+        public ObservableCollection<BrandWithSelectedImageServices> BrandWithSelectedImageServices
+        {
+            get => _brandWithSelectedImageServices;
+            set => Set(ref _brandWithSelectedImageServices, value);
         }
         #endregion
 
@@ -161,7 +168,7 @@ namespace DromAutoTrader.ViewModels
 
         #region КОМАНДЫ
 
-       
+
 
         #region Поставщики
         public ICommand AddSupplierCommand { get; } = null!;
@@ -241,20 +248,57 @@ namespace DromAutoTrader.ViewModels
 
         #region Брэнды
         public ICommand SelectImageServiceCommand { get; } = null!;
-
         private bool CanSelectImageServiceCommandExecute(object p) => true;
-        public ObservableCollection<ImageService> imageServices = new();
+
         private void OnSelectImageServiceCommandExecuted(object sender)
         {
-            if (sender is SelectImageServiceCommandParameters commandParameters)
+            if (!(sender is CheckBox checkBox) || checkBox.DataContext == null)
+                return;
+
+            if (checkBox.DataContext is ImageServiceWithState imageServiceWithState)
             {
-                Brand brand = commandParameters.Brand;
-                ImageService imageService = commandParameters.ImageService;
+                if (checkBox.IsChecked == true)
+                {
+                    // Добавляем запись в базу данных
+                    var mapping = new BrandImageServiceMapping
+                    {
+                        BrandId = SelectedBrand.Id,
+                        ImageServiceId = imageServiceWithState.ImageService.Id
+                    };
 
-                // Ваш код обработки здесь
+                    try
+                    {
+                        _db.BrandImageServiceMappings.Add(mapping);
+                        _db.SaveChanges();
+                    }
+                    catch (Exception)
+                    {
+                        // Обработка ошибок при сохранении в базу данных
+                    }
+                }
+                else if (checkBox.IsChecked == false)
+                {
+                    // Удаляем запись из базы данных
+                    var mapping = _db.BrandImageServiceMappings.FirstOrDefault(m =>
+                        m.BrandId == SelectedBrand.Id && m.ImageServiceId == imageServiceWithState.ImageService.Id);
+                    if (mapping != null)
+                    {
+                        try
+                        {
+                            // Удаляем запись
+                            _db.BrandImageServiceMappings.Remove(mapping);
+                            _db.SaveChanges();
+                        }
+                        catch (Exception)
+                        {
+                            // Обработка ошибок при удалении из базы данных
+                        }
+                    }
+                }
             }
-
         }
+
+
         #endregion
 
         #region Команда для получения нескольких параметров
@@ -271,14 +315,14 @@ namespace DromAutoTrader.ViewModels
         {
             // Ваш код определения, можно ли выполнить команду
             return true;
-        } 
+        }
         #endregion
 
         #endregion
 
         public MainWindowViewModel()
         {
-            
+
             // Инициализация базы данных
             InitializeDatabase();
 
@@ -317,15 +361,38 @@ namespace DromAutoTrader.ViewModels
             #endregion
 
             #region Бренды
+            BrandWithSelectedImageServices = GetBrandsWithSelectedImageServices();
+            // Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
+
             Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
-            TotalBrandCount = Brands.Count;
             ImageServices = new ObservableCollection<ImageService>(_db.ImageServices.ToList());
+            TotalBrandCount = Brands.Count;
+
+            foreach (var brand in Brands)
+            {
+                foreach (var imageService in ImageServices)
+                {
+                    var brandImageServiceMapping = _db.BrandImageServiceMappings.FirstOrDefault(
+                        m => m.BrandId == brand.Id && m.ImageServiceId == imageService.Id);
+
+                    var imageServiceWithState = new ImageServiceWithState
+                    {
+                        ImageService = imageService,
+                        IsSelected = brandImageServiceMapping != null
+                    };
+
+                    brand.ImageServicesWithState.Add(imageServiceWithState);
+                }
+            }
+
+
+
+
             #endregion
 
             #region Прайсы
             PriceChannelMappings = new List<PriceChannelMapping>();
             #endregion
-
             #endregion            
         }
 
@@ -501,8 +568,18 @@ namespace DromAutoTrader.ViewModels
                 // Экземпляр базы данных
                 _db = AppContextFactory.GetInstance();
                 // загружаем данные о поставщиках из БД и включаем связанные данные (PriceIncreases и Brands)
-                _db.Channels.Include(c => c.PriceIncreases).Include(c => c.Brands).Load();
-                _db.ImageServices.Load();
+                _db.Channels
+                    .Include(c => c.PriceIncreases)
+                    .Include(c => c.Brands)
+                    .Load();
+                _db.Brands
+                    .Include(b => b.ImageServices)
+                    .Load();
+                _db.BrandImageServiceMappings
+                    .Include(mapping => mapping.ImageServiceId) // Загрузка связанных ImageService
+                    .Load();
+
+                _db.BrandImageServiceMappings.Load();
             }
             catch (Exception)
             {
@@ -532,7 +609,47 @@ namespace DromAutoTrader.ViewModels
             if (!PriceChannelMappings.Contains(mapping))
                 PriceChannelMappings.Add(mapping);
         }
-        #endregion       
+        #endregion
+
+        #region Брэнды
+        public ObservableCollection<BrandWithSelectedImageServices> GetBrandsWithSelectedImageServices()
+        {
+            var brandImageServiceMappings = _db.BrandImageServiceMappings.ToList();
+            var imageServices = _db.ImageServices.ToList();
+            var brandWithSelectedImageServices = new ObservableCollection<BrandWithSelectedImageServices>();
+
+            foreach (var brand in _db.Brands.ToList())
+            {
+                var selectedImageServices = new ObservableCollection<ImageService>();
+
+                foreach (var imageService in imageServices)
+                {
+                    bool isSelected = brandImageServiceMappings.Any(mapping =>
+                        mapping.BrandId == brand.Id && mapping.ImageServiceId == imageService.Id);
+
+                    // Создайте копию ImageService
+                    var clonedImageService = new ImageService
+                    {
+                        Id = imageService.Id,
+                        // Копируйте остальные свойства по необходимости
+                        // Например, Name, Description и другие
+                    };
+
+                    clonedImageService.IsSelected = isSelected;
+                    selectedImageServices.Add(clonedImageService);
+                }
+
+                brandWithSelectedImageServices.Add(new BrandWithSelectedImageServices
+                {
+                    Brand = brand,
+                    SelectedImageServices = selectedImageServices
+                });
+            }
+
+            return brandWithSelectedImageServices;
+        }
+
+        #endregion
 
         #endregion
     }

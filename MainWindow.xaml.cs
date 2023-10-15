@@ -1,11 +1,13 @@
 ﻿using DromAutoTrader.Data;
 using DromAutoTrader.DromManager;
+using DromAutoTrader.Models;
 using DromAutoTrader.Prices;
 using DromAutoTrader.ViewModels;
 using DromAutoTrader.Views;
 using DromAutoTrader.Views.Pages;
 using OfficeOpenXml;
 using OpenQA.Selenium;
+using System.Drawing.Drawing2D;
 using System.Windows.Data;
 using System.Windows.Media;
 
@@ -22,11 +24,14 @@ namespace DromAutoTrader
         //}
         private MainWindowViewModel _mainViewModel = null!;
         private bool isPriceSelected = false;
+        private AppContext _db = null!;
 
         public MainWindow()
         {
             InitializeComponent();
 
+            // Инициализация базы данных
+            InitializeDatabase();
             // Объявляю какакую версию EPPlus использую
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
@@ -69,6 +74,8 @@ namespace DromAutoTrader
         {
             // Устанавливаем начальное содержимое Frame при загрузке окна
             ChannelFrame.Navigate(new AllChannelPage());
+
+            
         }
 
         #region ФИЛЬТРЫ
@@ -134,19 +141,6 @@ namespace DromAutoTrader
             isPriceSelected = false;
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
         #endregion
 
         #endregion
@@ -155,10 +149,53 @@ namespace DromAutoTrader
 
         #endregion
 
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+
+
+        
+
+        private T FindVisualChild<T>(Visual visual) where T : Visual
         {
-            var asdf = sender;
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(visual); i++)
+            {
+                Visual child = (Visual)VisualTreeHelper.GetChild(visual, i);
+
+                if (child != null && child is T)
+                {
+                    return (T)child;
+                }
+                else
+                {
+                    T childOfChild = FindVisualChild<T>(child);
+                    if (childOfChild != null)
+                    {
+                        return childOfChild;
+                    }
+                }
+            }
+
+            return null;
         }
+
+
+
+
+
+        private void InitializeDatabase()
+        {
+            try
+            {
+                // Экземпляр базы данных
+                _db = AppContextFactory.GetInstance();
+                
+                _db.BrandImageServiceMappings.Load();
+            }
+            catch (Exception)
+            {
+                // TODO сделать запись логов
+                //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
+            }
+        }
+
     }
 }
 

@@ -398,46 +398,49 @@
                             DockPanel.Dock="Top"
                             IsReadOnly="False"
                             ItemsSource="{Binding Source={StaticResource BrandsCollection}}"
+                            SelectedItem="{Binding SelectedBrand}"
                             VirtualizingPanel.IsVirtualizing="True"
-                            VirtualizingPanel.VirtualizationMode="Recycling">
+                            VirtualizingPanel.VirtualizationMode="Recycling">                           
                             <DataGrid.Columns>
                                 <!--  Определите ваши колонки здесь  -->
                                 <DataGridTextColumn
                                     Width="150"
                                     Binding="{Binding Name}"
                                     Header="Название" />
-                                <DataGridTemplateColumn Width="150" Header="Адрес шаблона">
+                                <DataGridTemplateColumn Width="170" Header="Image Services">
                                     <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>   
-                                            <ComboBox
+                                        <DataTemplate>
+                                            
+                                            <ComboBox                                               
+                                                x:Name="ImageServicesComboBox"
                                                 IsEditable="True"
                                                 IsReadOnly="True"
-                                                ItemsSource="{Binding DataContext.ImageServices, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
-                                                SelectedValue="{Binding DataContext.SelectedBrand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
-                                                SelectedValuePath="IsChecked"
-                                                Text="{Binding Text}">
+                                                ItemsSource="{Binding ImageServicesWithState}">
+                                                <ComboBox.Text >                                                    
+                                                    Выберите службу
+                                                </ComboBox.Text>
                                                 <ComboBox.ItemTemplate>
                                                     <DataTemplate>
                                                         <CheckBox
-                                                            Checked="CheckBox_Checked"
-                                                            Command="{Binding DataContext.SelectImageServiceCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
-                                                            CommandParameter="{Binding}"
-                                                            Content="{Binding Name}"
-                                                            IsChecked="{Binding IsChecked}" />
+                                                            Command="{Binding DataContext.SelectImageServiceCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                            CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
+                                                            Content="{Binding ImageService.Name}"
+                                                            IsChecked="{Binding IsSelected}" />
                                                     </DataTemplate>
                                                 </ComboBox.ItemTemplate>
                                             </ComboBox>
+
+
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
-
                                 </DataGridTemplateColumn>
+
                                 <DataGridTextColumn
                                     Width="150"
                                     Binding="{Binding DefaultImage}"
                                     Header="Заглушка" />
                             </DataGrid.Columns>
                         </DataGrid>
-
                     </DockPanel>
                 </TabItem>
                 <TabItem Header="Ставки">

@@ -1,5 +1,6 @@
 ﻿using DromAutoTrader.Models.Interfaces;
-using SQLiteNetExtensions.Attributes;
+using SQLite;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DromAutoTrader.Models
 {
@@ -7,6 +8,9 @@ namespace DromAutoTrader.Models
     {
         [SQLite.PrimaryKey, SQLite.AutoIncrement]
         public int Id { get; set; }
-        public string? Name { get; set; } = string.Empty;       
+        public string? Name { get; set; } = string.Empty;
+
+        [NotMapped]
+        public bool IsSelected { get; set; }
     }
 }
