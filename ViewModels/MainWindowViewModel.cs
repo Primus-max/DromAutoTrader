@@ -249,7 +249,6 @@ namespace DromAutoTrader.ViewModels
         #region Брэнды
         public ICommand SelectImageServiceCommand { get; } = null!;
         private bool CanSelectImageServiceCommandExecute(object p) => true;
-
         private void OnSelectImageServiceCommandExecuted(object sender)
         {
             if (!(sender is CheckBox checkBox) || checkBox.DataContext == null)
@@ -297,8 +296,6 @@ namespace DromAutoTrader.ViewModels
                 }
             }
         }
-
-
         #endregion
 
         #region Команда для получения нескольких параметров
@@ -361,12 +358,13 @@ namespace DromAutoTrader.ViewModels
             #endregion
 
             #region Бренды
-            BrandWithSelectedImageServices = GetBrandsWithSelectedImageServices();
+            //BrandWithSelectedImageServices = GetBrandsWithSelectedImageServices();
             // Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
 
             Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
-            ImageServices = new ObservableCollection<ImageService>(_db.ImageServices.ToList());
             TotalBrandCount = Brands.Count;
+
+            var ImageServices = new ObservableCollection<ImageService>(_db.ImageServices.ToList());
 
             foreach (var brand in Brands)
             {
@@ -384,9 +382,6 @@ namespace DromAutoTrader.ViewModels
                     brand.ImageServicesWithState.Add(imageServiceWithState);
                 }
             }
-
-
-
 
             #endregion
 

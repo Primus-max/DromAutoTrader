@@ -2,11 +2,10 @@
     x:Class="DromAutoTrader.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:TextBlockDesc="clr-namespace:DromAutoTrader.Views.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:DromAutoTrader"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:multicombo="clr-namespace:DromAutoTrader.Views.Controls"
     xmlns:vm="clr-namespace:DromAutoTrader.ViewModels"
     Title="{Binding Title}"
     Width="800"
@@ -56,21 +55,21 @@
                     <TextBlock Margin="10" Text="Раздел объявлениЙ" />
                 </TabItem>-->
                 <TabItem Header="Загрузить прайс">
-                    <StackPanel>
-                        <TextBlock
-                            Margin="0,10,0,0"
-                            HorizontalAlignment="Center"
-                            Foreground="White"
-                            Text="В этом разделе происходит заргурзка файлаи дальнейшее размещение информации в каналах, для этого надо:" />
+                    <DockPanel>
+                        <TextBlockDesc:PageDescriptionTextBlock
+                            Margin="0,20,0,0"
+                            Description="В этом разделе происходит загрузка прайса(ов) и дальнейшее размещение информации в каналах, для этого надо:"
+                            DockPanel.Dock="Top" />
                         <StackPanel
                             Height="Auto"
                             Margin="20,20,0,0"
                             HorizontalAlignment="Left"
+                            DockPanel.Dock="Top"
                             Orientation="Horizontal">
                             <TextBlock
                                 Margin="0,0,5,0"
                                 VerticalAlignment="Center"
-                                FontSize="20"
+                                
                                 FontWeight="Bold"
                                 Foreground="White"
                                 Text="1." />
@@ -81,53 +80,18 @@
                                 Cursor="Hand"
                                 Style="{StaticResource MaterialDesignPaperButton}" />
                         </StackPanel>
-
-                        <!--<StackPanel
-                            Height="60"
-                            Margin="20,20,0,0"
-                            HorizontalAlignment="Left"
-                            Orientation="Horizontal">
-                            <TextBlock
-                                Margin="0,0,20,0"
-                                VerticalAlignment="Center"
-                                FontSize="20"
-                                FontWeight="Bold"
-                                Foreground="White"
-                                Text="2." />
-                            <ComboBox
-                                Width="240"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                HorizontalContentAlignment="Stretch"
-                                Style="{StaticResource MaterialDesignOutlinedComboBox}">
-                                <ComboBoxItem IsEnabled="False" IsSelected="True">
-                                    <TextBlock>Выбрать компанию</TextBlock>
-                                </ComboBoxItem>
-                                <ComboBoxItem>
-                                    <TextBlock>Компания 1</TextBlock>
-                                </ComboBoxItem>
-                                <ComboBoxItem>
-                                    <TextBlock>Компания 2</TextBlock>
-                                </ComboBoxItem>
-                        -->
-                        <!--  Добавьте остальные элементы как ComboBoxItem  -->
-                        <!--
-                            </ComboBox>
-                        </StackPanel>-->
-
-
                         <StackPanel
                             Height="Auto"
                             Margin="20,20,0,0"
                             HorizontalAlignment="Left"
+                            DockPanel.Dock="Top"
                             Orientation="Vertical">
                             <TextBlock
                                 Margin="0,0,20,0"
                                 VerticalAlignment="Center"
-                                FontSize="20"
                                 FontWeight="Bold"
                                 Foreground="White"
-                                Text="2. Выбрать каналы для прайсов:" />
+                                Text="2.   Выбрать каналы для прайсов:" />
 
                             <ListBox
                                 x:Name="PriceListBox"
@@ -162,52 +126,25 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-
-
-                            <!--  Добавьте остальные элементы как ComboBoxItem  -->
-
-
-                            <!--<Expander Header="Выбрать канал" IsExpanded="True" Width="300" >
-                                <DockPanel>
-                                    <TextBox
-                                        x:Name="SearchBox"
-                                        Margin="5"
-                                        DockPanel.Dock="Top" />
-
-                                    <ListBox
-                                        x:Name="ListBox"
-                                        Margin="5"
-                                        DockPanel.Dock="Bottom"
-                                        ItemsSource="{Binding Channels}"
-                                        SelectionMode="Multiple">
-                                        <ListBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}" />
-                                            </DataTemplate>
-                                        </ListBox.ItemTemplate>
-                                    </ListBox>
-                                </DockPanel>
-                            </Expander>-->
                         </StackPanel>
-
-                        <StackPanel>
+                        <StackPanel DockPanel.Dock="Top">
                             <StackPanel
                                 Height="60"
                                 Margin="20,20,0,0"
                                 HorizontalAlignment="Left"
                                 Orientation="Horizontal">
                                 <TextBlock
-                                    Margin="0,0,20,0"
+                                    Margin="0,0,9,0"
                                     VerticalAlignment="Center"
-                                    FontSize="20"
+                                 
                                     FontWeight="Bold"
                                     Foreground="White"
-                                    Text="4." />
+                                    Text="3." />
                                 <StackPanel>
                                     <TextBlock Foreground="White">
-                                        <Run Text="Убирать в архив старые объявления и доставать из архива ранее загруженные?" />
+                                        <Run Text="Убирать в архив старые объявления и доставать из архива ранее загруженные?" FontWeight="Bold"/>
                                         <LineBreak />
-                                        <Run Text="По умолчанию Да" />
+                                        <Run Text="По умолчанию Да" FontWeight="Bold"/>
                                     </TextBlock>
                                     <CheckBox
                                         Width="Auto"
@@ -217,20 +154,21 @@
                                     </CheckBox>
                                 </StackPanel>
                             </StackPanel>
+                        </StackPanel>
+                        <DockPanel DockPanel.Dock="Top">
                             <Button
                                 Width="270"
                                 Margin="50,20,0,0"
                                 HorizontalAlignment="Left"
                                 Background="#877200"
                                 Command="{Binding RunAllWorkCommand}"
-                                Content="Поехали" />
+                                Content="Поехали"
+                                DockPanel.Dock="Top" />
 
                             <DataGrid
                                 x:Name="ProcessPostingDataGrid"
                                 Margin="30"
-                                AutoGenerateColumns="False"
-                                ItemsSource="{Binding Suppliers}"
-                                SelectedItem="{Binding SelectedSupplier}">
+                                AutoGenerateColumns="False">
                                 <DataGrid.InputBindings>
                                     <KeyBinding Key="Enter" Command="{Binding EnterKeyPressedCommand}" />
                                 </DataGrid.InputBindings>
@@ -247,83 +185,15 @@
                                     <DataGridTemplateColumn Header="Получить файл" />
                                 </DataGrid.Columns>
                             </DataGrid>
-                        </StackPanel>
-                    </StackPanel>
+                        </DockPanel>
+                    </DockPanel>
                 </TabItem>
-                <!--<TabItem Header="Поставщики">
 
-                    <StackPanel Margin="20">
-                        <TextBlock
-                            Margin="20,20"
-                            FontSize="14"
-                            Text="Этот раздел отвечает за добавление, удаление, или изменения данных о поставщике" />
-
-
-                -->
-                <!--  Кнопка добавления нового поставщика  -->
-                <!--
-                        <Button
-                            Width="200"
-                            Margin="20,16,0,30"
-                            HorizontalAlignment="Left"
-                            Command="{Binding AddSupplierCommand}"
-                            Content="Добавить" />
-
-                -->
-                <!--  Контейнер для списка поставщиков  -->
-                <!--
-                        <DataGrid
-                            x:Name="SupplierDataGrid"
-                            AutoGenerateColumns="False"
-                            ItemsSource="{Binding Suppliers}"
-                            SelectedItem="{Binding SelectedSupplier}">
-                            <DataGrid.InputBindings>
-                                <KeyBinding Key="Enter" Command="{Binding EnterKeyPressedCommand}" />
-                            </DataGrid.InputBindings>
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Binding="{Binding Id}" Header="ID" />
-                                <DataGridTextColumn
-                                    MinWidth="300"
-                                    Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
-                                    Header="Имя" />
-                                <DataGridTemplateColumn Header="Редактировать">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button Command="{Binding DataContext.EditeSuplierCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
-                                                <materialDesign:PackIcon
-                                                    Width="16"
-                                                    Height="16"
-                                                    Kind="Pencil" />
-                                            </Button>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="Удалить">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button Command="{Binding DataContext.DeleteSuplierCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" CommandParameter="{Binding}">
-                                                <materialDesign:PackIcon
-                                                    Width="16"
-                                                    Height="16"
-                                                    Kind="Delete" />
-                                            </Button>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
-
-
-                    </StackPanel>
-
-                </TabItem>-->
                 <TabItem Header="Каналы">
                     <StackPanel>
-
                         <Frame Name="ChannelFrame" NavigationUIVisibility="Hidden" />
                         <!--<Button Click="Edit_Click"/>-->
                     </StackPanel>
-
                 </TabItem>
                 <TabItem Header="Брэнды">
                     <DockPanel Margin="20">
@@ -334,10 +204,7 @@
                                 Source="{Binding Brands}" />
                         </DockPanel.Resources>
                         <StackPanel DockPanel.Dock="Top">
-                            <TextBlock
-                                Margin="20,20"
-                                FontSize="14"
-                                Text="Этот раздел отвечает за добавление, удаление, или изменения данных о поставщике" />
+                            <TextBlockDesc:PageDescriptionTextBlock Description="В этом разделе можно добавить брэнд, добавить сервис для поиска фото по брэнду, или поставить фото-заглушку" />
                             <Button
                                 Width="200"
                                 Margin="20,16,0,30"
@@ -398,9 +265,8 @@
                             DockPanel.Dock="Top"
                             IsReadOnly="False"
                             ItemsSource="{Binding Source={StaticResource BrandsCollection}}"
-                            SelectedItem="{Binding SelectedBrand}"
-                            VirtualizingPanel.IsVirtualizing="True"
-                            VirtualizingPanel.VirtualizationMode="Recycling">                           
+                            SelectedItem="{Binding SelectedBrand}">
+
                             <DataGrid.Columns>
                                 <!--  Определите ваши колонки здесь  -->
                                 <DataGridTextColumn
@@ -410,13 +276,13 @@
                                 <DataGridTemplateColumn Width="170" Header="Image Services">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            
-                                            <ComboBox                                               
+
+                                            <ComboBox
                                                 x:Name="ImageServicesComboBox"
                                                 IsEditable="True"
                                                 IsReadOnly="True"
                                                 ItemsSource="{Binding ImageServicesWithState}">
-                                                <ComboBox.Text >                                                    
+                                                <ComboBox.Text>
                                                     Выберите службу
                                                 </ComboBox.Text>
                                                 <ComboBox.ItemTemplate>
@@ -429,6 +295,7 @@
                                                     </DataTemplate>
                                                 </ComboBox.ItemTemplate>
                                             </ComboBox>
+
 
 
                                         </DataTemplate>

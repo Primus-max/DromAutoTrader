@@ -32,6 +32,7 @@ namespace DromAutoTrader
 
             // Инициализация базы данных
             InitializeDatabase();
+
             // Объявляю какакую версию EPPlus использую
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
@@ -73,10 +74,10 @@ namespace DromAutoTrader
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             // Устанавливаем начальное содержимое Frame при загрузке окна
-            ChannelFrame.Navigate(new AllChannelPage());
-
-            
+            ChannelFrame.Navigate(new AllChannelPage());            
         }
+
+
 
         #region ФИЛЬТРЫ
         #region Брэнды       
@@ -148,36 +149,6 @@ namespace DromAutoTrader
         #endregion
 
         #endregion
-
-
-
-        
-
-        private T FindVisualChild<T>(Visual visual) where T : Visual
-        {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(visual); i++)
-            {
-                Visual child = (Visual)VisualTreeHelper.GetChild(visual, i);
-
-                if (child != null && child is T)
-                {
-                    return (T)child;
-                }
-                else
-                {
-                    T childOfChild = FindVisualChild<T>(child);
-                    if (childOfChild != null)
-                    {
-                        return childOfChild;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-
-
 
 
         private void InitializeDatabase()

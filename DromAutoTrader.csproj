@@ -26,7 +26,6 @@
 
   <ItemGroup>
     <Folder Include="DromManager\AngleSharp\" />
-    <Folder Include="Resources\" />
   </ItemGroup>
 
   <ItemGroup>
