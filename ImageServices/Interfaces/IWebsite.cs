@@ -37,7 +37,7 @@ namespace DromAutoTrader.ImageServices.Interfaces
         /// </summary>
         /// <param name="username"></param>
         /// <param name="password"></param>
-        /// <exception cref="NotImplementedException"></exception>
+        /// <exception cref="NoSuchElementException"></exception>
         void Authorization(string username, string password);
 
         /// <summary>

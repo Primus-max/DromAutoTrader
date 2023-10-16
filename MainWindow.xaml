@@ -7,6 +7,7 @@
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:DromAutoTrader.ViewModels"
+    xmlns:vmParser="clr-namespace:DromAutoTrader.ViewModels"
     Title="{Binding Title}"
     Width="800"
     Height="450"
@@ -310,6 +311,35 @@
                 </TabItem>
                 <TabItem Header="Ставки">
                     <TextBlock Margin="10" Text="Раздел ставок" />
+                </TabItem>
+                <TabItem Header="Парсинг">
+                    <TabItem.DataContext>
+                        <vmParser:ParsingViewModel />
+                    </TabItem.DataContext>
+                    <DockPanel>
+                        <StackPanel Margin="0,0,0,40" DockPanel.Dock="Top">
+                            <TextBlockDesc:PageDescriptionTextBlock Margin="0,20,0,0" Description="В этом разделе происходит парсинг картинок в свободное от работы время" />
+                        </StackPanel>
+                        <StackPanel DockPanel.Dock="Top">
+                            <Button
+                                Width="290"
+                                Margin="20,0,0,0"
+                                HorizontalAlignment="Left"
+                                Command="{Binding SelectFilePriceCommand}"
+                                Content="Выбрать прайс"
+                                Cursor="Hand"
+                                Style="{StaticResource MaterialDesignPaperButton}" />
+                            <Button
+                                Width="290"
+                                Margin="20,40,0,0"
+                                HorizontalAlignment="Left"
+                                Command="{Binding StartParsingCommand}"
+                                Content="Начать парсинг"
+                                Cursor="Hand"
+                                Style="{StaticResource MaterialDesignPaperButton}" />
+                        </StackPanel>
+
+                    </DockPanel>
                 </TabItem>
             </TabControl>
         </Border>
