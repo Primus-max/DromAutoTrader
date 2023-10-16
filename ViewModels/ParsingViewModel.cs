@@ -8,7 +8,7 @@ namespace DromAutoTrader.ViewModels
 {
     internal class ParsingViewModel : BaseViewModel
     {
-        private string? _rootPathDirectory = "brand_images";
+
         public List<string>? PathsFilePrices { get; private set; }
         public List<string>? Prices { get; private set; }
 
@@ -40,7 +40,7 @@ namespace DromAutoTrader.ViewModels
 
         #region Методы
         // Метод-точка входа в парсинг
-        private void  RunPars()
+        private void RunPars()
         {
             if (PathsFilePrices == null) return;
 
@@ -49,10 +49,10 @@ namespace DromAutoTrader.ViewModels
                 if (string.IsNullOrEmpty(path))
                     MessageBox.Show("Для начала работы необходимо выбрать прайс");
 
-                PriceList prices =  ProcessPrice(path);
+                PriceList prices = ProcessPrice(path);
 
-                if (prices == null) return;              
-               
+                if (prices == null) return;
+
 
                 // Имя файла
                 string fileName = Path.GetFileNameWithoutExtension(path);
@@ -63,9 +63,9 @@ namespace DromAutoTrader.ViewModels
                     string? articul = price.Artikul;
 
                     FolderManager folderManager = new FolderManager();
-                    folderManager.EnsureFolderStructure(_rootPathDirectory, brand, articul);
+                    folderManager.EnsureFolderStructure( brand, articul);
 
-                    bool IsContainsFiles = folderManager.ArticulFolderContainsFiles(_rootPathDirectory, brand, articul);
+                    bool IsContainsFiles = folderManager.ArticulFolderContainsFiles( brand, articul);
                     if (IsContainsFiles) continue;
 
                     // TODO здесь запускаю парсинг по разным сервисам
@@ -78,7 +78,7 @@ namespace DromAutoTrader.ViewModels
         }
 
         // Метод парсинга файла excel
-        public  PriceList ProcessPrice(string pathToFile)
+        public PriceList ProcessPrice(string pathToFile)
         {
             PriceProcessor priceProcessor = new();
 
@@ -93,7 +93,7 @@ namespace DromAutoTrader.ViewModels
 
                 // Перебросить исключение для обработки в вызывающем коде, если это необходимо
                 throw;
-            }            
+            }
         }
 
         private void GetSelectedFilePaths()

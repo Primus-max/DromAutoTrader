@@ -17,8 +17,9 @@ namespace DromAutoTrader.ImageServices
         public string? Articul { get; set; }
         public List<string>? BrandImages { get; set; }
 
+        private string? _imagesLocalPath = string.Empty;
         private string? _loginPageUrl = "https://berg.ru/login";
-        private string ? _searchPageUrl = "https://berg.ru/search/step2?search=AG19166&brand=TRIALLI&withRedirect=1";
+        private string? _searchPageUrl = "https://berg.ru/search/step2?search=AG19166&brand=TRIALLI&withRedirect=1";
         private string? _userName = "autobest038";
         private string? _password = "dimonfutboll";
 
@@ -32,8 +33,6 @@ namespace DromAutoTrader.ImageServices
 
             UndetectDriver webDriver = new();
             _driver = webDriver.GetDriver();
-
-
         }
 
         #region Методы
@@ -46,8 +45,11 @@ namespace DromAutoTrader.ImageServices
             Authorization();
 
             SetArticulInSearchInput();
+
+            OpenSearchedCard();
         }
 
+        // Метод авторизации
         public void Authorization()
         {
             try
@@ -85,7 +87,8 @@ namespace DromAutoTrader.ImageServices
             catch (Exception ex)
             {
                 // TODO сделать логирование
-                string message = $"Произошла ошибка {ex.Message}";
+                string message = $"Произошла ошибка в методе Authorization: {ex.Message}";
+                Console.WriteLine(message);
             }
         }
 
@@ -94,13 +97,57 @@ namespace DromAutoTrader.ImageServices
             throw new NotImplementedException();
         }
 
+        // Метод отправки поискового запроса
         public void SetArticulInSearchInput()
         {
-            string? searchUrl =  BuildeUrl();
+            string? searchUrl = BuildeUrl();
 
             _driver.Navigate().GoToUrl(searchUrl);
-           
         }
+
+        // Метод открытия каротчки с полученным запросом
+        private void OpenSearchedCard()
+        {
+            try
+            {
+                IWebElement searchedCard = _driver.FindElement(By.ClassName("search_result__row first_row"));
+
+                searchedCard.Click();
+            }
+            catch (Exception ex)
+            {
+                string message = $"Произошла ошибка в методе GetSearchedCard: {ex.Message}";
+                Console.WriteLine(message);
+            }
+        }
+
+        // Метод сбора картинок из открытой карточки
+        private void GetImages()
+        {
+            List<string> images = new List<string>();
+            IWebElement mainImageParentDiv = null!;
+
+            // Получаю контейнер с картинками
+            try
+            {
+                mainImageParentDiv = _driver.FindElement(By.ClassName("photo_gallery"));
+            }
+            catch (Exception) { }
+
+            // Получаю картинку preview
+            try
+            {
+                IWebElement imagePreview = mainImageParentDiv.FindElement(By.ClassName("preview_img__container"));
+                string imagePath = imagePreview.GetAttribute("href");
+                images.Add(imagePath);
+            }
+            catch (Exception) { }
+
+            FolderManager folderManager = new FolderManager();
+            folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul);
+
+        }
+
 
         // Метод отчистки полей и вставки текста
         private static void ClearAndEnterText(IWebElement element, string text)

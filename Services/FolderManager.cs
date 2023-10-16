@@ -8,6 +8,8 @@ namespace DromAutoTrader.Services
     /// </summary>
     public class FolderManager
     {
+        private string? _rootPathDirectory = "brand_images";
+
         /// <summary>
         /// Метод проверки существования или создания директорий: 
         /// 1. корневая директория - brand_images
@@ -17,9 +19,9 @@ namespace DromAutoTrader.Services
         /// <param name="rootPath">Путь к корневой директории.</param>
         /// <param name="brand">Название бренда.</param>
         /// <param name="articul">Название артикула.</param>
-        public void EnsureFolderStructure(string rootPath, string brand, string articul)
+        public void EnsureFolderStructure( string brand, string articul)
         {
-            string brandImagesPath = Path.Combine(rootPath, "brand_images");
+            string brandImagesPath = Path.Combine(_rootPathDirectory);
 
             if (!Directory.Exists(brandImagesPath))
             {
@@ -48,9 +50,9 @@ namespace DromAutoTrader.Services
         /// <param name="brand"></param>
         /// <param name="articul"></param>
         /// <returns>bool IsFolderContainsFiles</returns>        
-        public bool ArticulFolderContainsFiles(string rootPath, string brand, string articul)
+        public bool ArticulFolderContainsFiles(string brand, string articul)
         {
-            string articulPath = Path.Combine(rootPath, "brand_images", brand, articul);
+            string articulPath = Path.Combine(_rootPathDirectory, brand, articul);
 
             if (Directory.Exists(articulPath))
             {
