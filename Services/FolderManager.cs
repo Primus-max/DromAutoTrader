@@ -62,5 +62,34 @@ namespace DromAutoTrader.Services
 
             return false;
         }
+
+        /// <summary>
+        /// Метод имеет две перегрузки, возвращает значение bool и директорию к изображениям, в зависимости от флага
+        /// </summary>
+        /// <param name="brand"></param>
+        /// <param name="articul"></param>
+        /// <param name="folderPath"></param>
+        /// <param name="returnPath"></param>
+        /// <returns>bool</returns>
+        /// <returns>filePath</returns>
+        public bool ArticulFolderContainsFiles(string brand, string articul, out string folderPath)
+        {
+            string articulPath = Path.Combine(_rootPathDirectory, brand, articul);
+
+            if (Directory.Exists(articulPath))
+            {
+                string[] files = Directory.GetFiles(articulPath);
+                folderPath = articulPath;
+
+                if (files.Length > 0)
+                {
+                    return true;
+                }
+            }
+
+            folderPath = null;
+            return false;
+        }
+
     }
 }

@@ -144,7 +144,7 @@ namespace DromAutoTrader.ImageServices
             catch (Exception) { }
 
             FolderManager folderManager = new FolderManager();
-            folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul);
+            folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
 
         }
 
