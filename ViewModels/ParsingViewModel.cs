@@ -1,4 +1,5 @@
-﻿using DromAutoTrader.Prices;
+﻿using DromAutoTrader.ImageServices;
+using DromAutoTrader.Prices;
 using DromAutoTrader.Services;
 using Microsoft.Win32;
 using System.IO;
@@ -68,6 +69,10 @@ namespace DromAutoTrader.ViewModels
                     if (IsContainsFiles) continue;
 
                     // TODO здесь запускаю парсинг по разным сервисам
+
+                    BergImageService bergImageService = new(brand, articul);
+
+                    bergImageService.Run();
                 }
             }
         }

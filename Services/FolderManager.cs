@@ -14,9 +14,9 @@ namespace DromAutoTrader.Services
         /// 2. директория в brand_images/ с брэндом - brandName
         /// 3. директория в  brand_images/brandName с именем артикула - articulName
         /// </summary>
-        /// <param name="rootPath"></param>
-        /// <param name="brand"></param>
-        /// <param name="articul"></param>
+        /// <param name="rootPath">Путь к корневой директории.</param>
+        /// <param name="brand">Название бренда.</param>
+        /// <param name="articul">Название артикула.</param>
         public void EnsureFolderStructure(string rootPath, string brand, string articul)
         {
             string brandImagesPath = Path.Combine(rootPath, "brand_images");

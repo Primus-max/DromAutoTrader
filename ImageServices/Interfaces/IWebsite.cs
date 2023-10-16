@@ -34,11 +34,9 @@ namespace DromAutoTrader.ImageServices.Interfaces
        
         /// <summary>
         /// Метод авторизации на сайте
-        /// </summary>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
+        /// </summary>        
         /// <exception cref="NoSuchElementException"></exception>
-        void Authorization(string username, string password);
+        void Authorization();
 
         /// <summary>
         /// Метод получает и возвращает строку поиска по артикулу
@@ -48,10 +46,7 @@ namespace DromAutoTrader.ImageServices.Interfaces
 
         /// <summary>
         /// Метод ввода артикула в строку поиска и отправки запроса (перед вводом поле очищается)
-        /// </summary>
-        /// <param name="articul"></param>
-        void SetArticulInSearchInput(string articul);    
-        
-
+        /// </summary>        
+        void SetArticulInSearchInput();  
     }
 }
