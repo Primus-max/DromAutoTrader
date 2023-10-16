@@ -44,26 +44,6 @@ namespace DromAutoTrader.Services
         }
 
         /// <summary>
-        /// Метод проверки наличия файлов в директории с имненем артикула:  
-        /// </summary>
-        /// <param name="rootPath"></param>
-        /// <param name="brand"></param>
-        /// <param name="articul"></param>
-        /// <returns>bool IsFolderContainsFiles</returns>        
-        public bool ArticulFolderContainsFiles(string brand, string articul)
-        {
-            string articulPath = Path.Combine(_rootPathDirectory, brand, articul);
-
-            if (Directory.Exists(articulPath))
-            {
-                string[] files = Directory.GetFiles(articulPath);
-                return files.Length > 0;
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// Метод имеет две перегрузки, возвращает значение bool и директорию к изображениям, в зависимости от флага
         /// </summary>
         /// <param name="brand"></param>
@@ -90,6 +70,14 @@ namespace DromAutoTrader.Services
             folderPath = null;
             return false;
         }
+
+        public bool ArticulFolderContainsFiles(string brand, string articul)
+        {
+            string folderPath; // В этой версии метода не нужно передавать folderPath
+
+            return ArticulFolderContainsFiles(brand, articul, out folderPath);
+        }
+
 
     }
 }

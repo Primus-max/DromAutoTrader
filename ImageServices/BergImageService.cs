@@ -47,6 +47,8 @@ namespace DromAutoTrader.ImageServices
             SetArticulInSearchInput();
 
             OpenSearchedCard();
+
+            GetImages();
         }
 
         // Метод авторизации
@@ -100,7 +102,7 @@ namespace DromAutoTrader.ImageServices
         // Метод отправки поискового запроса
         public void SetArticulInSearchInput()
         {
-            string? searchUrl = BuildeUrl();
+            string? searchUrl = BuildUrl();
 
             _driver.Navigate().GoToUrl(searchUrl);
         }
@@ -143,11 +145,26 @@ namespace DromAutoTrader.ImageServices
             }
             catch (Exception) { }
 
+            // Получаю все картинки thumbs
+            try
+            {
+                // Находим все img элементы в li элементах с data-type='thumb'
+                IList<IWebElement> imagesThumb = mainImageParentDiv.FindElements(By.XPath("//li[@data-type='thumb']/img"));
+
+                foreach (var image in imagesThumb)
+                {
+                    string imagePath = image.GetAttribute("src");
+                    images.Add(imagePath);
+                }   
+            }
+            catch (Exception) { }
+
+            // Проверяю создан ли путь для хранения картинок
             FolderManager folderManager = new FolderManager();
             folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
 
-        }
 
+        }
 
         // Метод отчистки полей и вставки текста
         private static void ClearAndEnterText(IWebElement element, string text)
@@ -180,7 +197,7 @@ namespace DromAutoTrader.ImageServices
         }
 
         // Метод для формирования Url поискового запроса
-        public string BuildeUrl()
+        public string BuildUrl()
         {
             var uri = new Uri(_searchPageUrl);
             var query = HttpUtility.ParseQueryString(uri.Query);
