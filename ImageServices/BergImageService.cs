@@ -58,11 +58,20 @@ namespace DromAutoTrader.ImageServices
 
             SetArticulInSearchInput();
 
+            if (IsNotMatchingArticul())
+                return;
+
             OpenSearchedCard();
 
             // Ожидание загрузки картинок и их получения
             if (IsImagesVisible())
+            {
                 BrandImages = await GetImages();
+            }
+            else
+            {
+                BrandImages = null;
+            }
         }
 
         // Метод авторизации
@@ -150,7 +159,7 @@ namespace DromAutoTrader.ImageServices
             bool isVisible = false;
             int tryCount = 0;
 
-            while (!false || tryCount > 100)
+            while (!false)
             {
                 try
                 {
@@ -163,11 +172,36 @@ namespace DromAutoTrader.ImageServices
                 catch (Exception)
                 {
                     tryCount++;
+
+                    if (tryCount == 20)
+                    {
+                        break;
+                    }
+
                     Thread.Sleep(500);
+
                     continue;
                 }
             }
             return isVisible;
+        }
+
+        // Метод проверки результатов поиска детали
+        private bool IsNotMatchingArticul()
+        {
+            bool isNotMatchingArticul = false;
+            try
+            {
+                IWebElement attentionMessage = _driver.FindElement(By.ClassName("attention_message"));
+
+                // Если получили этот элемент значит по запросу ничего не найдено
+                return true;
+
+            }
+            catch (Exception)
+            {
+                return isNotMatchingArticul;
+            }
         }
 
         // Метод сбора картинок из открытой карточки
@@ -186,17 +220,6 @@ namespace DromAutoTrader.ImageServices
                 mainImageParentDiv = _driver.FindElement(By.ClassName("photo_gallery"));
             }
             catch (Exception) { }
-
-            // Получаю картинку preview
-            try
-            {
-                IWebElement imagePreview = mainImageParentDiv.FindElement(By.ClassName("preview_img__container"));
-                string imagePath = imagePreview.GetAttribute("href");
-                images.Add(imagePath);
-            }
-            catch (Exception)
-            {
-            }
 
             // Получаю все картинки thumbs
             try
