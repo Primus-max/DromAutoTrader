@@ -66,8 +66,7 @@ namespace DromAutoTrader.Services
                     return true;
                 }
             }
-
-            folderPath = null;
+            folderPath = articulPath;
             return false;
         }
 

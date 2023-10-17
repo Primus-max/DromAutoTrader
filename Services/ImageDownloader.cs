@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using OpenQA.Selenium;
+using System.IO;
+using System.Net;
 using System.Net.Http;
 
 namespace DromAutoTrader.Services
@@ -10,13 +12,13 @@ namespace DromAutoTrader.Services
     {
         private string? _articul = string.Empty;
         private string? _downloadDirectory = string.Empty;
-        private List<string> _imageUrls = null!;
+        private List<string> _imageUrls = null!;      
 
         public ImageDownloader(string articul, string downloadDirectory, List<string> imageUrls) 
         {
             _articul = articul;
             _downloadDirectory = downloadDirectory;
-            _imageUrls = imageUrls;
+            _imageUrls = imageUrls;           
         }
 
         /// <summary>
@@ -36,13 +38,10 @@ namespace DromAutoTrader.Services
                     string fileName = $"{_articul}_{i:00}.jpg";
                     string localFilePath = Path.Combine(_downloadDirectory, fileName);
 
-                    using (HttpClient client = new HttpClient())
+                    using (WebClient client = new WebClient())
                     {
-                        byte[] imageBytes = await client.GetByteArrayAsync(imageUrl);
-                        File.WriteAllBytes(localFilePath, imageBytes);
+                        client.DownloadFile(imageUrl, localFilePath);
                     }
-
-                    Console.WriteLine($"Изображение {fileName} успешно скачано и сохранено в {localFilePath}");
                 }
             }
             catch (Exception ex)

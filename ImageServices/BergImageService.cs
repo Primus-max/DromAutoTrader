@@ -2,6 +2,7 @@
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
+using System.Net;
 using System.Threading;
 using System.Web;
 
@@ -17,9 +18,8 @@ namespace DromAutoTrader.ImageServices
         public string? Brand { get; set; }
         public string? Articul { get; set; }
         public List<string>? BrandImages { get; set; }
-
-        private string? _mainWindowHandle = string.Empty;
-        private string? _imagesLocalPath = string.Empty;
+                
+        public string? ImagesLocalPath = string.Empty;
         private string? _loginPageUrl = "https://berg.ru/login";
         private string? _searchPageUrl = "https://berg.ru/search/step2?search=AG19166&brand=TRIALLI&withRedirect=1";
         private string? _userName = "autobest038";
@@ -43,7 +43,7 @@ namespace DromAutoTrader.ImageServices
         {
             _driver.Manage().Window.Maximize();
             _driver.Navigate().GoToUrl(_loginPageUrl);
-            
+
             // Закрываю окно с предложением получения уведомлений
             Thread.Sleep(500);
             //ClosePermissionRequestPopup();
@@ -51,9 +51,10 @@ namespace DromAutoTrader.ImageServices
             Authorization();
 
             SetArticulInSearchInput();
-            
+
             OpenSearchedCard();
 
+            // TODO сделать ожидание, popup  с картинками может долго грузиться. Надо ожидать
             GetImages();
         }
 
@@ -72,19 +73,18 @@ namespace DromAutoTrader.ImageServices
                            .SendKeys(_userName)
                            .Build()
                            .Perform();
+
+                    Thread.Sleep(500);
                 }
                 catch (Exception) { }
 
                 try
                 {
-                    IWebElement passInput = _driver.FindElement(By.Id("password"));                    
-                    Actions builder = new Actions(_driver);
+                    IWebElement passInput = _driver.FindElement(By.Id("password"));
 
-                    builder.MoveToElement(passInput)
-                           .Click()
-                           .SendKeys(_userName)
-                           .Build()
-                           .Perform();
+                    Thread.Sleep(200);
+                    //ClearAndEnterText(passInput, _password);
+                    passInput.SendKeys(_password);
                 }
                 catch (Exception) { }
 
@@ -121,12 +121,14 @@ namespace DromAutoTrader.ImageServices
 
         // Метод открытия каротчки с полученным запросом
         private void OpenSearchedCard()
-        {
+        {             
             try
             {
                 IWebElement searchedCard = _driver.FindElement(By.CssSelector(".search_result__row.first_row"));
+                IWebElement searchCardLink = searchedCard.FindElement(By.CssSelector(".pseudo_link.part_description__link"));
 
-                searchedCard.Click();
+                IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
+                js.ExecuteScript("arguments[0].click();", searchCardLink);
             }
             catch (Exception ex)
             {
@@ -147,7 +149,7 @@ namespace DromAutoTrader.ImageServices
                 mainImageParentDiv = _driver.FindElement(By.ClassName("photo_gallery"));
             }
             catch (Exception) { }
-
+                        
             // Получаю картинку preview
             try
             {
@@ -167,17 +169,18 @@ namespace DromAutoTrader.ImageServices
                 {
                     string imagePath = image.GetAttribute("src");
                     images.Add(imagePath);
-                }   
+                }
             }
             catch (Exception) { }
 
             // Проверяю создан ли путь для хранения картинок
             FolderManager folderManager = new FolderManager();
-            folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
+            folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out ImagesLocalPath);
+                       
 
             // Скачиваю изображения
-            ImageDownloader? downloader = new ImageDownloader(Articul, _imagesLocalPath, images);
-           await downloader.DownloadImagesAsync();
+            ImageDownloader? downloader = new(Articul, ImagesLocalPath, images);
+            await downloader.DownloadImagesAsync();
         }
 
         // Метод отчистки полей и вставки текста
@@ -224,38 +227,7 @@ namespace DromAutoTrader.ImageServices
             return newUrl;
         }
 
-        // Метод закрывающий всплывающее окно с предложением о получении уведомлений с сайта
-        public void ClosePermissionRequestPopup()
-        {
-            try
-            {
-                // Получите список всех открытых окон (хэндлы)
-                var windowHandles = _driver.WindowHandles;
-
-                // Переключитесь на каждое окно и проверьте, является ли оно всплывающим
-                foreach (var windowHandle in windowHandles)
-                {
-                    if (windowHandle != _mainWindowHandle)
-                    {
-                        _driver.SwitchTo().Window(windowHandle);
-                        Console.WriteLine("Переключено на всплывающее окно.");
-
-                        // Ваши действия на всплывающем окне здесь
-
-                        // Закрыть всплывающее окно
-                        _driver.Close();
-                    }
-                }
-
-                // Переключитесь обратно на главное окно
-                _driver.SwitchTo().Window(_mainWindowHandle);
-                Console.WriteLine("Возвращено на главное окно.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка: {ex.Message}");
-            }
-        }
+        
         #endregion
 
     }

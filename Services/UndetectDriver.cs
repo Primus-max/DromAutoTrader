@@ -1,4 +1,5 @@
 ﻿using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 using SeleniumUndetectedChromeDriver;
 
 namespace DromAutoTrader.Services
@@ -16,7 +17,10 @@ namespace DromAutoTrader.Services
         /// <returns>IWebDriver</returns>
         public  IWebDriver GetDriver()
         {
-            var driver = UndetectedChromeDriver.Create(driverExecutablePath: "chromedriver.exe");
+            ChromeOptions options = new ChromeOptions();
+            options.AddArgument("--disable-notifications");
+
+            var driver = UndetectedChromeDriver.Create(options: options, driverExecutablePath: "chromedriver.exe");
 
             return driver;
         }
