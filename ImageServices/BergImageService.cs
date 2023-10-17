@@ -1,6 +1,7 @@
 ﻿using DromAutoTrader.ImageServices.Interfaces;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using System.Threading;
 using System.Web;
 
@@ -17,6 +18,7 @@ namespace DromAutoTrader.ImageServices
         public string? Articul { get; set; }
         public List<string>? BrandImages { get; set; }
 
+        private string? _mainWindowHandle = string.Empty;
         private string? _imagesLocalPath = string.Empty;
         private string? _loginPageUrl = "https://berg.ru/login";
         private string? _searchPageUrl = "https://berg.ru/search/step2?search=AG19166&brand=TRIALLI&withRedirect=1";
@@ -41,11 +43,15 @@ namespace DromAutoTrader.ImageServices
         {
             _driver.Manage().Window.Maximize();
             _driver.Navigate().GoToUrl(_loginPageUrl);
+            
+            // Закрываю окно с предложением получения уведомлений
+            Thread.Sleep(500);
+            //ClosePermissionRequestPopup();
 
             Authorization();
 
             SetArticulInSearchInput();
-
+            
             OpenSearchedCard();
 
             GetImages();
@@ -59,20 +65,26 @@ namespace DromAutoTrader.ImageServices
                 try
                 {
                     IWebElement logInput = _driver.FindElement(By.Id("username"));
+                    Actions builder = new Actions(_driver);
 
-                    logInput.SendKeys(_userName);
-
-                    Thread.Sleep(200);
+                    builder.MoveToElement(logInput)
+                           .Click()
+                           .SendKeys(_userName)
+                           .Build()
+                           .Perform();
                 }
                 catch (Exception) { }
 
                 try
                 {
-                    IWebElement passInput = _driver.FindElement(By.Id("password"));
+                    IWebElement passInput = _driver.FindElement(By.Id("password"));                    
+                    Actions builder = new Actions(_driver);
 
-                    passInput.SendKeys(_password);
-
-                    Thread.Sleep(200);
+                    builder.MoveToElement(passInput)
+                           .Click()
+                           .SendKeys(_userName)
+                           .Build()
+                           .Perform();
                 }
                 catch (Exception) { }
 
@@ -112,7 +124,7 @@ namespace DromAutoTrader.ImageServices
         {
             try
             {
-                IWebElement searchedCard = _driver.FindElement(By.ClassName("search_result__row first_row"));
+                IWebElement searchedCard = _driver.FindElement(By.CssSelector(".search_result__row.first_row"));
 
                 searchedCard.Click();
             }
@@ -124,7 +136,7 @@ namespace DromAutoTrader.ImageServices
         }
 
         // Метод сбора картинок из открытой карточки
-        private void GetImages()
+        private async void GetImages()
         {
             List<string> images = new List<string>();
             IWebElement mainImageParentDiv = null!;
@@ -163,7 +175,9 @@ namespace DromAutoTrader.ImageServices
             FolderManager folderManager = new FolderManager();
             folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
 
-
+            // Скачиваю изображения
+            ImageDownloader? downloader = new ImageDownloader(Articul, _imagesLocalPath, images);
+           await downloader.DownloadImagesAsync();
         }
 
         // Метод отчистки полей и вставки текста
@@ -208,6 +222,39 @@ namespace DromAutoTrader.ImageServices
             string newUrl = uri.GetLeftPart(UriPartial.Path) + "?" + query.ToString();
 
             return newUrl;
+        }
+
+        // Метод закрывающий всплывающее окно с предложением о получении уведомлений с сайта
+        public void ClosePermissionRequestPopup()
+        {
+            try
+            {
+                // Получите список всех открытых окон (хэндлы)
+                var windowHandles = _driver.WindowHandles;
+
+                // Переключитесь на каждое окно и проверьте, является ли оно всплывающим
+                foreach (var windowHandle in windowHandles)
+                {
+                    if (windowHandle != _mainWindowHandle)
+                    {
+                        _driver.SwitchTo().Window(windowHandle);
+                        Console.WriteLine("Переключено на всплывающее окно.");
+
+                        // Ваши действия на всплывающем окне здесь
+
+                        // Закрыть всплывающее окно
+                        _driver.Close();
+                    }
+                }
+
+                // Переключитесь обратно на главное окно
+                _driver.SwitchTo().Window(_mainWindowHandle);
+                Console.WriteLine("Возвращено на главное окно.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка: {ex.Message}");
+            }
         }
         #endregion
 
