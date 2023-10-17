@@ -41,7 +41,7 @@ namespace DromAutoTrader.ViewModels
 
         #region Методы
         // Метод-точка входа в парсинг
-        private void RunPars()
+        private async void RunPars()
         {
             if (PathsFilePrices == null) return;
 
@@ -59,7 +59,7 @@ namespace DromAutoTrader.ViewModels
                 string fileName = Path.GetFileNameWithoutExtension(path);
 
                 BergImageService bergImageService = new();
-
+              
                 foreach (var price in prices)
                 {
                     string? brand = price.Brand;
@@ -74,7 +74,8 @@ namespace DromAutoTrader.ViewModels
                     // TODO здесь запускаю парсинг по разным сервисам
 
                     
-                    bergImageService.Run(brand, articul);
+                  await  bergImageService.RunAsync(brand, articul);
+                  var testImages =  bergImageService.BrandImages;
                 }
             }
         }

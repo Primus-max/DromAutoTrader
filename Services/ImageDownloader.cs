@@ -28,8 +28,10 @@ namespace DromAutoTrader.Services
         /// <param name="downloadDirectory"></param>
         /// <param name="imageUrls"></param>
         /// <returns>Результат сохраняет в downloadDirectory</returns>
-        public async Task DownloadImagesAsync()
+        public async Task<List<string>> DownloadImagesAsync()
         {
+            List<string> downloadedImagePaths = new List<string>();
+
             try
             {
                 for (int i = 0; i < _imageUrls.Count; i++)
@@ -41,6 +43,7 @@ namespace DromAutoTrader.Services
                     using (WebClient client = new WebClient())
                     {
                         client.DownloadFile(imageUrl, localFilePath);
+                        downloadedImagePaths.Add(localFilePath); // Добавляем путь к скачанному файлу в список
                     }
                 }
             }
@@ -48,7 +51,10 @@ namespace DromAutoTrader.Services
             {
                 Console.WriteLine($"Ошибка: {ex.Message}");
             }
+
+            return downloadedImagePaths;
         }
+
     }
 }
 

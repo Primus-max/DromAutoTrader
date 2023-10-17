@@ -2,7 +2,6 @@
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
-using System.Net;
 using System.Threading;
 using System.Web;
 
@@ -18,7 +17,9 @@ namespace DromAutoTrader.ImageServices
         public string? Brand { get; set; }
         public string? Articul { get; set; }
         public List<string>? BrandImages { get; set; }
-                
+
+
+        private bool IsFirstRunning = true;
         public string? ImagesLocalPath = string.Empty;
         private string? _loginPageUrl = "https://berg.ru/login";
         private string? _searchPageUrl = "https://berg.ru/search/step2?search=AG19166&brand=TRIALLI&withRedirect=1";
@@ -29,34 +30,39 @@ namespace DromAutoTrader.ImageServices
 
 
         public BergImageService()
-        {            
+        {
             UndetectDriver webDriver = new();
             _driver = webDriver.GetDriver();
         }
 
         #region Методы
         // Метод-точка вход 
-        public void Run(string brandName, string articul)
+        public async Task RunAsync(string brandName, string articul)
         {
             Brand = brandName;
             Articul = articul;
 
-            _driver.Manage().Window.Maximize();
-            _driver.Navigate().GoToUrl(_loginPageUrl);
+            if (IsFirstRunning)
+            {
+                IsFirstRunning = false;
 
-            // Закрываю окно с предложением получения уведомлений
-            Thread.Sleep(500);
-            //ClosePermissionRequestPopup();
+                _driver.Manage().Window.Maximize();
+                _driver.Navigate().GoToUrl(_loginPageUrl);
 
-            Authorization();
+                // Закрываю окно с предложением получения уведомлений
+                Thread.Sleep(500);
+                //ClosePermissionRequestPopup();
+
+                Authorization();
+            }
 
             SetArticulInSearchInput();
 
             OpenSearchedCard();
 
             // Ожидание загрузки картинок и их получения
-            if(IsImagesVisible())
-                GetImages();
+            if (IsImagesVisible())
+                BrandImages = await GetImages();
         }
 
         // Метод авторизации
@@ -122,7 +128,7 @@ namespace DromAutoTrader.ImageServices
 
         // Метод открытия каротчки с полученным запросом
         private void OpenSearchedCard()
-        {             
+        {
             try
             {
                 IWebElement searchedCard = _driver.FindElement(By.CssSelector(".search_result__row.first_row"));
@@ -139,7 +145,7 @@ namespace DromAutoTrader.ImageServices
         }
 
         // Метод проверки, появились картинки или нет
-        private bool IsImagesVisible() 
+        private bool IsImagesVisible()
         {
             bool isVisible = false;
             int tryCount = 0;
@@ -158,15 +164,19 @@ namespace DromAutoTrader.ImageServices
                 {
                     tryCount++;
                     Thread.Sleep(500);
-                    continue;                    
+                    continue;
                 }
-            }           
-          return isVisible;
+            }
+            return isVisible;
         }
 
         // Метод сбора картинок из открытой карточки
-        private async void GetImages()
+        private async Task<List<string>> GetImages()
         {
+            // Список изображений которые возвращаем из метода
+            List<string> downloadedImages = new List<string>();
+
+            // Временное хранилище изображений
             List<string> images = new List<string>();
             IWebElement mainImageParentDiv = null!;
 
@@ -176,7 +186,7 @@ namespace DromAutoTrader.ImageServices
                 mainImageParentDiv = _driver.FindElement(By.ClassName("photo_gallery"));
             }
             catch (Exception) { }
-                        
+
             // Получаю картинку preview
             try
             {
@@ -184,7 +194,7 @@ namespace DromAutoTrader.ImageServices
                 string imagePath = imagePreview.GetAttribute("href");
                 images.Add(imagePath);
             }
-            catch (Exception) 
+            catch (Exception)
             {
             }
 
@@ -205,11 +215,13 @@ namespace DromAutoTrader.ImageServices
             // Проверяю создан ли путь для хранения картинок
             FolderManager folderManager = new FolderManager();
             folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out ImagesLocalPath);
-                       
+
 
             // Скачиваю изображения
             ImageDownloader? downloader = new(Articul, ImagesLocalPath, images);
-            await downloader.DownloadImagesAsync();
+            downloadedImages = await downloader.DownloadImagesAsync();
+
+            return downloadedImages;
         }
 
         // Метод отчистки полей и вставки текста
@@ -254,7 +266,7 @@ namespace DromAutoTrader.ImageServices
             string newUrl = uri.GetLeftPart(UriPartial.Path) + "?" + query.ToString();
 
             return newUrl;
-        }        
+        }
         #endregion
 
     }
