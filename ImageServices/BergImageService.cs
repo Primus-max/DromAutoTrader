@@ -54,8 +54,9 @@ namespace DromAutoTrader.ImageServices
 
             OpenSearchedCard();
 
-            // TODO сделать ожидание, popup  с картинками может долго грузиться. Надо ожидать
-            GetImages();
+            // Ожидание загрузки картинок и их получения
+            if(IsImagesVisible())
+                GetImages();
         }
 
         // Метод авторизации
@@ -137,6 +138,32 @@ namespace DromAutoTrader.ImageServices
             }
         }
 
+        // Метод проверки, появились картинки или нет
+        private bool IsImagesVisible() 
+        {
+            bool isVisible = false;
+            int tryCount = 0;
+
+            while (!false || tryCount > 100)
+            {
+                try
+                {
+                    IWebElement imagePreview = _driver.FindElement(By.ClassName("preview_img__container"));
+
+                    isVisible = imagePreview != null;
+
+                    return isVisible;
+                }
+                catch (Exception)
+                {
+                    tryCount++;
+                    Thread.Sleep(500);
+                    continue;                    
+                }
+            }           
+          return isVisible;
+        }
+
         // Метод сбора картинок из открытой карточки
         private async void GetImages()
         {
@@ -157,7 +184,9 @@ namespace DromAutoTrader.ImageServices
                 string imagePath = imagePreview.GetAttribute("href");
                 images.Add(imagePath);
             }
-            catch (Exception) { }
+            catch (Exception) 
+            {
+            }
 
             // Получаю все картинки thumbs
             try
@@ -225,9 +254,7 @@ namespace DromAutoTrader.ImageServices
             string newUrl = uri.GetLeftPart(UriPartial.Path) + "?" + query.ToString();
 
             return newUrl;
-        }
-
-        
+        }        
         #endregion
 
     }
