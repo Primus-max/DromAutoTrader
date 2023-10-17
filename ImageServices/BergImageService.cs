@@ -28,19 +28,19 @@ namespace DromAutoTrader.ImageServices
         private IWebDriver _driver = null!;
 
 
-        public BergImageService(string brandName, string articul)
-        {
-            Brand = brandName;
-            Articul = articul;
-
+        public BergImageService()
+        {            
             UndetectDriver webDriver = new();
             _driver = webDriver.GetDriver();
         }
 
         #region Методы
         // Метод-точка вход 
-        public void Run()
+        public void Run(string brandName, string articul)
         {
+            Brand = brandName;
+            Articul = articul;
+
             _driver.Manage().Window.Maximize();
             _driver.Navigate().GoToUrl(_loginPageUrl);
 

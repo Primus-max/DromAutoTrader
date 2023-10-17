@@ -1,4 +1,5 @@
 ﻿using DromAutoTrader.ImageServices;
+using DromAutoTrader.Models;
 using DromAutoTrader.Prices;
 using DromAutoTrader.Services;
 using Microsoft.Win32;
@@ -57,6 +58,8 @@ namespace DromAutoTrader.ViewModels
                 // Имя файла
                 string fileName = Path.GetFileNameWithoutExtension(path);
 
+                BergImageService bergImageService = new();
+
                 foreach (var price in prices)
                 {
                     string? brand = price.Brand;
@@ -70,9 +73,8 @@ namespace DromAutoTrader.ViewModels
 
                     // TODO здесь запускаю парсинг по разным сервисам
 
-                    BergImageService bergImageService = new(brand, articul);
-
-                    bergImageService.Run();
+                    
+                    bergImageService.Run(brand, articul);
                 }
             }
         }
