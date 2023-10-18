@@ -19,8 +19,16 @@ namespace DromAutoTrader.Services
         {
             ChromeOptions options = new ChromeOptions();
             options.AddArgument("--disable-notifications");
+            IWebDriver driver = null!;
 
-            var driver = UndetectedChromeDriver.Create(options: options, driverExecutablePath: "chromedriver.exe");
+            try
+            {
+                driver = UndetectedChromeDriver.Create(options: options, driverExecutablePath: "chromedriver.exe");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Не удалось получить драйвер, причина: {ex.Message}");
+            }
 
             return driver;
         }
