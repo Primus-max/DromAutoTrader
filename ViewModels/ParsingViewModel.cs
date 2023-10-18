@@ -1,5 +1,4 @@
 ﻿using DromAutoTrader.ImageServices;
-using DromAutoTrader.Models;
 using DromAutoTrader.Prices;
 using DromAutoTrader.Services;
 using Microsoft.Win32;
@@ -59,23 +58,23 @@ namespace DromAutoTrader.ViewModels
                 string fileName = Path.GetFileNameWithoutExtension(path);
 
                 BergImageService bergImageService = new();
-              
+
                 foreach (var price in prices)
                 {
                     string? brand = price.Brand;
                     string? articul = price.Artikul;
 
                     FolderManager folderManager = new FolderManager();
-                    folderManager.EnsureFolderStructure( brand, articul);
+                    folderManager.EnsureFolderStructure(brand, articul);
 
-                    bool IsContainsFiles = folderManager.ArticulFolderContainsFiles( brand, articul);
+                    bool IsContainsFiles = folderManager.ArticulFolderContainsFiles(brand, articul);
                     if (IsContainsFiles) continue;
 
                     // TODO здесь запускаю парсинг по разным сервисам
 
-                    
-                  await  bergImageService.RunAsync(brand, articul);
-                  var testImages =  bergImageService.BrandImages;
+
+                    await bergImageService.RunAsync(brand, articul);
+                    var testImages = bergImageService.BrandImages;
                 }
             }
         }

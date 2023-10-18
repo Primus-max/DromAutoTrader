@@ -20,7 +20,7 @@ namespace DromAutoTrader.ImageServices.Interfaces
         /// <summary>
         /// Название брэнда для которого получаем изображение(я)
         /// </summary>
-       internal string? Brand { get; set; }
+        string? Brand { get; set; }
 
         /// <summary>
         /// Артикул товара

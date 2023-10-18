@@ -9,6 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="DromManager\AngleSharp\**" />
+    <EmbeddedResource Remove="DromManager\AngleSharp\**" />
+    <None Remove="DromManager\AngleSharp\**" />
+    <Page Remove="DromManager\AngleSharp\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AngleSharp" Version="1.0.4" />
     <PackageReference Include="EPPlus" Version="6.2.9" />
     <PackageReference Include="MaterialDesignColors" Version="2.1.4" />
@@ -23,10 +30,6 @@
     <PackageReference Include="SQLite" Version="3.13.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
     <PackageReference Include="SQLiteNetExtensions" Version="2.1.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="DromManager\AngleSharp\" />
   </ItemGroup>
 
   <ItemGroup>
