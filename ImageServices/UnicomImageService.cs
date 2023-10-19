@@ -86,7 +86,18 @@ namespace DromAutoTrader.ImageServices
 
         protected override void SetArticulInSearchInput()
         {
-            throw new NotImplementedException();
+            try
+            {
+                // Найти поле для поиска
+                IWebElement searchField = _driver.FindElement(By.Id("m-header-search-l"));
+
+                // Ввести поисковый запрос
+                searchField.SendKeys(Articul);
+
+                // Нажать клавишу "Enter" для поиска
+                searchField.SendKeys(Keys.Enter);
+            }
+            catch (Exception) { }
         }
 
         protected override bool IsNotMatchingArticul()
@@ -118,21 +129,7 @@ namespace DromAutoTrader.ImageServices
 
         void SearchProduct(string searchTerm)
         {
-            try
-            {
-                // Найти поле для поиска
-                IWebElement searchField = _driver.FindElement(By.Id("m-header-search-l"));
 
-                // Ввести поисковый запрос
-                searchField.SendKeys(searchTerm);
-
-                // Нажать клавишу "Enter" для поиска
-                searchField.SendKeys(Keys.Enter);
-            }
-            catch (Exception)
-            {
-
-            }
         }
 
         void SelectProduct()
