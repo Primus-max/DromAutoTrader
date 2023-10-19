@@ -118,19 +118,61 @@ namespace DromAutoTrader.ImageServices
             }
         }
 
+        // Открываю карточку с изображениями
         protected override void OpenSearchedCard()
         {
             throw new NotImplementedException();
         }
 
+        // Метод проверки почвился ли блок с картинами и есть картинка для этого артикула
         protected override bool IsImagesVisible()
-        {
-            throw new NotImplementedException();
+        {            
+            try
+            {
+                // Получаем элемент-родитель если арткул найден
+                IWebElement divElement = _driver.FindElement(By.XPath("//h1[contains(text(),'Искомый товар')]/ancestor::div[not(@class)]"));
+                // Получаем в элементе-родителе этот элемент
+                IWebElement pictureNotFounfDiv = divElement.FindElement(By.ClassName("picture_not-found"));
+
+                // Если элемент получили, значит картинки нет и значит не получаем
+                return false;
+            }
+            catch (Exception)
+            {
+                // Если элемент не получили, значит картинка есть и мы можем её получать
+                return true;
+            }
         }
 
-        protected override Task<List<string>> GetImages()
+        protected override async Task<List<string>> GetImages()
         {
-            throw new NotImplementedException();
+            // Список изображений которые возвращаем из метода
+            List<string> downloadedImages = new List<string>();
+
+            // Временное хранилище изображений
+            List<string> images = new List<string>();
+
+            try
+            {                
+                // Получаем изображение
+                var imageUrl = _driver.FindElement(By.XPath("//div[not(@class)]/h1[contains(text(),'Искомый товар')]/following-sibling::a/img")).GetAttribute("src");
+
+                if (!string.IsNullOrEmpty(imageUrl))
+                    images.Add(imageUrl);
+
+            }
+            catch (Exception) { }
+
+            // Проверяю создан ли путь для хранения картинок
+            FolderManager folderManager = new();
+            folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
+
+
+            // Скачиваю изображения
+            ImageDownloader? downloader = new(Articul, _imagesLocalPath, images);
+            downloadedImages = await downloader.DownloadImagesAsync();
+
+            return downloadedImages;
         }
         #endregion
 

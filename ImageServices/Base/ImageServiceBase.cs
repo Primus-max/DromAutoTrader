@@ -63,7 +63,6 @@ namespace DromAutoTrader.ImageServices.Base
 
             OpenSearchedCard();
 
-            // Ожидание загрузки картинок и их получение
             if (IsImagesVisible())
             {
                 BrandImages = await GetImages();
