@@ -1,0 +1,75 @@
+﻿<Window
+    x:Class="DromAutoTrader.Views.Windows.AddBrandsToChannelaWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:DromAutoTrader.ViewModels"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="AddBrandsToChannelaWindow"
+    Width="400"
+    Height="600"
+    Background="{DynamicResource MaterialDesignPaper}"
+    FontFamily="{DynamicResource MaterialDesignFont}"
+    Loaded="Window_Loaded"
+    mc:Ignorable="d">
+    <Window.DataContext>
+        <local:AddBrandsToChannelaWindowViewModel />
+    </Window.DataContext>
+    <Grid>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="108*" />
+                <RowDefinition Height="13*" />
+            </Grid.RowDefinitions>
+            <DockPanel Grid.Row="0">
+                <DockPanel.Resources>
+                    <CollectionViewSource
+                        x:Key="BrandsCollenctionViewSoiurce"
+                        Filter="BrandCollection_Filter"
+                        Source="{Binding Brands}" />
+                </DockPanel.Resources>
+                <TextBox
+                    x:Name="FilterSearchParameterTextBox"
+                    MinWidth="300"
+                    Margin="0"
+                    Padding="10"
+                    VerticalAlignment="Center"
+                    materialDesign:HintAssist.Hint="Поиск про брэнду"
+                    materialDesign:TextFieldAssist.DecorationVisibility="Visible"
+                    materialDesign:TextFieldAssist.HasFilledTextField="True"
+                    materialDesign:TextFieldAssist.HasLeadingIcon="True"
+                    materialDesign:TextFieldAssist.LeadingIcon="Search"
+                    Background="#727272"
+                    BorderThickness="0"
+                    DockPanel.Dock="Top"
+                    FontSize="16"
+                    TextChanged="FilterSearchParameterTextBox_TextChanged" />
+                <ListBox
+                    x:Name="BrandsListBox"
+                    DisplayMemberPath="Name"
+                    DockPanel.Dock="Top"
+                    ItemsSource="{Binding Source={StaticResource BrandsCollenctionViewSoiurce}}"
+                    Loaded="BrandsListBox_Loaded"
+                    SelectionMode="Multiple"
+                    VirtualizingPanel.IsVirtualizing="False" />
+            </DockPanel>
+            <StackPanel
+                Grid.Row="1"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <Button
+                    Width="Auto"
+                    Margin="10,0"
+                    Content="Отменить"
+                    Style="{StaticResource MaterialDesignPaperButton}" />
+                <Button
+                    Width="Auto"
+                    Margin="10,0"
+                    Click="AcceptButton_Click"
+                    Content="OK"
+                    Style="{StaticResource MaterialDesignOutlinedButton}" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

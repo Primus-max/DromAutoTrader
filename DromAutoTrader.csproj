@@ -9,6 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="DromManager\AngleSharp\**" />
+    <EmbeddedResource Remove="DromManager\AngleSharp\**" />
+    <None Remove="DromManager\AngleSharp\**" />
+    <Page Remove="DromManager\AngleSharp\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AngleSharp" Version="1.0.4" />
     <PackageReference Include="EPPlus" Version="6.2.9" />
     <PackageReference Include="MaterialDesignColors" Version="2.1.4" />
@@ -16,7 +23,9 @@
     <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.11" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Sdl.MultiSelectComboBox" Version="1.0.73" />
     <PackageReference Include="Selenium.Support" Version="4.13.1" />
+    <PackageReference Include="Selenium.UndetectedChromeDriver" Version="1.1.1" />
     <PackageReference Include="Selenium.WebDriver" Version="4.13.1" />
     <PackageReference Include="SQLite" Version="3.13.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
@@ -24,13 +33,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DromManager\AngleSharp\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="AdsPowerManager">
       <HintPath>..\libs\AdsPowerManager\bin\Debug\net6.0\AdsPowerManager.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="chromedriver.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
