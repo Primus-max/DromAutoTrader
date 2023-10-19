@@ -1,7 +1,8 @@
 ﻿using DromAutoTrader.ImageServices.Base;
-using DromAutoTrader.Models;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Support.UI;
 using System.Threading;
 
 namespace DromAutoTrader.ImageServices
@@ -23,20 +24,17 @@ namespace DromAutoTrader.ImageServices
         #region Приватный поля
         //private bool _isFirstRunning = true;
         public string? _imagesLocalPath = string.Empty;
-        protected IWebDriver _driver = null!;
-        protected string? _brand = string.Empty;
-        protected string? _articul = string.Empty;
+        protected IWebDriver _driver = null!;        
         #endregion
 
         #region Публичные поля        
-        protected string? Brand { get; set; }
+        //protected string? Brand { get; set; }
         //public string? Articul { get; set; }
-        public List<string>? BrandImages { get; set; }
+        //public List<string>? BrandImages { get; set; }
         #endregion
 
         public UnicomImageService()
         {
-            
             InitializeDriver();
         }
 
@@ -50,11 +48,12 @@ namespace DromAutoTrader.ImageServices
         }
 
         // Метод перехода по ссылке
-        protected override void GoTo(string brand, string articul)
+        protected override void GoTo()
         {
             string asd = Brand;
-            _brand = brand;
-            _articul = articul;
+            string dasd = Articul;
+            //_brand = brand;
+            //_articul = articul;
 
             _driver.Manage().Window.Maximize();
             _driver.Navigate().GoToUrl(LoginPageUrl);
@@ -96,14 +95,22 @@ namespace DromAutoTrader.ImageServices
         {
             try
             {
-                // Найти поле для поиска
+                // Ожидание загурзки страницы
+                WaitReadyStatePage();
+
+                Thread.Sleep(1000);
+                // Находим поле для ввода
                 IWebElement searchField = _driver.FindElement(By.Id("m-header-search-l"));
 
-                // Ввести поисковый запрос
-                searchField.SendKeys(_articul);
+                // Используем JavaScript, чтобы очистить поле
+                ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].value = '';", searchField);
 
-                // Нажать клавишу "Enter" для поиска
+                // Вводим новый текст
+                searchField.SendKeys(Articul);
+
+                // Нажимаем Enter
                 searchField.SendKeys(Keys.Enter);
+
             }
             catch (Exception) { }
         }
@@ -126,17 +133,15 @@ namespace DromAutoTrader.ImageServices
             }
         }
 
-        // Открываю карточку с изображениями
-        protected override void OpenSearchedCard()
-        {
-            throw new NotImplementedException();
-        }
+        // Открываю карточку с изображениями (в данном классе реализация не требуется)
+        protected override void OpenSearchedCard() { }
 
         // Метод проверки наличия изображения для дальнейшего получения
         protected override bool IsImagesVisible()
-        {            
+        {
             try
             {
+                Thread.Sleep(300);
                 // Получаем элемент-родитель если арткул найден
                 IWebElement divElement = _driver.FindElement(By.XPath("//h1[contains(text(),'Искомый товар')]/ancestor::div[not(@class)]"));
                 // Получаем в элементе-родителе этот элемент
@@ -162,12 +167,22 @@ namespace DromAutoTrader.ImageServices
             List<string> images = new();
 
             try
-            {                
+            {
+                Thread.Sleep(200);
                 // Получаем изображение
-                var imageUrl = _driver.FindElement(By.XPath("//div[not(@class)]/h1[contains(text(),'Искомый товар')]/following-sibling::a/img")).GetAttribute("src");
+                // Найти элемент h1 с текстом "Искомый товар"
+                var h1Element = _driver.FindElement(By.XPath("//h1[contains(text(),'Искомый товар')]"));
 
-                if (!string.IsNullOrEmpty(imageUrl))
-                    images.Add(imageUrl);
+                // Затем получить родительский элемент (div)
+                var parentDiv = h1Element.FindElement(By.XPath("./parent::div"));
+
+                // Теперь, используя родительский элемент, получить ссылку на изображение
+                var imageUrlElement = parentDiv.FindElement(By.ClassName("feip-productsList-photoCell-image"));
+
+                string imgUrl = imageUrlElement.GetAttribute("href");
+
+                if (!string.IsNullOrEmpty(imgUrl))
+                    images.Add(imgUrl);
 
             }
             catch (Exception) { }
@@ -177,11 +192,11 @@ namespace DromAutoTrader.ImageServices
 
             // Проверяю создан ли путь для хранения картинок
             FolderManager folderManager = new();
-            folderManager.ArticulFolderContainsFiles(brand: _brand, articul: _articul, out _imagesLocalPath);
+            folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
 
-
+            Thread.Sleep(1000);
             // Скачиваю изображения
-            ImageDownloader? downloader = new(_articul, _imagesLocalPath, images);
+            ImageDownloader? downloader = new(Articul, _imagesLocalPath, images);
             downloadedImages = await downloader.DownloadImagesAsync();
 
             return downloadedImages;
@@ -189,15 +204,7 @@ namespace DromAutoTrader.ImageServices
         #endregion
 
         #region Специфичные методы класса   
-        void PerformLogin(string username, string password)
-        {
-
-        }
-
-        void SearchProduct(string searchTerm)
-        {
-
-        }
+        
 
         void SelectProduct()
         {
@@ -211,7 +218,7 @@ namespace DromAutoTrader.ImageServices
             // Нажать на элемент, представляющий открытие изображения продукта
             IWebElement imageElement = _driver.FindElement(By.CssSelector(".uk-lightbox-toolbar-icon line:nth-child(2)"));
             imageElement.Click();
-        }
+        }        
 
         // Инициализация драйвера
         private void InitializeDriver()

@@ -1,6 +1,7 @@
 ﻿using DromAutoTrader.ImageServices.Interfaces;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,8 +25,7 @@ namespace DromAutoTrader.ImageServices.Base
         protected bool _isFirstRunning = true;
         protected string _imagesLocalPath = string.Empty;
         protected IWebDriver _driver = null!;
-        protected string? _brand = string.Empty;
-        protected string? _articul = string.Empty;
+        
         #endregion
 
         #region Публичные поля
@@ -36,20 +36,21 @@ namespace DromAutoTrader.ImageServices.Base
 
         public ImageServiceBase()
         {
-         
+            BrandImages = new List<string>();
         }
 
         #region Общие методы для наследников
         public async Task RunAsync(string brandName, string articul)
         {            
-            _brand = brandName;
-            _articul = articul;
+            Brand = brandName;
+            Articul = articul;
+            
 
             if (_isFirstRunning)
             {
                 _isFirstRunning = false;
 
-                GoTo(_brand, _articul);
+                GoTo();
 
                 // Закрывает окно с предложением получения уведомлений
                 Thread.Sleep(500);
@@ -73,18 +74,59 @@ namespace DromAutoTrader.ImageServices.Base
             {
                 BrandImages = null;
             }
-        }       
-        #endregion
-        
+        }
 
-        protected abstract void GoTo(string brand, string articul);
+        // Метод вставик текста с предварительной очисткой инпута (настраивается рандомная задержка для эмитации поведения человека)
+        public void ClearAndEnterText(IWebElement element, string text)
+        {
+            Random random = new Random();
+            // Используем JavaScriptExecutor для выполнения JavaScript-кода
+            IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)((IWrapsDriver)element).WrappedDriver;
+
+            // Очищаем поле ввода с помощью JavaScript
+            jsExecutor.ExecuteScript("arguments[0].value = '';", element);
+            // Установить стиль display элемента в block
+            jsExecutor.ExecuteScript("arguments[0].style.display = 'block';", element);
+            // Вставляем текст по одному символу без изменений
+            foreach (char letter in text)
+            {
+                if (letter == '\b')
+                {
+                    // Если символ является символом backspace, удаляем последний введенный символ
+                    element.SendKeys(Keys.Backspace);
+                }
+                else
+                {
+                    // Вводим символ
+                    element.SendKeys(letter.ToString());
+                }
+
+                Thread.Sleep(random.Next(50, 150));  // Добавляем небольшую паузу между вводом каждого символа
+            }
+            Thread.Sleep(random.Next(300, 700));
+        }
+
+        // Метод ожидания полной загрузки страницы
+        protected void WaitReadyStatePage()
+        {
+            IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(30));
+
+            // Ожидаем, пока загрузится страница
+            wait.Until(driver => (bool)js.ExecuteScript("return document.readyState == 'complete'"));
+        }
+
+        #endregion
+
+
+        protected abstract void GoTo();
         protected abstract void Authorization();
         protected abstract void SetArticulInSearchInput();
         protected abstract bool IsNotMatchingArticul();
         protected abstract void OpenSearchedCard();
         protected abstract bool IsImagesVisible();
         protected abstract Task<List<string>> GetImages();
-        
+         
 
         protected abstract void SpecificRunAsync(string brandName, string articul);
     }
