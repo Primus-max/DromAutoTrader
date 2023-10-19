@@ -34,11 +34,14 @@
 
   <ItemGroup>
     <Reference Include="AdsPowerManager">
-      <HintPath>..\libs\AdsPowerManager\bin\Debug\net6.0\AdsPowerManager.dll</HintPath>
+      <HintPath>AdsPowerManager.dll</HintPath>
     </Reference>
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="AdsPowerManager.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="chromedriver.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
