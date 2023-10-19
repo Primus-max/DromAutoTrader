@@ -12,21 +12,22 @@ namespace DromAutoTrader.ImageServices
     /// </summary>
     class BergImageService : IWebsite
     {
-
-        public string WebSiteName => "berg.ru";
-        public string? Brand { get; set; }
-        public string? Articul { get; set; }
-        public List<string>? BrandImages { get; set; }
-
-
+        #region Приватный поля
         private bool IsFirstRunning = true;
         public string? ImagesLocalPath = string.Empty;
         private string? _loginPageUrl = "https://berg.ru/login";
         private string? _searchPageUrl = "https://berg.ru/search/step2?search=AG19166&brand=TRIALLI&withRedirect=1";
         private string? _userName = "autobest038";
         private string? _password = "dimonfutboll";
-
         private IWebDriver _driver = null!;
+        #endregion
+
+        #region Публичные поля
+        public string WebSiteName => "berg.ru";
+        public string? Brand { get; set; }
+        public string? Articul { get; set; }
+        public List<string>? BrandImages { get; set; }        
+        #endregion
 
 
         public BergImageService()
