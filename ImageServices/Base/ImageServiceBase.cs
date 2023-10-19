@@ -1,13 +1,7 @@
 ﻿using DromAutoTrader.ImageServices.Interfaces;
-using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace DromAutoTrader.ImageServices.Base
 {
@@ -25,7 +19,7 @@ namespace DromAutoTrader.ImageServices.Base
         protected bool _isFirstRunning = true;
         protected string _imagesLocalPath = string.Empty;
         protected IWebDriver _driver = null!;
-        
+
         #endregion
 
         #region Публичные поля
@@ -55,10 +49,10 @@ namespace DromAutoTrader.ImageServices.Base
         /// <param name="articul"></param>
         /// <returns></returns>
         public async Task RunAsync(string brandName, string articul)
-        {            
+        {
             Brand = brandName;
             Articul = articul;
-            
+
 
             if (_isFirstRunning)
             {
@@ -138,7 +132,7 @@ namespace DromAutoTrader.ImageServices.Base
 
         #endregion
 
-
+        #region Абстратные метод
         protected abstract void GoTo();
         protected abstract void Authorization();
         protected abstract void SetArticulInSearchInput();
@@ -146,9 +140,9 @@ namespace DromAutoTrader.ImageServices.Base
         protected abstract void OpenSearchedCard();
         protected abstract bool IsImagesVisible();
         protected abstract Task<List<string>> GetImagesAsync();
-         
 
         protected abstract void SpecificRunAsync(string brandName, string articul);
+        #endregion
     }
 
 }

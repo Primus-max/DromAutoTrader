@@ -1,8 +1,6 @@
 ﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Interactions;
-using OpenQA.Selenium.Support.UI;
 using System.Threading;
 
 namespace DromAutoTrader.ImageServices
@@ -21,17 +19,11 @@ namespace DromAutoTrader.ImageServices
         public override string ServiceName => "uniqom.ru";
         #endregion
 
-        #region Приватный поля
-        //private bool _isFirstRunning = true;
+        #region Приватный поля       
         public string? _imagesLocalPath = string.Empty;
-        protected IWebDriver _driver = null!;        
+        protected IWebDriver _driver = null!;
         #endregion
 
-        #region Публичные поля        
-        //protected string? Brand { get; set; }
-        //public string? Articul { get; set; }
-        //public List<string>? BrandImages { get; set; }
-        #endregion
 
         public UnicomImageService()
         {
@@ -204,7 +196,7 @@ namespace DromAutoTrader.ImageServices
         #endregion
 
         #region Специфичные методы класса   
-        
+
 
         void SelectProduct()
         {
@@ -218,7 +210,7 @@ namespace DromAutoTrader.ImageServices
             // Нажать на элемент, представляющий открытие изображения продукта
             IWebElement imageElement = _driver.FindElement(By.CssSelector(".uk-lightbox-toolbar-icon line:nth-child(2)"));
             imageElement.Click();
-        }        
+        }
 
         // Инициализация драйвера
         private void InitializeDriver()
