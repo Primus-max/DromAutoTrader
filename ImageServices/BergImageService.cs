@@ -41,8 +41,7 @@ namespace DromAutoTrader.ImageServices
 
         public BergImageService()
         {
-            UndetectDriver webDriver = new();
-            _driver = webDriver.GetDriver();
+            InitializeDriver();
         }
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
@@ -52,10 +51,11 @@ namespace DromAutoTrader.ImageServices
         protected override void SpecificRunAsync(string brandName, string articul)
         {
             throw new NotImplementedException();
-        }
-        
+        }       
+       
+
         // Метод перехода по ссылке
-        protected override void InitializeDriver()
+        protected override void GoTo()
         {
             _driver.Manage().Window.Maximize();
             _driver.Navigate().GoToUrl(LoginPageUrl);
@@ -107,11 +107,6 @@ namespace DromAutoTrader.ImageServices
                 string message = $"Произошла ошибка в методе Authorization: {ex.Message}";
                 Console.WriteLine(message);
             }
-        }
-
-        public IWebElement GetSearchInput()
-        {
-            throw new NotImplementedException();
         }
 
         // Метод отправки поискового запроса
@@ -279,7 +274,14 @@ namespace DromAutoTrader.ImageServices
             string newUrl = uri.GetLeftPart(UriPartial.Path) + "?" + query.ToString();
 
             return newUrl;
-        }        
+        }
+
+        // Инициализация драйвера
+        private void InitializeDriver()
+        {
+            UndetectDriver webDriver = new();
+            _driver = webDriver.GetDriver();
+        }
         #endregion
 
     }

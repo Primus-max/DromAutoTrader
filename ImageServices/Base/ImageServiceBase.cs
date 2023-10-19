@@ -37,6 +37,7 @@ namespace DromAutoTrader.ImageServices.Base
            
         }
 
+        #region Общие методы для наследников
         public async Task RunAsync(string brandName, string articul)
         {
             Brand = brandName;
@@ -46,7 +47,7 @@ namespace DromAutoTrader.ImageServices.Base
             {
                 _isFirstRunning = false;
 
-                InitializeDriver();                
+                GoTo();
 
                 // Закрывает окно с предложением получения уведомлений
                 Thread.Sleep(500);
@@ -71,9 +72,11 @@ namespace DromAutoTrader.ImageServices.Base
             {
                 BrandImages = null;
             }
-        }
+        }       
+        #endregion
+        
 
-        protected abstract void InitializeDriver();
+        protected abstract void GoTo();
         protected abstract void Authorization();
         protected abstract void SetArticulInSearchInput();
         protected abstract bool IsNotMatchingArticul();
