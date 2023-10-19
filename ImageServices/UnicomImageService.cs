@@ -1,4 +1,5 @@
 ﻿using DromAutoTrader.ImageServices.Base;
+using DromAutoTrader.Models;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using System.Threading;
@@ -8,11 +9,11 @@ namespace DromAutoTrader.ImageServices
     public class UnicomImageService : ImageServiceBase
     {
         #region Перезапись абстрактных свойст
-        protected override string LoginPageUrl => "https://uniqom.ru/";
+        protected override string LoginPageUrl => "https://uniqom.ru/#login";
 
-        protected override string SearchPageUrl => LoginPageUrl;
+        protected override string SearchPageUrl => "https://uniqom.ru";
 
-        protected override string UserName => "autobest038";
+        protected override string UserName => "autobest038@gmail.com";
 
         protected override string Password => "dimonfutboll";
 
@@ -23,16 +24,19 @@ namespace DromAutoTrader.ImageServices
         //private bool _isFirstRunning = true;
         public string? _imagesLocalPath = string.Empty;
         protected IWebDriver _driver = null!;
+        protected string? _brand = string.Empty;
+        protected string? _articul = string.Empty;
         #endregion
 
         #region Публичные поля        
-        public string? Brand { get; set; }
-        public string? Articul { get; set; }
+        protected string? Brand { get; set; }
+        //public string? Articul { get; set; }
         public List<string>? BrandImages { get; set; }
         #endregion
 
         public UnicomImageService()
         {
+            
             InitializeDriver();
         }
 
@@ -46,8 +50,12 @@ namespace DromAutoTrader.ImageServices
         }
 
         // Метод перехода по ссылке
-        protected override void GoTo()
+        protected override void GoTo(string brand, string articul)
         {
+            string asd = Brand;
+            _brand = brand;
+            _articul = articul;
+
             _driver.Manage().Window.Maximize();
             _driver.Navigate().GoToUrl(LoginPageUrl);
         }
@@ -92,7 +100,7 @@ namespace DromAutoTrader.ImageServices
                 IWebElement searchField = _driver.FindElement(By.Id("m-header-search-l"));
 
                 // Ввести поисковый запрос
-                searchField.SendKeys(Articul);
+                searchField.SendKeys(_articul);
 
                 // Нажать клавишу "Enter" для поиска
                 searchField.SendKeys(Keys.Enter);
@@ -124,7 +132,7 @@ namespace DromAutoTrader.ImageServices
             throw new NotImplementedException();
         }
 
-        // Метод проверки почвился ли блок с картинами и есть картинка для этого артикула
+        // Метод проверки наличия изображения для дальнейшего получения
         protected override bool IsImagesVisible()
         {            
             try
@@ -144,13 +152,14 @@ namespace DromAutoTrader.ImageServices
             }
         }
 
+        // Метод получения изображений
         protected override async Task<List<string>> GetImages()
         {
             // Список изображений которые возвращаем из метода
-            List<string> downloadedImages = new List<string>();
+            List<string> downloadedImages = new();
 
             // Временное хранилище изображений
-            List<string> images = new List<string>();
+            List<string> images = new();
 
             try
             {                
@@ -163,13 +172,16 @@ namespace DromAutoTrader.ImageServices
             }
             catch (Exception) { }
 
+
+            // TODO Отрефакторить и вынести в отдельный метод и в базовый класс
+
             // Проверяю создан ли путь для хранения картинок
             FolderManager folderManager = new();
-            folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
+            folderManager.ArticulFolderContainsFiles(brand: _brand, articul: _articul, out _imagesLocalPath);
 
 
             // Скачиваю изображения
-            ImageDownloader? downloader = new(Articul, _imagesLocalPath, images);
+            ImageDownloader? downloader = new(_articul, _imagesLocalPath, images);
             downloadedImages = await downloader.DownloadImagesAsync();
 
             return downloadedImages;

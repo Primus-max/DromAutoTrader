@@ -24,30 +24,32 @@ namespace DromAutoTrader.ImageServices.Base
         protected bool _isFirstRunning = true;
         protected string _imagesLocalPath = string.Empty;
         protected IWebDriver _driver = null!;
+        protected string? _brand = string.Empty;
+        protected string? _articul = string.Empty;
         #endregion
 
         #region Публичные поля
-        public string? Brand { get; set; }
-        public string? Articul { get; set; }
+        protected string? Brand { get; set; }
+        protected string? Articul { get; set; }
         public List<string>? BrandImages { get; set; }
         #endregion
 
         public ImageServiceBase()
         {
-           
+         
         }
 
         #region Общие методы для наследников
         public async Task RunAsync(string brandName, string articul)
-        {
-            Brand = brandName;
-            Articul = articul;
+        {            
+            _brand = brandName;
+            _articul = articul;
 
             if (_isFirstRunning)
             {
                 _isFirstRunning = false;
 
-                GoTo();
+                GoTo(_brand, _articul);
 
                 // Закрывает окно с предложением получения уведомлений
                 Thread.Sleep(500);
@@ -75,7 +77,7 @@ namespace DromAutoTrader.ImageServices.Base
         #endregion
         
 
-        protected abstract void GoTo();
+        protected abstract void GoTo(string brand, string articul);
         protected abstract void Authorization();
         protected abstract void SetArticulInSearchInput();
         protected abstract bool IsNotMatchingArticul();
