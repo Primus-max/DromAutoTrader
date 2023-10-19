@@ -5,12 +5,12 @@ namespace DromAutoTrader.ImageServices.Interfaces
     /// <summary>
     /// Интерфейс описыват класс сайта для парсинга картинок брэндов
     /// </summary>
-    public interface IWebsite
+    public interface IImageService
     {
         /// <summary>
-        /// Название сайта
+        /// Название сайта / сервиса
         /// </summary>
-        string WebSiteName { get; }
+        string ServiceName { get; }
 
         /// <summary>
         /// Название брэнда для которого получаем изображение(я)

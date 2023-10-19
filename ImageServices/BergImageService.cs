@@ -1,6 +1,8 @@
-﻿using DromAutoTrader.ImageServices.Interfaces;
+﻿using DromAutoTrader.ImageServices.Base;
+using DromAutoTrader.ImageServices.Interfaces;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
+using OpenQA.Selenium.DevTools.V115.Network;
 using OpenQA.Selenium.Interactions;
 using System.Threading;
 using System.Web;
@@ -10,20 +12,27 @@ namespace DromAutoTrader.ImageServices
     /// <summary>
     /// Класс для получения изображений деталей брэндов с сайта https://berg.ru/ 
     /// </summary>
-    class BergImageService : IWebsite
+    internal class BergImageService : ImageServiceBase
     {
+        #region Перезапись абстрактных свойст
+        protected override string LoginPageUrl => "https://berg.ru/login";
+
+        protected override string SearchPageUrl => "https://berg.ru/search/step2?search=AG19166&brand=TRIALLI&withRedirect=1";
+
+        protected override string UserName => "autobest038";
+
+        protected override string Password => "dimonfutboll";
+
+        public override string ServiceName => "berg.ru";
+        #endregion
+
         #region Приватный поля
-        private bool IsFirstRunning = true;
-        public string? ImagesLocalPath = string.Empty;
-        private string? _loginPageUrl = "https://berg.ru/login";
-        private string? _searchPageUrl = "https://berg.ru/search/step2?search=AG19166&brand=TRIALLI&withRedirect=1";
-        private string? _userName = "autobest038";
-        private string? _password = "dimonfutboll";
+        private bool _isFirstRunning = true;
+        public string? _imagesLocalPath = string.Empty;       
         private IWebDriver _driver = null!;
         #endregion
 
-        #region Публичные поля
-        public string WebSiteName => "berg.ru";
+        #region Публичные поля        
         public string? Brand { get; set; }
         public string? Articul { get; set; }
         public List<string>? BrandImages { get; set; }        
@@ -36,47 +45,16 @@ namespace DromAutoTrader.ImageServices
             _driver = webDriver.GetDriver();
         }
 
-        #region Методы
-        // Метод-точка вход 
-        public async Task RunAsync(string brandName, string articul)
+        // Реализация метод RunAsync находится в базовом классе
+
+        #region Перезаписанные методы
+        protected override void SpecificRunAsync(string brandName, string articul)
         {
-            Brand = brandName;
-            Articul = articul;
-
-            if (IsFirstRunning)
-            {
-                IsFirstRunning = false;
-
-                _driver.Manage().Window.Maximize();
-                _driver.Navigate().GoToUrl(_loginPageUrl);
-
-                // Закрываю окно с предложением получения уведомлений
-                Thread.Sleep(500);
-                //ClosePermissionRequestPopup();
-
-                Authorization();
-            }
-
-            SetArticulInSearchInput();
-
-            if (IsNotMatchingArticul())
-                return;
-
-            OpenSearchedCard();
-
-            // Ожидание загрузки картинок и их получения
-            if (IsImagesVisible())
-            {
-                BrandImages = await GetImages();
-            }
-            else
-            {
-                BrandImages = null;
-            }
+            throw new NotImplementedException();
         }
-
+        
         // Метод авторизации
-        public void Authorization()
+        protected override void Authorization()
         {
             try
             {
@@ -87,7 +65,7 @@ namespace DromAutoTrader.ImageServices
 
                     builder.MoveToElement(logInput)
                            .Click()
-                           .SendKeys(_userName)
+                           .SendKeys(UserName)
                            .Build()
                            .Perform();
 
@@ -101,7 +79,7 @@ namespace DromAutoTrader.ImageServices
 
                     Thread.Sleep(200);
                     //ClearAndEnterText(passInput, _password);
-                    passInput.SendKeys(_password);
+                    passInput.SendKeys(Password);
                 }
                 catch (Exception) { }
 
@@ -129,7 +107,7 @@ namespace DromAutoTrader.ImageServices
         }
 
         // Метод отправки поискового запроса
-        public void SetArticulInSearchInput()
+        protected override void SetArticulInSearchInput()
         {
             string? searchUrl = BuildUrl();
 
@@ -137,7 +115,7 @@ namespace DromAutoTrader.ImageServices
         }
 
         // Метод открытия каротчки с полученным запросом
-        private void OpenSearchedCard()
+        protected override void OpenSearchedCard()
         {
             try
             {
@@ -155,7 +133,7 @@ namespace DromAutoTrader.ImageServices
         }
 
         // Метод проверки, появились картинки или нет
-        private bool IsImagesVisible()
+        protected override bool IsImagesVisible()
         {
             bool isVisible = false;
             int tryCount = 0;
@@ -188,7 +166,7 @@ namespace DromAutoTrader.ImageServices
         }
 
         // Метод проверки результатов поиска детали
-        private bool IsNotMatchingArticul()
+        protected override bool IsNotMatchingArticul()
         {
             bool isNotMatchingArticul = false;
             try
@@ -206,7 +184,7 @@ namespace DromAutoTrader.ImageServices
         }
 
         // Метод сбора картинок из открытой карточки
-        private async Task<List<string>> GetImages()
+        protected override async Task<List<string>> GetImages()
         {
             // Список изображений которые возвращаем из метода
             List<string> downloadedImages = new List<string>();
@@ -238,11 +216,11 @@ namespace DromAutoTrader.ImageServices
 
             // Проверяю создан ли путь для хранения картинок
             FolderManager folderManager = new FolderManager();
-            folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out ImagesLocalPath);
+            folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
 
 
             // Скачиваю изображения
-            ImageDownloader? downloader = new(Articul, ImagesLocalPath, images);
+            ImageDownloader? downloader = new(Articul, _imagesLocalPath, images);
             downloadedImages = await downloader.DownloadImagesAsync();
 
             return downloadedImages;
@@ -281,7 +259,7 @@ namespace DromAutoTrader.ImageServices
         // Метод для формирования Url поискового запроса
         public string BuildUrl()
         {
-            var uri = new Uri(_searchPageUrl);
+            var uri = new Uri(SearchPageUrl);
             var query = HttpUtility.ParseQueryString(uri.Query);
             query["search"] = Articul;
             query["brand"] = Brand;
@@ -290,7 +268,7 @@ namespace DromAutoTrader.ImageServices
             string newUrl = uri.GetLeftPart(UriPartial.Path) + "?" + query.ToString();
 
             return newUrl;
-        }
+        }        
         #endregion
 
     }
