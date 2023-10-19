@@ -21,6 +21,13 @@ namespace DromAutoTrader.Services
             _imageUrls = imageUrls;           
         }
 
+        /// <summary>
+        /// Асинхронный метод для скачивания изображений из удалённых источников с использованием <see cref="HttpResponseMessage"/>.
+        /// </summary>
+        /// <param name="articul">Артикул</param>
+        /// <param name="downloadDirectory">Директория для загрузки</param>
+        /// <param name="imageUrls">Список URL изображений</param>
+        /// <returns>Результат сохраняется в <paramref name="downloadDirectory" />. Возвращает список путей к скачанным изображениям.</returns>
         public async Task<List<string>> DownloadImagesAsync()
         {
             List<string> downloadedImagePaths = new();
@@ -57,12 +64,12 @@ namespace DromAutoTrader.Services
 
 
         /// <summary>
-        /// Синхронный метод для скачивания изображений из удалённых источников
+        /// Синхронный метод для скачивания изображений из удалённых источников с использованием <see cref="WebClient"/>.
         /// </summary>
-        /// <param name="articul"></param>
-        /// <param name="downloadDirectory"></param>
-        /// <param name="imageUrls"></param>
-        /// <returns>Результат сохраняет в downloadDirectory</returns>
+        /// <param name="articul">Артикул</param>
+        /// <param name="downloadDirectory">Директория для загрузки</param>
+        /// <param name="imageUrls">Список URL изображений</param>
+        /// <returns>Результат сохраняется в <paramref name="downloadDirectory" />. Возвращает список путей к скачанным изображениям.</returns>
         public List<string> DownloadImages()
         {
             List<string> downloadedImagePaths = new List<string>();
