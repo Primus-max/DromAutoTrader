@@ -158,7 +158,7 @@ namespace DromAutoTrader.ImageServices
         }
 
         // Метод получения изображений
-        protected override async Task<List<string>> GetImages()
+        protected override async Task<List<string>> GetImagesAsync()
         {
             // Список изображений которые возвращаем из метода
             List<string> downloadedImages = new();

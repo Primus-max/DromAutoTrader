@@ -40,6 +40,20 @@ namespace DromAutoTrader.ImageServices.Base
         }
 
         #region Общие методы для наследников
+        /// <summary>
+        /// Метод (точка входа) запускает парсинг. Определён в базовом классе, наследники не перезаписывают.
+        /// Использует методы которые обязательны для наследников. Возвращает список скачанных изображений (локальные дареса)
+        /// <see cref="GoTo"/> - метод перехода на сайт
+        /// <see cref="Authorization"/> - метод авторизации
+        /// <see cref="SetArticulInSearchInput"/> - метод вставки артикула в поле поиска
+        /// <see cref="IsNotMatchingArticul"/> - реализация этого метод может отличаться в наследниках. Возвращает bool.
+        /// <see cref="OpenSearchedCard"/> - Метод перехода в карточку где находятся изображений
+        /// <see cref="IsImagesVisible"/> - Метод ожидания появления изображений
+        /// <see cref="GetImagesAsync"/> - Метод скачивания изображений (имеет две перегрузки)
+        /// </summary>
+        /// <param name="brandName"></param>
+        /// <param name="articul"></param>
+        /// <returns></returns>
         public async Task RunAsync(string brandName, string articul)
         {            
             Brand = brandName;
@@ -68,7 +82,7 @@ namespace DromAutoTrader.ImageServices.Base
 
             if (IsImagesVisible())
             {
-                BrandImages = await GetImages();
+                BrandImages = await GetImagesAsync();
             }
             else
             {
@@ -76,7 +90,11 @@ namespace DromAutoTrader.ImageServices.Base
             }
         }
 
-        // Метод вставик текста с предварительной очисткой инпута (настраивается рандомная задержка для эмитации поведения человека)
+        /// <summary>
+        /// Метод вставки текста с предварительной очисткой инпута (настраивается рандомная задержка для эмитации поведения человека)
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="text"></param>        
         public void ClearAndEnterText(IWebElement element, string text)
         {
             Random random = new Random();
@@ -106,7 +124,9 @@ namespace DromAutoTrader.ImageServices.Base
             Thread.Sleep(random.Next(300, 700));
         }
 
-        // Метод ожидания полной загрузки страницы
+        /// <summary>
+        /// Метод ожидания полной загрузки страницы, по умолчанию время ожидания 30 секунд. 
+        /// </summary>
         protected void WaitReadyStatePage()
         {
             IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
@@ -125,7 +145,7 @@ namespace DromAutoTrader.ImageServices.Base
         protected abstract bool IsNotMatchingArticul();
         protected abstract void OpenSearchedCard();
         protected abstract bool IsImagesVisible();
-        protected abstract Task<List<string>> GetImages();
+        protected abstract Task<List<string>> GetImagesAsync();
          
 
         protected abstract void SpecificRunAsync(string brandName, string articul);
