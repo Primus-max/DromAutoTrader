@@ -34,23 +34,21 @@ namespace DromAutoTrader.Services
 
             try
             {
-                using (HttpClient client = new())
+                using HttpClient client = new();
+                for (int i = 0; i < _imageUrls.Count; i++)
                 {
-                    for (int i = 0; i < _imageUrls.Count; i++)
-                    {
-                        string imageUrl = _imageUrls[i];
-                        string fileName = $"{_articul}_{i:00}.jpg";
-                        string localFilePath = Path.Combine(_downloadDirectory, fileName);
+                    string imageUrl = _imageUrls[i];
+                    string fileName = $"{_articul}_{i:00}.jpg";
+                    string localFilePath = Path.Combine(_downloadDirectory, fileName);
 
-                        using HttpResponseMessage response = await client.GetAsync(imageUrl);
-                        if (response.IsSuccessStatusCode)
-                        {
-                            using Stream imageStream = await response.Content.ReadAsStreamAsync();
-                            using FileStream fileStream = File.Create(localFilePath);
-                            await imageStream.CopyToAsync(fileStream);
-                            await fileStream.FlushAsync(); // Добавьте эту строку
-                            downloadedImagePaths.Add(localFilePath);
-                        }
+                    using HttpResponseMessage response = await client.GetAsync(imageUrl);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        using Stream imageStream = await response.Content.ReadAsStreamAsync();
+                        using FileStream fileStream = File.Create(localFilePath);
+                        await imageStream.CopyToAsync(fileStream);
+                        await fileStream.FlushAsync(); // Добавьте эту строку
+                        downloadedImagePaths.Add(localFilePath);
                     }
                 }
             }
