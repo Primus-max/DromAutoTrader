@@ -57,7 +57,8 @@ namespace DromAutoTrader.ViewModels
                 // Имя файла
                 string fileName = Path.GetFileNameWithoutExtension(path);
 
-                BergImageService bergImageService = new();
+              //  BergImageService bergImageService = new();
+                UnicomImageService unicomImageService = new();
 
                 foreach (var price in prices)
                 {
@@ -73,8 +74,10 @@ namespace DromAutoTrader.ViewModels
                     // TODO здесь запускаю парсинг по разным сервисам
 
 
-                    await bergImageService.RunAsync(brand, articul);
-                    var testImages = bergImageService.BrandImages;
+                   // await bergImageService.RunAsync(brand, articul);
+                    await unicomImageService.RunAsync(brand, articul);
+
+                    var testImages = unicomImageService.BrandImages;
                 }
             }
         }

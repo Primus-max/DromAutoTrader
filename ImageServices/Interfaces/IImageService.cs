@@ -12,15 +12,15 @@ namespace DromAutoTrader.ImageServices.Interfaces
         /// </summary>
         string ServiceName { get; }
 
-        /// <summary>
-        /// Название брэнда для которого получаем изображение(я)
-        /// </summary>
-        string? Brand { get; set; }
+        ///// <summary>
+        ///// Название брэнда для которого получаем изображение(я)
+        ///// </summary>
+        //string? _brand { get; set; }
 
-        /// <summary>
-        /// Артикул товара
-        /// </summary>
-        string? Articul { get; set; }
+        ///// <summary>
+        ///// Артикул товара
+        ///// </summary>
+        //string? _articul { get; set; }
 
         /// <summary>
         /// Список (локальных) ссылок на картинки полученных с сайта (сначала сохраняем в локальное хранилище и их же возвращаем) 
