@@ -100,9 +100,22 @@ namespace DromAutoTrader.ImageServices
             catch (Exception) { }
         }
 
+        // Метод проверяет если ничего не найдено
         protected override bool IsNotMatchingArticul()
         {
-            throw new NotImplementedException();
+            bool isNotMatchingArticul = false;
+            try
+            {
+                IWebElement attentionMessage = _driver.FindElement(By.ClassName("not-found__title"));
+
+                // Если получили этот элемент значит по запросу ничего не найдено
+                return true;
+
+            }
+            catch (Exception)
+            {
+                return isNotMatchingArticul;
+            }
         }
 
         protected override void OpenSearchedCard()
