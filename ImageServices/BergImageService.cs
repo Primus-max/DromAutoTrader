@@ -27,9 +27,9 @@ namespace DromAutoTrader.ImageServices
         #endregion
 
         #region Приватный поля
-        private bool _isFirstRunning = true;
+        //private bool _isFirstRunning = true;
         public string? _imagesLocalPath = string.Empty;       
-        private IWebDriver _driver = null!;
+        protected IWebDriver _driver = null!;
         #endregion
 
         #region Публичные поля        
@@ -45,14 +45,22 @@ namespace DromAutoTrader.ImageServices
             _driver = webDriver.GetDriver();
         }
 
-        // Реализация метод RunAsync находится в базовом классе
+        //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
 
-        #region Перезаписанные методы
+
+        #region Перезаписанные методы базового класса
         protected override void SpecificRunAsync(string brandName, string articul)
         {
             throw new NotImplementedException();
         }
         
+        // Метод перехода по ссылке
+        protected override void InitializeDriver()
+        {
+            _driver.Manage().Window.Maximize();
+            _driver.Navigate().GoToUrl(LoginPageUrl);
+        }       
+
         // Метод авторизации
         protected override void Authorization()
         {
@@ -226,6 +234,9 @@ namespace DromAutoTrader.ImageServices
             return downloadedImages;
         }
 
+        #endregion
+
+        #region Специфичные методы класса
         // Метод отчистки полей и вставки текста
         private static void ClearAndEnterText(IWebElement element, string text)
         {

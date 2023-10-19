@@ -34,8 +34,7 @@ namespace DromAutoTrader.ImageServices.Base
 
         public ImageServiceBase()
         {
-            UndetectDriver webDriver = new();
-            _driver = webDriver.GetDriver();
+           
         }
 
         public async Task RunAsync(string brandName, string articul)
@@ -47,8 +46,7 @@ namespace DromAutoTrader.ImageServices.Base
             {
                 _isFirstRunning = false;
 
-                _driver.Manage().Window.Maximize();
-                _driver.Navigate().GoToUrl(LoginPageUrl);
+                InitializeDriver();                
 
                 // Закрывает окно с предложением получения уведомлений
                 Thread.Sleep(500);
@@ -75,6 +73,7 @@ namespace DromAutoTrader.ImageServices.Base
             }
         }
 
+        protected abstract void InitializeDriver();
         protected abstract void Authorization();
         protected abstract void SetArticulInSearchInput();
         protected abstract bool IsNotMatchingArticul();
