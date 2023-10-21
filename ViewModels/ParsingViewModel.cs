@@ -58,7 +58,8 @@ namespace DromAutoTrader.ViewModels
                 string fileName = Path.GetFileNameWithoutExtension(path);
 
               //  BergImageService bergImageService = new();
-                UnicomImageService unicomImageService = new();
+                //UnicomImageService unicomImageService = new();
+                LynxautoImageService lynxautoImageService = new LynxautoImageService();
 
                 foreach (var price in prices)
                 {
@@ -75,9 +76,9 @@ namespace DromAutoTrader.ViewModels
 
 
                    // await bergImageService.RunAsync(brand, articul);
-                    await unicomImageService.RunAsync(brand, articul);
+                    await lynxautoImageService.RunAsync(brand, articul);
 
-                    var testImages = unicomImageService.BrandImages;
+                    var testImages = lynxautoImageService.BrandImages;
                 }
             }
         }

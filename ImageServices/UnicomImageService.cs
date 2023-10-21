@@ -19,10 +19,10 @@ namespace DromAutoTrader.ImageServices
         public override string ServiceName => "uniqom.ru";
         #endregion
 
-        #region Приватный поля       
-        public string? _imagesLocalPath = string.Empty;
-        protected IWebDriver _driver = null!;
-        #endregion
+        //#region Приватные поля       
+        //protected string? _imagesLocalPath = string.Empty;
+        //protected IWebDriver _driver = null!;
+        //#endregion
 
 
         public UnicomImageService()
@@ -36,17 +36,12 @@ namespace DromAutoTrader.ImageServices
         #region Перезаписанные методы базового класса
         protected override void SpecificRunAsync(string brandName, string articul)
         {
-            throw new NotImplementedException();
+            
         }
 
         // Метод перехода по ссылке
         protected override void GoTo()
         {
-            string asd = Brand;
-            string dasd = Articul;
-            //_brand = brand;
-            //_articul = articul;
-
             _driver.Manage().Window.Maximize();
             _driver.Navigate().GoToUrl(LoginPageUrl);
         }

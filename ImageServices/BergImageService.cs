@@ -24,10 +24,10 @@ namespace DromAutoTrader.ImageServices
         public override string ServiceName => "berg.ru";
         #endregion
 
-        #region Приватный поля        
-        public string? _imagesLocalPath = string.Empty;
-        protected IWebDriver _driver = null!;
-        #endregion
+        //#region Приватный поля        
+        //private string? _imagesLocalPath = string.Empty;
+        //private IWebDriver _driver = null!;
+        //#endregion
 
 
         public BergImageService()

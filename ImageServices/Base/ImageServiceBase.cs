@@ -19,7 +19,6 @@ namespace DromAutoTrader.ImageServices.Base
         protected bool _isFirstRunning = true;
         protected string _imagesLocalPath = string.Empty;
         protected IWebDriver _driver = null!;
-
         #endregion
 
         #region Публичные поля
@@ -133,7 +132,7 @@ namespace DromAutoTrader.ImageServices.Base
         #endregion
 
         #region Абстратные метод
-        protected abstract void GoTo();
+        protected abstract void GoTo();       
         protected abstract void Authorization();
         protected abstract void SetArticulInSearchInput();
         protected abstract bool IsNotMatchingArticul();
