@@ -29,10 +29,7 @@ namespace DromAutoTrader.ImageServices
         private IHtmlDocument _document = null!;
         #endregion
 
-        public LynxautoImageService()
-        {
-            //InitializeDriver();
-        }
+        public LynxautoImageService() { }
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
 
@@ -90,7 +87,7 @@ namespace DromAutoTrader.ImageServices
                 IHtmlElement wrongMessageElement = _document?.QuerySelector(".content-container.min-width") as IHtmlElement;
 
                 string wrongMessage = wrongMessageElement.Text();
-                
+
 
                 string cleanedText = Regex.Unescape(wrongMessage.Trim().Replace("\n", "").Replace("\r", ""));
                 string comparisonStr = $"По вашему запросу \"{Articul}\" нет информации";
@@ -128,7 +125,7 @@ namespace DromAutoTrader.ImageServices
             {
                 Thread.Sleep(500);
                 // Получаем изображение
-                var linkElement = _document.QuerySelector("a.lightbox");           
+                var linkElement = _document.QuerySelector("a.lightbox");
 
                 string imgUrl = linkElement?.GetAttribute("href");
 
@@ -136,23 +133,33 @@ namespace DromAutoTrader.ImageServices
                     images.Add(imgUrl);
 
             }
-            catch (Exception) 
-            { 
+            catch (Exception)
+            {
                 return downloadedImages;
             }
 
 
-            if (images.Count != 0) 
+            if (images.Count != 0)
                 downloadedImages = await ImagesProcessAsync(images);
 
             return downloadedImages;
         }
 
+
+        protected override void SpecificRunAsync(string brandName, string articul)
+        {
+            // TODO если метод не пригодился, убрать
+        }
+        #endregion
+
+
+        #region Специфичные методы класса 
+        // TODO вынести этот метод в базовый и сделать для всех
         // Метод создания директории и скачивания изображений
         private async Task<List<string>> ImagesProcessAsync(List<string> images)
         {
             List<string> downloadedImages = new();
-            
+
             // Проверяю создан ли путь для хранения картинок
             FolderManager folderManager = new();
             bool folderContainsFiles = folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
@@ -164,25 +171,9 @@ namespace DromAutoTrader.ImageServices
                 // Скачиваю изображения
                 ImageDownloader? downloader = new(Articul, _imagesLocalPath, images);
                 downloadedImages = await downloader.DownloadImagesAsync();
-            }         
+            }
 
             return downloadedImages;
-        }
-
-        protected override void SpecificRunAsync(string brandName, string articul)
-        {
-            // TODO если метод не пригодился, убрать
-        }
-        #endregion
-
-
-        #region Специфичные методы класса            
-
-        // Инициализация драйвера
-        private void InitializeDriver()
-        {
-            UndetectDriver webDriver = new();
-            _driver = webDriver.GetDriver();
         }
         #endregion
     }
