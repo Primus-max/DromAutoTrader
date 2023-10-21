@@ -211,6 +211,7 @@ namespace DromAutoTrader.ImageServices
             return downloadedImages;
         }
 
+        // Метод создания директории и скачивания изображений
         private async Task<List<string>> ImagesProcessAsync(List<string> images)
         {
             List<string> downloadedImages = new();

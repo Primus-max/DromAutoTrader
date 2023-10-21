@@ -174,17 +174,29 @@ namespace DromAutoTrader.ImageServices
             }
             catch (Exception) { }
 
+            if (images.Count != 0)
+                downloadedImages = await ImagesProcessAsync(images);
 
-            // TODO Отрефакторить и вынести в отдельный метод и в базовый класс
+            return downloadedImages;
+        }
+
+        // Метод создания директории и скачивания изображений
+        private async Task<List<string>> ImagesProcessAsync(List<string> images)
+        {
+            List<string> downloadedImages = new();
 
             // Проверяю создан ли путь для хранения картинок
             FolderManager folderManager = new();
-            folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
+            bool folderContainsFiles = folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
 
             Thread.Sleep(1000);
-            // Скачиваю изображения
-            ImageDownloader? downloader = new(Articul, _imagesLocalPath, images);
-            downloadedImages = await downloader.DownloadImagesAsync();
+
+            if (!folderContainsFiles)
+            {
+                // Скачиваю изображения
+                ImageDownloader? downloader = new(Articul, _imagesLocalPath, images);
+                downloadedImages = await downloader.DownloadImagesAsync();
+            }
 
             return downloadedImages;
         }
