@@ -1,4 +1,5 @@
 ﻿using DromAutoTrader.ImageServices.Interfaces;
+using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System.Threading;
@@ -128,7 +129,7 @@ namespace DromAutoTrader.ImageServices.Base
             // Ожидаем, пока загрузится страница
             wait.Until(driver => (bool)js.ExecuteScript("return document.readyState == 'complete'"));
         }
-
+        
         #endregion
 
         #region Абстратные метод

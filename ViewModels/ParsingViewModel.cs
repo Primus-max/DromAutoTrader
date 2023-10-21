@@ -3,6 +3,7 @@ using DromAutoTrader.Prices;
 using DromAutoTrader.Services;
 using Microsoft.Win32;
 using System.IO;
+using System.Threading;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -28,7 +29,11 @@ namespace DromAutoTrader.ViewModels
 
         private void OnStartParsingCommandExecuted(object sender)
         {
-            RunPars();
+            Thread thread = new Thread(RunPars);  
+            thread.Start();
+
+            // Прервать после действий
+            thread.Abort();
         }
         #endregion
 

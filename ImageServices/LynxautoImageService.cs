@@ -77,7 +77,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override void SetArticulInSearchInput()
         {
-            // В этом классе данный метод реализова в GoTo()
+            Task.Run(async () => await GoToAsync()).Wait();
         }
 
         // Метод проверки есть ли данных по артикулу
@@ -86,6 +86,7 @@ namespace DromAutoTrader.ImageServices
             bool isMatching = false;
             try
             {
+                Thread.Sleep(500);
                 IHtmlElement wrongMessageElement = _document?.QuerySelector(".content-container.min-width") as IHtmlElement;
 
                 string wrongMessage = wrongMessageElement.Text();
@@ -111,6 +112,7 @@ namespace DromAutoTrader.ImageServices
         // Метод проверки наличия сообщения, что ничего не найдено
         protected override bool IsImagesVisible()
         {
+            Thread.Sleep(500);
             return true;
         }
 
@@ -124,28 +126,45 @@ namespace DromAutoTrader.ImageServices
 
             try
             {
-                Thread.Sleep(200);
+                Thread.Sleep(500);
                 // Получаем изображение
-                var linkElement = _document.QuerySelector("a.lightbox");
-                string imgUrl = linkElement.GetAttribute("href");
+                var linkElement = _document.QuerySelector("a.lightbox");           
+
+                string imgUrl = linkElement?.GetAttribute("href");
 
                 if (!string.IsNullOrEmpty(imgUrl))
                     images.Add(imgUrl);
 
             }
-            catch (Exception) { }
+            catch (Exception) 
+            { 
+                return downloadedImages;
+            }
 
 
-            // TODO Отрефакторить и вынести в отдельный метод и в базовый класс
+            if (images.Count != 0) 
+                downloadedImages = await ImagesProcessAsync(images);
 
+            return downloadedImages;
+        }
+
+        // Метод создания директории и скачивания изображений
+        private async Task<List<string>> ImagesProcessAsync(List<string> images)
+        {
+            List<string> downloadedImages = new();
+            
             // Проверяю создан ли путь для хранения картинок
             FolderManager folderManager = new();
-            folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
+            bool folderContainsFiles = folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
 
             Thread.Sleep(1000);
-            // Скачиваю изображения
-            ImageDownloader? downloader = new(Articul, _imagesLocalPath, images);
-            downloadedImages = await downloader.DownloadImagesAsync();
+
+            if (!folderContainsFiles)
+            {
+                // Скачиваю изображения
+                ImageDownloader? downloader = new(Articul, _imagesLocalPath, images);
+                downloadedImages = await downloader.DownloadImagesAsync();
+            }         
 
             return downloadedImages;
         }
