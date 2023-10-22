@@ -3,7 +3,6 @@ using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using System.Threading;
-using System.Web;
 
 namespace DromAutoTrader.ImageServices
 {
@@ -86,12 +85,29 @@ namespace DromAutoTrader.ImageServices
 
         protected override void SetArticulInSearchInput()
         {
-            throw new NotImplementedException();
+            string? searchUrl = BuildUrl();
+
+            _driver.Navigate().GoToUrl(searchUrl);
         }
 
         protected override bool IsNotMatchingArticul()
         {
-            throw new NotImplementedException();
+            bool isNotMatchingArticul = false;
+            try
+            {
+                IWebElement attentionMessage = _driver.FindElement(By.ClassName("mx-text_secondary"));
+
+                string warningTest = attentionMessage.Text;
+
+                if (!string.IsNullOrEmpty(warningTest))
+                    return true;
+
+            }
+            catch (Exception)
+            {
+                return isNotMatchingArticul;
+            }
+            return isNotMatchingArticul;
         }
 
         protected override void OpenSearchedCard()
@@ -120,15 +136,9 @@ namespace DromAutoTrader.ImageServices
         // Метод для формирования Url поискового запроса
         public string BuildUrl()
         {
-            var uri = new Uri(SearchPageUrl);
-            var query = HttpUtility.ParseQueryString(uri.Query);
-            query["search"] = Articul;
-            query["brand"] = Brand;
+            string url = $"{SearchPageUrl}{Articul}";
 
-            // Построение нового URL с обновленными параметрами
-            string newUrl = uri.GetLeftPart(UriPartial.Path) + "?" + query.ToString();
-
-            return newUrl;
+            return url;
         }
 
         // Инициализация драйвера
