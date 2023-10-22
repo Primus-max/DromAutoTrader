@@ -25,22 +25,18 @@ namespace DromAutoTrader.ImageServices
 
         public MxgroupImageService()
         {
-                
-        }
-
-       
-
-        protected override void SpecificRunAsync(string brandName, string articul)
-        {
-            throw new NotImplementedException();
-        }
+            InitializeDriver();
+        }    
+               
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
+
 
         #region Перезаписанные методы базового класса       
         protected override void GoTo()
         {
-            throw new NotImplementedException();
+            _driver.Manage().Window.Maximize();
+            _driver.Navigate().GoToUrl(LoginPageUrl);
         }
 
         protected override void Authorization()
@@ -72,7 +68,13 @@ namespace DromAutoTrader.ImageServices
         {
             throw new NotImplementedException();
         }
+        protected override void SpecificRunAsync(string brandName, string articul)
+        {
+            throw new NotImplementedException();
+        }
         #endregion
+
+
         #region Специфичные методы класса       
 
         // Метод для формирования Url поискового запроса
