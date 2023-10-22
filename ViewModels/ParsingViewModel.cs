@@ -3,6 +3,7 @@ using DromAutoTrader.Prices;
 using DromAutoTrader.Services;
 using Microsoft.Win32;
 using System.IO;
+using System.Threading;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -28,7 +29,8 @@ namespace DromAutoTrader.ViewModels
 
         private void OnStartParsingCommandExecuted(object sender)
         {
-            RunPars();
+            Thread thread = new Thread(RunPars);  
+            thread.Start();
         }
         #endregion
 
@@ -57,8 +59,11 @@ namespace DromAutoTrader.ViewModels
                 // Имя файла
                 string fileName = Path.GetFileNameWithoutExtension(path);
 
-              //  BergImageService bergImageService = new();
-                UnicomImageService unicomImageService = new();
+                //BergImageService bergImageService = new();
+                //UnicomImageService unicomImageService = new();
+                //LynxautoImageService lynxautoImageService = new LynxautoImageService();
+                //LuzarImageService LuzarimageService = new LuzarImageService();
+                StarvoltImageService starvoltImageService = new StarvoltImageService();
 
                 foreach (var price in prices)
                 {
@@ -75,9 +80,9 @@ namespace DromAutoTrader.ViewModels
 
 
                    // await bergImageService.RunAsync(brand, articul);
-                    await unicomImageService.RunAsync(brand, articul);
+                    await starvoltImageService.RunAsync(brand, articul);
 
-                    var testImages = unicomImageService.BrandImages;
+                    var testImages = starvoltImageService.BrandImages;
                 }
             }
         }

@@ -1,8 +1,6 @@
 ﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Interactions;
-using OpenQA.Selenium.Support.UI;
 using System.Threading;
 
 namespace DromAutoTrader.ImageServices
@@ -21,17 +19,11 @@ namespace DromAutoTrader.ImageServices
         public override string ServiceName => "uniqom.ru";
         #endregion
 
-        #region Приватный поля
-        //private bool _isFirstRunning = true;
-        public string? _imagesLocalPath = string.Empty;
-        protected IWebDriver _driver = null!;        
-        #endregion
+        //#region Приватные поля       
+        //protected string? _imagesLocalPath = string.Empty;
+        //protected IWebDriver _driver = null!;
+        //#endregion
 
-        #region Публичные поля        
-        //protected string? Brand { get; set; }
-        //public string? Articul { get; set; }
-        //public List<string>? BrandImages { get; set; }
-        #endregion
 
         public UnicomImageService()
         {
@@ -44,17 +36,12 @@ namespace DromAutoTrader.ImageServices
         #region Перезаписанные методы базового класса
         protected override void SpecificRunAsync(string brandName, string articul)
         {
-            throw new NotImplementedException();
+            
         }
 
         // Метод перехода по ссылке
         protected override void GoTo()
         {
-            string asd = Brand;
-            string dasd = Articul;
-            //_brand = brand;
-            //_articul = articul;
-
             _driver.Manage().Window.Maximize();
             _driver.Navigate().GoToUrl(LoginPageUrl);
         }
@@ -158,7 +145,7 @@ namespace DromAutoTrader.ImageServices
         }
 
         // Метод получения изображений
-        protected override async Task<List<string>> GetImages()
+        protected override async Task<List<string>> GetImagesAsync()
         {
             // Список изображений которые возвращаем из метода
             List<string> downloadedImages = new();
@@ -187,24 +174,36 @@ namespace DromAutoTrader.ImageServices
             }
             catch (Exception) { }
 
+            if (images.Count != 0)
+                downloadedImages = await ImagesProcessAsync(images);
 
-            // TODO Отрефакторить и вынести в отдельный метод и в базовый класс
+            return downloadedImages;
+        }
+
+        // Метод создания директории и скачивания изображений
+        private async Task<List<string>> ImagesProcessAsync(List<string> images)
+        {
+            List<string> downloadedImages = new();
 
             // Проверяю создан ли путь для хранения картинок
             FolderManager folderManager = new();
-            folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
+            bool folderContainsFiles = folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
 
             Thread.Sleep(1000);
-            // Скачиваю изображения
-            ImageDownloader? downloader = new(Articul, _imagesLocalPath, images);
-            downloadedImages = await downloader.DownloadImagesAsync();
+
+            if (!folderContainsFiles)
+            {
+                // Скачиваю изображения
+                ImageDownloader? downloader = new(Articul, _imagesLocalPath, images);
+                downloadedImages = await downloader.DownloadImagesAsync();
+            }
 
             return downloadedImages;
         }
         #endregion
 
         #region Специфичные методы класса   
-        
+
 
         void SelectProduct()
         {
@@ -218,7 +217,7 @@ namespace DromAutoTrader.ImageServices
             // Нажать на элемент, представляющий открытие изображения продукта
             IWebElement imageElement = _driver.FindElement(By.CssSelector(".uk-lightbox-toolbar-icon line:nth-child(2)"));
             imageElement.Click();
-        }        
+        }
 
         // Инициализация драйвера
         private void InitializeDriver()
