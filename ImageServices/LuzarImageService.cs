@@ -1,6 +1,11 @@
-﻿using AngleSharp.Html.Dom;
+﻿using AngleSharp;
+using AngleSharp.Dom;
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
 using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
+using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace DromAutoTrader.ImageServices
@@ -8,15 +13,15 @@ namespace DromAutoTrader.ImageServices
     public class LuzarImageService : ImageServiceBase
     {
         #region Перезапись абстрактных свойст
-        protected override string LoginPageUrl => "https://lynxauto.info/";
+        protected override string LoginPageUrl => "https://luzar.ru/";
 
-        protected override string SearchPageUrl => "https://lynxauto.info/index.php?route=product/category/search";
+        protected override string SearchPageUrl => "https://luzar.ru/search/";
 
         protected override string UserName => "";
 
         protected override string Password => "";
 
-        public override string ServiceName => "lynxauto.info";
+        public override string ServiceName => "luzar.ru";
         #endregion
 
         #region Приватные поля
@@ -31,37 +36,86 @@ namespace DromAutoTrader.ImageServices
         #region Перезаписанные методы базового класса          
         protected override void GoTo()
         {
-            throw new NotImplementedException();
+            Task.Run(async () => await GoToAsync()).Wait();
         }
 
-        protected override void Authorization()
-        {
-            throw new NotImplementedException();
-        }
+        protected override void Authorization() { }
 
         protected override void SetArticulInSearchInput()
         {
-            throw new NotImplementedException();
+            Task.Run(async () => await GoToAsync()).Wait();
         }
 
         protected override bool IsNotMatchingArticul()
         {
-            throw new NotImplementedException();
+            bool isMatching = false;
+            try
+            {
+                Thread.Sleep(500);
+                IHtmlElement wrongMessageElement = _document?.QuerySelector("font.notetext") as IHtmlElement;
+
+                string wrongMessage = wrongMessageElement.Text();
+
+
+                string cleanedText = Regex.Unescape(wrongMessage.Trim().Replace("\n", "").Replace("\r", ""));
+                string comparisonStr = $"К сожалению, на ваш поисковый запрос ничего не найдено.";
+
+                if (wrongMessage.Contains(comparisonStr, StringComparison.OrdinalIgnoreCase))
+                {
+                    isMatching = true;
+                }
+            }
+            catch (Exception)
+            {
+                return isMatching;
+            }
+            return isMatching;
         }
 
-        protected override void OpenSearchedCard()
-        {
-            throw new NotImplementedException();
-        }
+        protected override void OpenSearchedCard() { }
 
         protected override bool IsImagesVisible()
         {
-            throw new NotImplementedException();
+            Thread.Sleep(500);
+            return true;
         }
 
-        protected override Task<List<string>> GetImagesAsync()
+        protected override async Task<List<string>> GetImagesAsync()
         {
-            throw new NotImplementedException();
+            // Список изображений которые возвращаем из метода
+            List<string> downloadedImages = new();
+
+            // Временное хранилище изображений
+            List<string> images = new();
+
+            try
+            {
+                Thread.Sleep(500);
+                // Получаем изображение
+
+                // Получение абсолютного URL из относительного
+                var imgElement = _document.QuerySelector(".center-image img") as IHtmlImageElement;
+                string relativeUrl = imgElement.GetAttribute("src");
+
+                using HttpClient httpClient = new HttpClient();
+                httpClient.BaseAddress = new Uri(LoginPageUrl);
+
+                string imgUrl = new Uri(httpClient.BaseAddress, relativeUrl).AbsoluteUri;
+
+                if (!string.IsNullOrEmpty(imgUrl))
+                    images.Add(imgUrl);
+
+            }
+            catch (Exception)
+            {
+                return downloadedImages;
+            }
+
+
+            if (images.Count != 0)
+                downloadedImages = await ImagesProcessAsync(images);
+
+            return downloadedImages;
         }
 
         protected override void SpecificRunAsync(string brandName, string articul)
@@ -71,6 +125,37 @@ namespace DromAutoTrader.ImageServices
         #endregion
 
         #region Специфичные методы класса
+        // Асинхронный метода перехода на страницу поиска и поиск
+        protected async Task GoToAsync()
+        {
+            string art = "LAT0864";
+            try
+            {
+                var httpClient = new HttpClient();
+                var fullUrl = $"{SearchPageUrl}?query={art}";
+                var response = await httpClient.GetAsync(fullUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Получаю документ
+                    var pageSource = await response.Content.ReadAsStringAsync();
+                    var contextt = BrowsingContext.New(Configuration.Default);
+                    var parser = contextt.GetService<IHtmlParser>();
+                    _document = parser?.ParseDocument(pageSource);
+                }
+                else
+                {
+                    // TODO сделать логирование                    
+                }
+            }
+            catch (Exception ex)
+            {
+                // Обработка исключения, например, логирование
+                Console.WriteLine($"Произошло исключение: {ex.Message}");
+            }
+        }
+
+
         // TODO вынести этот метод в базовый и сделать для всех
         // Метод создания директории и скачивания изображений
         private async Task<List<string>> ImagesProcessAsync(List<string> images)

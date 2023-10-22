@@ -31,9 +31,6 @@ namespace DromAutoTrader.ViewModels
         {
             Thread thread = new Thread(RunPars);  
             thread.Start();
-
-            // Прервать после действий
-            thread.Abort();
         }
         #endregion
 
@@ -62,9 +59,10 @@ namespace DromAutoTrader.ViewModels
                 // Имя файла
                 string fileName = Path.GetFileNameWithoutExtension(path);
 
-              //  BergImageService bergImageService = new();
+                //BergImageService bergImageService = new();
                 //UnicomImageService unicomImageService = new();
-                LynxautoImageService lynxautoImageService = new LynxautoImageService();
+                //LynxautoImageService lynxautoImageService = new LynxautoImageService();
+                LuzarImageService LuzarimageService = new LuzarImageService();
 
                 foreach (var price in prices)
                 {
@@ -81,9 +79,9 @@ namespace DromAutoTrader.ViewModels
 
 
                    // await bergImageService.RunAsync(brand, articul);
-                    await lynxautoImageService.RunAsync(brand, articul);
+                    await LuzarimageService.RunAsync(brand, articul);
 
-                    var testImages = lynxautoImageService.BrandImages;
+                    var testImages = LuzarimageService.BrandImages;
                 }
             }
         }

@@ -38,37 +38,7 @@ namespace DromAutoTrader.ImageServices
         protected override void GoTo()
         {
             Task.Run(async () => await GoToAsync()).Wait();
-        }
-
-        protected async Task GoToAsync()
-        {
-            try
-            {
-                var httpClient = new HttpClient();
-                var fullUrl = $"{SearchPageUrl}&keyword={Articul}&search_type=right"; // Строим URL с параметрами
-                var response = await httpClient.GetAsync(fullUrl);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    // Получаю документ
-                    var pageSource = await response.Content.ReadAsStringAsync();
-                    var contextt = BrowsingContext.New(Configuration.Default);
-                    var parser = contextt.GetService<IHtmlParser>();
-                    _document = parser?.ParseDocument(pageSource);
-                }
-                else
-                {
-                    // TODO сделать логирование
-                    var strasding = response.ReasonPhrase;
-                }
-            }
-            catch (Exception ex)
-            {
-                // Обработка исключения, например, логирование
-                Console.WriteLine($"Произошло исключение: {ex.Message}");
-            }
-        }
-
+        }      
 
         protected override void Authorization() { }
 
@@ -154,6 +124,36 @@ namespace DromAutoTrader.ImageServices
 
 
         #region Специфичные методы класса 
+        // Асинхронный метода перехода на страницу поиска и поиск
+        protected async Task GoToAsync()
+        {
+            try
+            {
+                var httpClient = new HttpClient();
+                var fullUrl = $"{SearchPageUrl}&keyword={Articul}&search_type=right"; // Строим URL с параметрами
+                var response = await httpClient.GetAsync(fullUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Получаю документ
+                    var pageSource = await response.Content.ReadAsStringAsync();
+                    var contextt = BrowsingContext.New(Configuration.Default);
+                    var parser = contextt.GetService<IHtmlParser>();
+                    _document = parser?.ParseDocument(pageSource);
+                }
+                else
+                {
+                    // TODO сделать логирование
+                    var strasding = response.ReasonPhrase;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Обработка исключения, например, логирование
+                Console.WriteLine($"Произошло исключение: {ex.Message}");
+            }
+        }
+
         // TODO вынести этот метод в базовый и сделать для всех
         // Метод создания директории и скачивания изображений
         private async Task<List<string>> ImagesProcessAsync(List<string> images)
