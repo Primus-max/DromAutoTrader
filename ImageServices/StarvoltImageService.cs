@@ -130,10 +130,10 @@ namespace DromAutoTrader.ImageServices
                 Thread.Sleep(500);
                 // Получаем изображение
 
-                var imageBlocks = _document.QuerySelectorAll("img.product__gallery-thumbs-slider-card-image");               
+                var imageBlocks = _document.QuerySelectorAll("img.product__gallery-thumbs-slider-card-image");
 
                 foreach (var imageBlock in imageBlocks)
-                {                    
+                {
                     if (imageBlock != null)
                     {
                         string? imgUrl = imageBlock.GetAttribute("src");
@@ -156,17 +156,14 @@ namespace DromAutoTrader.ImageServices
             return downloadedImages;
         }
 
-        protected override void SpecificRunAsync(string brandName, string articul)
-        {
-           
-        }
+        protected override void SpecificRunAsync(string brandName, string articul) { }
         #endregion
 
         #region Специфичные методы класса
         // Асинхронный метода перехода на страницу поиска и поиск
         protected async Task GoToAsync(string url = null!)
         {
-            string testArticul = "LG2633";
+            // TODO Решить проблему с двойным переходом
             try
             {
                 using HttpClient httpClient = new();
@@ -179,9 +176,8 @@ namespace DromAutoTrader.ImageServices
                 }
                 else
                 {
-                     fullUrl = $"{SearchPageUrl}?q={testArticul}";
+                    fullUrl = $"{SearchPageUrl}?q={Articul}";
                 }
-
 
                 var response = await httpClient.GetAsync(fullUrl);
 
