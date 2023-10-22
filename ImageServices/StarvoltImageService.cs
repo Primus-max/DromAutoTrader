@@ -115,14 +115,50 @@ namespace DromAutoTrader.ImageServices
             return true;
         }
 
-        protected override Task<List<string>> GetImagesAsync()
+        protected override async Task<List<string>> GetImagesAsync()
         {
-            throw new NotImplementedException();
+            // Список изображений которые возвращаем из метода
+            List<string> downloadedImages = new();
+
+            // Временное хранилище изображений
+            List<string> images = new();
+
+            using HttpClient httpClient = new();
+
+            try
+            {
+                Thread.Sleep(500);
+                // Получаем изображение
+
+                var imageBlocks = _document.QuerySelectorAll("img.product__gallery-thumbs-slider-card-image");               
+
+                foreach (var imageBlock in imageBlocks)
+                {                    
+                    if (imageBlock != null)
+                    {
+                        string? imgUrl = imageBlock.GetAttribute("src");
+                        httpClient.BaseAddress = new Uri(LoginPageUrl);
+                        string? fullUrl = new Uri(httpClient.BaseAddress, imgUrl).AbsoluteUri;
+
+                        images.Add(fullUrl);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return downloadedImages;
+            }
+
+
+            if (images.Count != 0)
+                downloadedImages = await ImagesProcessAsync(images);
+
+            return downloadedImages;
         }
 
         protected override void SpecificRunAsync(string brandName, string articul)
         {
-            throw new NotImplementedException();
+           
         }
         #endregion
 
