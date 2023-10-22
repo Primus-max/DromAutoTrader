@@ -1,5 +1,4 @@
-﻿using AngleSharp.Dom;
-using AngleSharp.Html.Dom;
+﻿using AngleSharp.Html.Dom;
 using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
@@ -99,17 +98,74 @@ namespace DromAutoTrader.ImageServices
 
         protected override void OpenSearchedCard()
         {
-            throw new NotImplementedException();
+            try
+            {
+                IWebElement searchCardLink = _driver.FindElement(By.CssSelector("div.src-features-search-components-result-item-___index__link___q1afC.src-features-search-components-result-item-___index__isLinkFocused___-+EPf"));
+
+                IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
+                js.ExecuteScript("arguments[0].click();", searchCardLink);
+            }
+            catch (Exception ex)
+            {
+                string message = $"Произошла ошибка в методе GetSearchedCard: {ex.Message}";
+                Console.WriteLine(message);
+            }
+
+            try
+            {
+                IWebElement tabDescription = _driver.FindElement(By.CssSelector("//div[@class='src-features-product-card-components-navigationBar-___style__tab___MqWl1 src-features-product-card-components-navigationBar-___style__enabledTab___Ku7iZ'][contains(.,'Описание')]"));
+
+                IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
+                js.ExecuteScript("arguments[0].click();", tabDescription);
+            }
+            catch (Exception)
+            {
+                string message = $"Произошла ошибка в методе GetSearchedCard: {ex.Message}";
+                Console.WriteLine(message);
+            }
         }
 
         protected override bool IsImagesVisible()
         {
-            throw new NotImplementedException();
+            Thread.Sleep(500);
+            return true;
         }
 
-        protected override Task<List<string>> GetImagesAsync()
+        protected override async Task<List<string>> GetImagesAsync()
         {
-            throw new NotImplementedException();
+            // Список изображений которые возвращаем из метода
+            List<string> downloadedImages = new List<string>();
+
+            // Временное хранилище изображений
+            List<string> images = new List<string>();
+
+            IWebElement mainImageParentDiv = null!;
+
+            // Получаю контейнер с картинками
+            try
+            {
+                mainImageParentDiv = _driver.FindElement(By.ClassName("photo_gallery"));
+            }
+            catch (Exception) { }
+
+            // Получаю все картинки thumbs
+            try
+            {
+                // Находим все img элементы в li элементах с data-type='thumb'
+                IList<IWebElement> imagesThumb = mainImageParentDiv.FindElements(By.XPath("//li[@data-type='thumb']/img"));
+
+                foreach (var image in imagesThumb)
+                {
+                    string imagePath = image.GetAttribute("src");
+                    images.Add(imagePath);
+                }
+            }
+            catch (Exception) { }
+
+            if (images.Count != 0)
+                downloadedImages = await ImagesProcessAsync(images);
+
+            return downloadedImages;
         }
 
         protected override void SpecificRunAsync(string brandName, string articul)
