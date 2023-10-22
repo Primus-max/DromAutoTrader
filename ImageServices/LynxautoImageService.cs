@@ -74,7 +74,9 @@ namespace DromAutoTrader.ImageServices
             return isMatching;
         }
 
-        protected override void OpenSearchedCard() { }
+        protected override void OpenSearchedCard() 
+        {
+                   }
 
         // Метод проверки наличия сообщения, что ничего не найдено
         protected override bool IsImagesVisible()

@@ -72,7 +72,38 @@ namespace DromAutoTrader.ImageServices
             return isMatching;
         }
 
-        protected override void OpenSearchedCard() { }
+        protected override void OpenSearchedCard()
+        {
+            try
+            {
+                // Находим div с классом "module-spisok-product"
+                var productDiv = _document.QuerySelector(".module-spisok-product");
+
+                if (productDiv != null)
+                {
+                    // Находим первый элемент li внутри div
+                    var firstLi = productDiv.QuerySelector("li");
+
+                    if (firstLi != null)
+                    {
+                        // Извлекаем ссылку из тега a
+                        var linkElement = firstLi.QuerySelector("a");
+                        if (linkElement != null)
+                        {
+                            string? link = linkElement.GetAttribute("href");
+
+                            Task.Run(async () => await GoToAsync(link)).Wait();
+                            // Здесь можно осуществить переход по полученной ссылке и продолжить парсинг следующей страницы
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
 
         protected override bool IsImagesVisible()
         {
@@ -99,7 +130,6 @@ namespace DromAutoTrader.ImageServices
 
                 using HttpClient httpClient = new HttpClient();
                 httpClient.BaseAddress = new Uri(LoginPageUrl);
-
                 string imgUrl = new Uri(httpClient.BaseAddress, relativeUrl).AbsoluteUri;
 
                 if (!string.IsNullOrEmpty(imgUrl))
@@ -126,13 +156,25 @@ namespace DromAutoTrader.ImageServices
 
         #region Специфичные методы класса
         // Асинхронный метода перехода на страницу поиска и поиск
-        protected async Task GoToAsync()
+        protected async Task GoToAsync(string url = null!)
         {
             string art = "LAT0864";
             try
             {
-                var httpClient = new HttpClient();
-                var fullUrl = $"{SearchPageUrl}?query={art}";
+                using HttpClient httpClient = new();
+                string fullUrl = string.Empty;
+
+                if (url != null)
+                {
+                    httpClient.BaseAddress = new Uri(LoginPageUrl);
+                    fullUrl = new Uri(httpClient.BaseAddress, url).AbsoluteUri;
+                }
+                else
+                {
+                    fullUrl = $"{SearchPageUrl}?query={art}";
+                }
+
+
                 var response = await httpClient.GetAsync(fullUrl);
 
                 if (response.IsSuccessStatusCode)
