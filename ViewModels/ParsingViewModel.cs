@@ -62,7 +62,8 @@ namespace DromAutoTrader.ViewModels
                 //BergImageService bergImageService = new();
                 //UnicomImageService unicomImageService = new();
                 //LynxautoImageService lynxautoImageService = new LynxautoImageService();
-                LuzarImageService LuzarimageService = new LuzarImageService();
+                //LuzarImageService LuzarimageService = new LuzarImageService();
+                StarvoltImageService starvoltImageService = new StarvoltImageService();
 
                 foreach (var price in prices)
                 {
@@ -79,9 +80,9 @@ namespace DromAutoTrader.ViewModels
 
 
                    // await bergImageService.RunAsync(brand, articul);
-                    await LuzarimageService.RunAsync(brand, articul);
+                    await starvoltImageService.RunAsync(brand, articul);
 
-                    var testImages = LuzarimageService.BrandImages;
+                    var testImages = starvoltImageService.BrandImages;
                 }
             }
         }

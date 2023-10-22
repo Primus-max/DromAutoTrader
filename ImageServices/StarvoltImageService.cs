@@ -1,22 +1,19 @@
 ﻿using AngleSharp;
+using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace DromAutoTrader.ImageServices
 {
     public class StarvoltImageService : ImageServiceBase
     {
         #region Перезапись абстрактных свойст
-        protected override string LoginPageUrl => "https://luzar.ru/";
+        protected override string LoginPageUrl => "https://startvolt.com/";
 
         protected override string SearchPageUrl => "https://luzar.ru/search/";
 
@@ -24,7 +21,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override string Password => "";
 
-        public override string ServiceName => "luzar.ru";
+        public override string ServiceName => "startvolt.com";
         #endregion
 
         #region Приватные поля
@@ -33,32 +30,50 @@ namespace DromAutoTrader.ImageServices
 
         public StarvoltImageService()
         {
-            
+
         }
 
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
 
-        
+
         #region Перезаписанные методы базового класса
         protected override void GoTo()
         {
-            throw new NotImplementedException();
+            Task.Run(async () => await GoToAsync()).Wait();
         }
 
-        protected override void Authorization()
-        {
-            throw new NotImplementedException();
-        }
+        protected override void Authorization() { }
 
         protected override void SetArticulInSearchInput()
         {
-            throw new NotImplementedException();
+            Task.Run(async () => await GoToAsync()).Wait();
         }
 
         protected override bool IsNotMatchingArticul()
         {
-            throw new NotImplementedException();
+            bool isMatching = false;
+            try
+            {
+                Thread.Sleep(500);
+                IHtmlElement? wrongMessageElement = _document?.QuerySelector("h1") as IHtmlElement;
+
+                string? wrongMessage = wrongMessageElement?.Text();
+
+
+                string? cleanedText = Regex.Unescape(wrongMessage.Trim().Replace("\n", "").Replace("\r", ""));
+                string? comparisonStr = $"По точному совпадению результатов не найдено";
+
+                if (wrongMessage.Contains(comparisonStr, StringComparison.OrdinalIgnoreCase))
+                {
+                    isMatching = true;
+                }
+            }
+            catch (Exception)
+            {
+                return isMatching;
+            }
+            return isMatching;
         }
 
         protected override void OpenSearchedCard()
@@ -98,7 +113,7 @@ namespace DromAutoTrader.ImageServices
                 }
                 else
                 {
-                    fullUrl = $"{SearchPageUrl}?query={Articul}";
+                     fullUrl = $"{SearchPageUrl}?q={Articul}";
                 }
 
 
