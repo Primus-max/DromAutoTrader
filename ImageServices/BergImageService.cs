@@ -74,7 +74,7 @@ namespace DromAutoTrader.ImageServices
                     IWebElement passInput = _driver.FindElement(By.Id("password"));
 
                     Thread.Sleep(200);
-                    //ClearAndEnterText(passInput, _password);
+                   
                     passInput.SendKeys(Password);
                 }
                 catch (Exception) { }

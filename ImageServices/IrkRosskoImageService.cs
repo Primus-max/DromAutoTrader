@@ -1,5 +1,4 @@
-﻿using AngleSharp.Html.Dom;
-using DromAutoTrader.ImageServices.Base;
+﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using System.Text.RegularExpressions;
@@ -22,7 +21,7 @@ namespace DromAutoTrader.ImageServices
         #endregion
 
         #region Приватные поля
-        private IHtmlDocument _document = null!;
+
         #endregion
 
         public IrkRosskoImageService() { InitializeDriver(); }
@@ -51,7 +50,11 @@ namespace DromAutoTrader.ImageServices
 
                     searchInput = _driver.FindElement(By.Id("1"));
 
-                    searchInput.SendKeys(Articul);
+                    searchInput.Clear();
+
+                    ClearAndEnterText(searchInput, Articul);
+                    Thread.Sleep(200);
+                    //searchInput.SendKeys(Articul);
 
                     searchInput.Submit();
 
@@ -95,7 +98,8 @@ namespace DromAutoTrader.ImageServices
         {
             try
             {
-                IWebElement searchCardLink = _driver.FindElement(By.CssSelector("div.src-features-search-components-result-item-___index__link___q1afC.src-features-search-components-result-item-___index__isLinkFocused___-+EPf"));
+                Thread.Sleep(1000);
+                IWebElement searchCardLink = _driver.FindElement(By.ClassName("src-features-search-components-result-item-___index__isLinkFocused___-+EPf"));
 
                 Thread.Sleep(200);
                 IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
@@ -124,24 +128,34 @@ namespace DromAutoTrader.ImageServices
             // Получаю все картинки thumbs
             try
             {
+                Thread.Sleep(500);
                 // Находим все img элементы 
                 IWebElement imagesThumb = _driver.FindElement(By.ClassName("src-features-product-card-components-info-___index__image___KeiQL"));
 
+                Thread.Sleep(200);
                 string imagePath = imagesThumb.GetAttribute("style");
 
-                string pattern = @"url\(""(https://[^""]+)""\);";
+                // Находим позиции, где начинается URL и заканчивается
+                int startIndex = imagePath.IndexOf("https://");
+                int endIndex = imagePath.LastIndexOf("jpg") + 3;
 
-                Match match = Regex.Match(imagePath, pattern);
-                if (match.Success)
+                if (startIndex >= 0 && endIndex > startIndex)
                 {
-                    string imageUrl = match.Groups[1].Value;
+                    string imageUrl = imagePath.Substring(startIndex, endIndex - startIndex);
 
-                    images.Add(imageUrl);
+                    if (!string.IsNullOrEmpty(imageUrl))
+                        images.Add(imageUrl);
                 }
+
+                
+
 
 
             }
-            catch (Exception) { }
+            catch (Exception ex) 
+            {
+                string asdf = ex.Message;
+            }
 
             if (images.Count != 0)
                 downloadedImages = await ImagesProcessAsync(images);
@@ -181,6 +195,35 @@ namespace DromAutoTrader.ImageServices
         {
             UndetectDriver webDriver = new();
             _driver = webDriver.GetDriver();
+        }
+
+        public void ClearAndEnterText(IWebElement element, string text)
+        {
+            Random random = new Random();
+            // Используем JavaScriptExecutor для выполнения JavaScript-кода
+            IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)((IWrapsDriver)element).WrappedDriver;
+
+            // Очищаем поле ввода с помощью JavaScript
+            jsExecutor.ExecuteScript("arguments[0].value = '';", element);
+            // Установить стиль display элемента в block
+            jsExecutor.ExecuteScript("arguments[0].style.display = 'block';", element);
+            // Вставляем текст по одному символу без изменений
+            foreach (char letter in text)
+            {
+                if (letter == '\b')
+                {
+                    // Если символ является символом backspace, удаляем последний введенный символ
+                    element.SendKeys(Keys.Backspace);
+                }
+                else
+                {
+                    // Вводим символ
+                    element.SendKeys(letter.ToString());
+                }
+
+                Thread.Sleep(random.Next(50, 150));  // Добавляем небольшую паузу между вводом каждого символа
+            }
+            Thread.Sleep(random.Next(300, 700));
         }
         #endregion
 
