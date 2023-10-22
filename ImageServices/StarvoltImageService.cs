@@ -78,12 +78,41 @@ namespace DromAutoTrader.ImageServices
 
         protected override void OpenSearchedCard()
         {
-            throw new NotImplementedException();
+            try
+            {
+                // Находим div с классом "module-spisok-product"
+                var productDiv = _document.QuerySelector(".catalog__main-products-list");
+
+                if (productDiv != null)
+                {
+                    // Находим первый элемент li внутри div
+                    var firstLi = productDiv.QuerySelector("li");
+
+                    if (firstLi != null)
+                    {
+                        // Извлекаем ссылку из тега a
+                        var linkElement = firstLi.QuerySelector("a");
+                        if (linkElement != null)
+                        {
+                            string? link = linkElement.GetAttribute("href");
+
+                            Task.Run(async () => await GoToAsync(link)).Wait();
+                            // Здесь можно осуществить переход по полученной ссылке и продолжить парсинг следующей страницы
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         protected override bool IsImagesVisible()
         {
-            throw new NotImplementedException();
+            Thread.Sleep(500);
+            return true;
         }
 
         protected override Task<List<string>> GetImagesAsync()
@@ -101,6 +130,7 @@ namespace DromAutoTrader.ImageServices
         // Асинхронный метода перехода на страницу поиска и поиск
         protected async Task GoToAsync(string url = null!)
         {
+            string testArticul = "LG2633";
             try
             {
                 using HttpClient httpClient = new();
@@ -113,7 +143,7 @@ namespace DromAutoTrader.ImageServices
                 }
                 else
                 {
-                     fullUrl = $"{SearchPageUrl}?q={Articul}";
+                     fullUrl = $"{SearchPageUrl}?q={testArticul}";
                 }
 
 
