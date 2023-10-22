@@ -13,9 +13,9 @@ namespace DromAutoTrader.ImageServices
     public class StarvoltImageService : ImageServiceBase
     {
         #region Перезапись абстрактных свойст
-        protected override string LoginPageUrl => "https://startvolt.com/";
+        protected override string LoginPageUrl => "https://startvolt.com";
 
-        protected override string SearchPageUrl => "https://luzar.ru/search/";
+        protected override string SearchPageUrl => "https://startvolt.com/catalogue/";
 
         protected override string UserName => "";
 
@@ -56,7 +56,7 @@ namespace DromAutoTrader.ImageServices
             try
             {
                 Thread.Sleep(500);
-                IHtmlElement? wrongMessageElement = _document?.QuerySelector("h1") as IHtmlElement;
+                IHtmlElement? wrongMessageElement = _document?.QuerySelector("h1.page-title__heading.page-title__heading--fullwidth") as IHtmlElement;
 
                 string? wrongMessage = wrongMessageElement?.Text();
 
