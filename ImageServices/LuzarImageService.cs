@@ -119,22 +119,30 @@ namespace DromAutoTrader.ImageServices
             // Временное хранилище изображений
             List<string> images = new();
 
+            using HttpClient httpClient = new();
+
             try
             {
                 Thread.Sleep(500);
                 // Получаем изображение
 
-                // Получение абсолютного URL из относительного
-                var imgElement = _document.QuerySelector(".center-image img") as IHtmlImageElement;
-                string relativeUrl = imgElement.GetAttribute("src");
+                var imageBlocks = _document.QuerySelectorAll(".product-card-image-list-item");
 
-                using HttpClient httpClient = new HttpClient();
-                httpClient.BaseAddress = new Uri(LoginPageUrl);
-                string imgUrl = new Uri(httpClient.BaseAddress, relativeUrl).AbsoluteUri;
+                List<string> imageUrls = new List<string>();
 
-                if (!string.IsNullOrEmpty(imgUrl))
-                    images.Add(imgUrl);
+                foreach (var imageBlock in imageBlocks)
+                {
+                    // Находим изображение внутри блока
+                    var imgElement = imageBlock.QuerySelector("img");
+                    if (imgElement != null)
+                    {
+                        string? imgUrl = imgElement.GetAttribute("data-big-image");
+                        httpClient.BaseAddress = new Uri(LoginPageUrl);
+                        string? fullUrl = new Uri(httpClient.BaseAddress, imgUrl).AbsoluteUri;
 
+                        images.Add(fullUrl);
+                    }
+                }
             }
             catch (Exception)
             {
@@ -158,7 +166,6 @@ namespace DromAutoTrader.ImageServices
         // Асинхронный метода перехода на страницу поиска и поиск
         protected async Task GoToAsync(string url = null!)
         {
-            string art = "LAT0864";
             try
             {
                 using HttpClient httpClient = new();
@@ -171,7 +178,7 @@ namespace DromAutoTrader.ImageServices
                 }
                 else
                 {
-                    fullUrl = $"{SearchPageUrl}?query={art}";
+                    fullUrl = $"{SearchPageUrl}?query={Articul}";
                 }
 
 
@@ -196,7 +203,6 @@ namespace DromAutoTrader.ImageServices
                 Console.WriteLine($"Произошло исключение: {ex.Message}");
             }
         }
-
 
         // TODO вынести этот метод в базовый и сделать для всех
         // Метод создания директории и скачивания изображений
