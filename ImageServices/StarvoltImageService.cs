@@ -13,9 +13,9 @@ namespace DromAutoTrader.ImageServices
     public class StarvoltImageService : ImageServiceBase
     {
         #region Перезапись абстрактных свойст
-        protected override string LoginPageUrl => "https://startvolt.com/";
+        protected override string LoginPageUrl => "https://startvolt.com";
 
-        protected override string SearchPageUrl => "https://luzar.ru/search/";
+        protected override string SearchPageUrl => "https://startvolt.com/catalogue/";
 
         protected override string UserName => "";
 
@@ -56,7 +56,7 @@ namespace DromAutoTrader.ImageServices
             try
             {
                 Thread.Sleep(500);
-                IHtmlElement? wrongMessageElement = _document?.QuerySelector("h1") as IHtmlElement;
+                IHtmlElement? wrongMessageElement = _document?.QuerySelector("h1.page-title__heading.page-title__heading--fullwidth") as IHtmlElement;
 
                 string? wrongMessage = wrongMessageElement?.Text();
 
@@ -78,22 +78,87 @@ namespace DromAutoTrader.ImageServices
 
         protected override void OpenSearchedCard()
         {
-            throw new NotImplementedException();
+            try
+            {
+                // Находим div с классом "module-spisok-product"
+                var productDiv = _document.QuerySelector(".catalog__main-products-list");
+
+                if (productDiv != null)
+                {
+                    // Находим первый элемент li внутри div
+                    var firstLi = productDiv.QuerySelector("li");
+
+                    if (firstLi != null)
+                    {
+                        // Извлекаем ссылку из тега a
+                        var linkElement = firstLi.QuerySelector("a");
+                        if (linkElement != null)
+                        {
+                            string? link = linkElement.GetAttribute("href");
+
+                            Task.Run(async () => await GoToAsync(link)).Wait();
+                            // Здесь можно осуществить переход по полученной ссылке и продолжить парсинг следующей страницы
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         protected override bool IsImagesVisible()
         {
-            throw new NotImplementedException();
+            Thread.Sleep(500);
+            return true;
         }
 
-        protected override Task<List<string>> GetImagesAsync()
+        protected override async Task<List<string>> GetImagesAsync()
         {
-            throw new NotImplementedException();
+            // Список изображений которые возвращаем из метода
+            List<string> downloadedImages = new();
+
+            // Временное хранилище изображений
+            List<string> images = new();
+
+            using HttpClient httpClient = new();
+
+            try
+            {
+                Thread.Sleep(500);
+                // Получаем изображение
+
+                var imageBlocks = _document.QuerySelectorAll("img.product__gallery-thumbs-slider-card-image");               
+
+                foreach (var imageBlock in imageBlocks)
+                {                    
+                    if (imageBlock != null)
+                    {
+                        string? imgUrl = imageBlock.GetAttribute("src");
+                        httpClient.BaseAddress = new Uri(LoginPageUrl);
+                        string? fullUrl = new Uri(httpClient.BaseAddress, imgUrl).AbsoluteUri;
+
+                        images.Add(fullUrl);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return downloadedImages;
+            }
+
+
+            if (images.Count != 0)
+                downloadedImages = await ImagesProcessAsync(images);
+
+            return downloadedImages;
         }
 
         protected override void SpecificRunAsync(string brandName, string articul)
         {
-            throw new NotImplementedException();
+           
         }
         #endregion
 
@@ -101,6 +166,7 @@ namespace DromAutoTrader.ImageServices
         // Асинхронный метода перехода на страницу поиска и поиск
         protected async Task GoToAsync(string url = null!)
         {
+            string testArticul = "LG2633";
             try
             {
                 using HttpClient httpClient = new();
@@ -113,7 +179,7 @@ namespace DromAutoTrader.ImageServices
                 }
                 else
                 {
-                     fullUrl = $"{SearchPageUrl}?q={Articul}";
+                     fullUrl = $"{SearchPageUrl}?q={testArticul}";
                 }
 
 
