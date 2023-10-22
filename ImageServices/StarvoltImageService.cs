@@ -1,16 +1,19 @@
 ﻿using AngleSharp;
-using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
-using System.Text.RegularExpressions;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace DromAutoTrader.ImageServices
 {
-    public class LuzarImageService : ImageServiceBase
+    public class StarvoltImageService : ImageServiceBase
     {
         #region Перезапись абстрактных свойст
         protected override string LoginPageUrl => "https://luzar.ru/";
@@ -28,132 +31,49 @@ namespace DromAutoTrader.ImageServices
         private IHtmlDocument _document = null!;
         #endregion
 
-        public LuzarImageService() { }
+        public StarvoltImageService()
+        {
+            
+        }
 
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
 
-        #region Перезаписанные методы базового класса          
+        
+        #region Перезаписанные методы базового класса
         protected override void GoTo()
         {
-            Task.Run(async () => await GoToAsync()).Wait();
+            throw new NotImplementedException();
         }
 
-        protected override void Authorization() { }
+        protected override void Authorization()
+        {
+            throw new NotImplementedException();
+        }
 
         protected override void SetArticulInSearchInput()
         {
-            Task.Run(async () => await GoToAsync()).Wait();
+            throw new NotImplementedException();
         }
 
         protected override bool IsNotMatchingArticul()
         {
-            bool isMatching = false;
-            try
-            {
-                Thread.Sleep(500);
-                IHtmlElement wrongMessageElement = _document?.QuerySelector("font.notetext") as IHtmlElement;
-
-                string? wrongMessage = wrongMessageElement.Text();
-
-
-                string? cleanedText = Regex.Unescape(wrongMessage.Trim().Replace("\n", "").Replace("\r", ""));
-                string? comparisonStr = $"К сожалению, на ваш поисковый запрос ничего не найдено.";
-
-                if (wrongMessage.Contains(comparisonStr, StringComparison.OrdinalIgnoreCase))
-                {
-                    isMatching = true;
-                }
-            }
-            catch (Exception)
-            {
-                return isMatching;
-            }
-            return isMatching;
+            throw new NotImplementedException();
         }
 
         protected override void OpenSearchedCard()
         {
-            try
-            {
-                // Находим div с классом "module-spisok-product"
-                var productDiv = _document.QuerySelector(".module-spisok-product");
-
-                if (productDiv != null)
-                {
-                    // Находим первый элемент li внутри div
-                    var firstLi = productDiv.QuerySelector("li");
-
-                    if (firstLi != null)
-                    {
-                        // Извлекаем ссылку из тега a
-                        var linkElement = firstLi.QuerySelector("a");
-                        if (linkElement != null)
-                        {
-                            string? link = linkElement.GetAttribute("href");
-
-                            Task.Run(async () => await GoToAsync(link)).Wait();
-                            // Здесь можно осуществить переход по полученной ссылке и продолжить парсинг следующей страницы
-                        }
-                    }
-                }
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
+            throw new NotImplementedException();
         }
 
         protected override bool IsImagesVisible()
         {
-            Thread.Sleep(500);
-            return true;
+            throw new NotImplementedException();
         }
 
-        protected override async Task<List<string>> GetImagesAsync()
+        protected override Task<List<string>> GetImagesAsync()
         {
-            // Список изображений которые возвращаем из метода
-            List<string> downloadedImages = new();
-
-            // Временное хранилище изображений
-            List<string> images = new();
-            
-            using HttpClient httpClient = new();
-
-            try
-            {
-                Thread.Sleep(500);
-                // Получаем изображение
-
-                var imageBlocks = _document.QuerySelectorAll(".product-card-image-list-item");
-
-                List<string> imageUrls = new List<string>();
-
-                foreach (var imageBlock in imageBlocks)
-                {
-                    // Находим изображение внутри блока
-                    var imgElement = imageBlock.QuerySelector("img");
-                    if (imgElement != null)
-                    {
-                        string? imgUrl = imgElement.GetAttribute("data-big-image");
-                        httpClient.BaseAddress = new Uri(LoginPageUrl);
-                        string? fullUrl = new Uri(httpClient.BaseAddress, imgUrl).AbsoluteUri;
-
-                        images.Add(fullUrl);
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                return downloadedImages;
-            }
-
-
-            if (images.Count != 0)
-                downloadedImages = await ImagesProcessAsync(images);
-
-            return downloadedImages;
+            throw new NotImplementedException();
         }
 
         protected override void SpecificRunAsync(string brandName, string articul)
