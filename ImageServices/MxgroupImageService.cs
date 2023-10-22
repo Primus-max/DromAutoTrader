@@ -2,9 +2,7 @@
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
-using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Windows.Controls;
 
 namespace DromAutoTrader.ImageServices
 {
@@ -98,10 +96,7 @@ namespace DromAutoTrader.ImageServices
             _driver.Navigate().GoToUrl(searchUrl);
 
 
-            // Отличия, в неполном виде есть, этого нет в полном
-            // class="mx-sr-panel exact"
-            // class="mx-sr-info"
-
+            // Проверка на наличие спиннеров свидетельствующих о загрузке страницы
             bool isSpinner = true;
             while (isSpinner)
             {
@@ -111,14 +106,14 @@ namespace DromAutoTrader.ImageServices
                     IWebElement spinner1 = _driver.FindElement(By.CssSelector(".icon.spinner.mx-spin"));
 
                     try
-                    {                        
+                    {
                         IWebElement spinner12 = _driver.FindElement(By.CssSelector(".indicator-wrapper.disabled"));
                         break;
                     }
                     catch (Exception)
                     {
                         continue;
-                    }                    
+                    }
                 }
                 catch (Exception)
                 {
@@ -160,7 +155,6 @@ namespace DromAutoTrader.ImageServices
 
         protected override async Task<List<string>> GetImagesAsync()
         {
-
             // Еще одна проверка на загрузку страницы
             bool isSpinner = true;
             int tryCount = 0;
@@ -192,6 +186,16 @@ namespace DromAutoTrader.ImageServices
             IWebElement mainImageParentUl = null!;
             IWebElement imgPopup = null!;
 
+            // Если открылась другая таблица, то по другому забираем фото
+            string offerLink = _driver.Url;
+            if (offerLink.Contains("offers"))
+            {
+                downloadedImages = await GetImagesFromOtherSourceAsync();
+
+                if (downloadedImages.Count > 0)
+                    return downloadedImages;
+            }
+
             // Получаю контейнер с картинками
             try
             {
@@ -203,10 +207,73 @@ namespace DromAutoTrader.ImageServices
             try
             {
                 // Находим все img элементы в li элементах с data-type='thumb'
-                IList<IWebElement> itemProductsLi = mainImageParentUl?.FindElements(By.TagName("li"));
+                IList<IWebElement>? itemProductsLi = mainImageParentUl?.FindElements(By.TagName("li"));
 
                 IWebElement? itemProductIcon = itemProductsLi[0]?.FindElement(By.ClassName("mx-sr-item__img"));
-               
+
+
+                if (itemProductIcon is not null)
+                {
+                    itemProductIcon.Click();
+                    Thread.Sleep(1000);
+
+                    try
+                    {
+                        imgPopup = _driver.FindElement(By.CssSelector("div.slider__item.img-viewer__slider-item img"));
+                    }
+                    catch (Exception)
+                    {
+
+                    }
+
+                    string imagePath = imgPopup.GetAttribute("src");
+                    images.Add(imagePath);
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+
+            if (images.Count != 0)
+                downloadedImages = await ImagesProcessAsync(images);
+
+            return downloadedImages;
+        }
+        protected override void SpecificRunAsync(string brandName, string articul)
+        {
+
+        }
+        #endregion
+
+
+        #region Специфичные методы класса    
+        // Метод на случай если появилась другая таблица, в ней другие селекторы
+        private async Task<List<string>> GetImagesFromOtherSourceAsync()
+        {
+            // Список изображений которые возвращаем из метода
+            List<string> downloadedImages = new List<string>();
+
+            // Временное хранилище изображений
+            List<string> images = new List<string>();
+            IList<IWebElement> mainImageParentTable = null!;
+            IWebElement imgPopup = null!;
+
+            // Получаю контейнер с картинками
+            try
+            {
+                mainImageParentTable = _driver.FindElements(By.CssSelector("div.sr-table__row.offer.sr-table__row_mx"));
+            }
+            catch (Exception) { }
+
+            // Получаю все картинки thumbs
+            try
+            {
+                // Находим все img элементы в li элементах с data-type='thumb'
+                IWebElement? itemProductsTd = mainImageParentTable[0]?.FindElement(By.CssSelector("div.sr-table__td.td_product"));
+
+                IWebElement? itemProductIcon = itemProductsTd?.FindElement(By.ClassName("mx-sr-item__img"));
+
 
                 if (itemProductIcon is not null)
                 {
@@ -228,41 +295,9 @@ namespace DromAutoTrader.ImageServices
                     images.Add(imagePath);
                 }
             }
-            catch (Exception) 
+            catch (Exception)
             {
-                //try
-                //{
-                //    // Если открылось другое окно, то пробую получить фото там
-                //    //mainImageParentUl = _driver.FindElement(By.CssSelector("div.descr"));
-                //    IWebElement? itemProductIcon = _driver.FindElement(By.ClassName("mx-sr-item__img"));
 
-                //    if (itemProductIcon is not null)
-                //    {
-                //        itemProductIcon.Click();
-                //        Thread.Sleep(1000);
-
-                //        try
-                //        {
-                //            imgPopup = _driver.FindElement(By.CssSelector("div.slider__item.img-viewer__slider-item img"));
-                //        }
-                //        catch (Exception)
-                //        {
-
-                //        }
-                //        //< h1 >< span class="mx-text_up mx-text_light mx-text_sm">Результат поиска</span>SS-3033</h1>
-                //        //<div class="text">…подождите, идет поиск&nbsp;<svg class="icon spinner mx-spin"><use xlink:href="/images/sprite.svg#icon-spinner2"></use></svg></div>
-
-                //        string imagePath = imgPopup.GetAttribute("src");
-
-                //        images.Add(imagePath);
-                //        if (images.Count != 0)
-                //            downloadedImages = await ImagesProcessAsync(images);
-
-                //    }
-                //}
-                //catch (Exception)
-                //{
-                //}
             }
 
             if (images.Count != 0)
@@ -270,14 +305,6 @@ namespace DromAutoTrader.ImageServices
 
             return downloadedImages;
         }
-        protected override void SpecificRunAsync(string brandName, string articul)
-        {
-
-        }
-        #endregion
-
-
-        #region Специфичные методы класса       
 
         // Метод для формирования Url поискового запроса
         public string BuildUrl()
@@ -314,26 +341,17 @@ namespace DromAutoTrader.ImageServices
             return downloadedImages;
         }
 
-
         public void WaitingReadyStatePage()
         {
-            //class="mx-modal__main mx-modal__content"
-            // class="mx-spin icon"
-
             while (true)
             {
                 try
                 {
-                    //                    < div class="alert success">
-                    //    <svg class="spinner icon ">
-                    //        <use xlink:href="/images/sprite.svg#icon-spinner2"></use>
-                    //    </svg>
-                    //    … секундочку, входим на сайт//</div>
 
                     IWebElement spinner = _driver.FindElement(By.CssSelector("div.alert.success"));
 
                     continue;
-                    
+
                 }
                 catch (Exception)
                 {
