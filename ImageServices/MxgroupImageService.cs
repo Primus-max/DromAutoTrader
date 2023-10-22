@@ -1,10 +1,8 @@
 ﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
+using System.Threading;
 using System.Web;
 
 namespace DromAutoTrader.ImageServices
@@ -12,22 +10,22 @@ namespace DromAutoTrader.ImageServices
     public class MxgroupImageService : ImageServiceBase
     {
         #region Перезапись абстрактных свойст
-        protected override string LoginPageUrl => "https://berg.ru/login";
+        protected override string LoginPageUrl => "https://new.mxgroup.ru/#login-client";
 
-        protected override string SearchPageUrl => "https://berg.ru/search/step2?search=AG19166&brand=TRIALLI&withRedirect=1";
+        protected override string SearchPageUrl => "https://new.mxgroup.ru/b/search/n/";
 
-        protected override string UserName => "autobest038";
+        protected override string UserName => "krasikov98975rus@gmail.com";
 
-        protected override string Password => "dimonfutboll";
+        protected override string Password => "H2A8AMZ757";
 
-        public override string ServiceName => "berg.ru";
+        public override string ServiceName => "new.mxgroup.ru";
         #endregion
 
         public MxgroupImageService()
         {
             InitializeDriver();
-        }    
-               
+        }
+
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
 
@@ -41,7 +39,49 @@ namespace DromAutoTrader.ImageServices
 
         protected override void Authorization()
         {
-            throw new NotImplementedException();
+            try
+            {
+                try
+                {
+                    IWebElement logInput = _driver.FindElement(By.Name("username"));
+                    Actions builder = new Actions(_driver);
+
+                    builder.MoveToElement(logInput)
+                           .Click()
+                           .SendKeys(UserName)
+                           .Build()
+                           .Perform();
+
+                    Thread.Sleep(500);
+                }
+                catch (Exception) { }
+
+                try
+                {
+                    IWebElement passInput = _driver.FindElement(By.Name("password"));
+
+                    Thread.Sleep(200);
+
+                    passInput.SendKeys(Password);
+                }
+                catch (Exception) { }
+
+                try
+                {
+                    IWebElement sumbitBtn = _driver.FindElement(By.ClassName("btn"));
+
+                    sumbitBtn.Click();
+
+                    Thread.Sleep(200);
+                }
+                catch (Exception) { }
+            }
+            catch (Exception ex)
+            {
+                // TODO сделать логирование
+                string message = $"Произошла ошибка в методе Authorization: {ex.Message}";
+                Console.WriteLine(message);
+            }
         }
 
         protected override void SetArticulInSearchInput()
