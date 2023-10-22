@@ -4,7 +4,6 @@ using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Web;
 
 namespace DromAutoTrader.ImageServices
 {
@@ -38,10 +37,7 @@ namespace DromAutoTrader.ImageServices
             _driver.Navigate().GoToUrl(LoginPageUrl);
         }
 
-        protected override void Authorization()
-        {
-
-        }
+        protected override void Authorization() { }
 
         protected override void SetArticulInSearchInput()
         {
@@ -80,7 +76,6 @@ namespace DromAutoTrader.ImageServices
 
                 string? wrongMessage = wrongMessageElement?.Text;
 
-
                 string? cleanedText = Regex.Unescape(wrongMessage.Trim().Replace("\n", "").Replace("\r", ""));
                 string? comparisonStr = $"Ничего не нашлось";
 
@@ -102,26 +97,13 @@ namespace DromAutoTrader.ImageServices
             {
                 IWebElement searchCardLink = _driver.FindElement(By.CssSelector("div.src-features-search-components-result-item-___index__link___q1afC.src-features-search-components-result-item-___index__isLinkFocused___-+EPf"));
 
+                Thread.Sleep(200);
                 IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
                 js.ExecuteScript("arguments[0].click();", searchCardLink);
             }
-            catch (Exception ex)
-            {
-                string message = $"Произошла ошибка в методе GetSearchedCard: {ex.Message}";
-                Console.WriteLine(message);
-            }
-
-            try
-            {
-                IWebElement tabDescription = _driver.FindElement(By.CssSelector("//div[@class='src-features-product-card-components-navigationBar-___style__tab___MqWl1 src-features-product-card-components-navigationBar-___style__enabledTab___Ku7iZ'][contains(.,'Описание')]"));
-
-                IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
-                js.ExecuteScript("arguments[0].click();", tabDescription);
-            }
             catch (Exception)
             {
-                string message = $"Произошла ошибка в методе GetSearchedCard: {ex.Message}";
-                Console.WriteLine(message);
+
             }
         }
 
@@ -139,26 +121,25 @@ namespace DromAutoTrader.ImageServices
             // Временное хранилище изображений
             List<string> images = new List<string>();
 
-            IWebElement mainImageParentDiv = null!;
-
-            // Получаю контейнер с картинками
-            try
-            {
-                mainImageParentDiv = _driver.FindElement(By.ClassName("photo_gallery"));
-            }
-            catch (Exception) { }
-
             // Получаю все картинки thumbs
             try
             {
-                // Находим все img элементы в li элементах с data-type='thumb'
-                IList<IWebElement> imagesThumb = mainImageParentDiv.FindElements(By.XPath("//li[@data-type='thumb']/img"));
+                // Находим все img элементы 
+                IWebElement imagesThumb = _driver.FindElement(By.ClassName("src-features-product-card-components-info-___index__image___KeiQL"));
 
-                foreach (var image in imagesThumb)
+                string imagePath = imagesThumb.GetAttribute("style");
+
+                string pattern = @"url\(""(https://[^""]+)""\);";
+
+                Match match = Regex.Match(imagePath, pattern);
+                if (match.Success)
                 {
-                    string imagePath = image.GetAttribute("src");
-                    images.Add(imagePath);
+                    string imageUrl = match.Groups[1].Value;
+
+                    images.Add(imageUrl);
                 }
+
+
             }
             catch (Exception) { }
 
@@ -168,13 +149,10 @@ namespace DromAutoTrader.ImageServices
             return downloadedImages;
         }
 
-        protected override void SpecificRunAsync(string brandName, string articul)
-        {
-            throw new NotImplementedException();
-        }
+        protected override void SpecificRunAsync(string brandName, string articul) { }
         #endregion
 
-        #region Специфичные методы класса  
+        #region Специфичные методы класса 
 
         // TODO вынести этот метод в базовый и сделать для всех
         // Метод создания директории и скачивания изображений
@@ -198,27 +176,12 @@ namespace DromAutoTrader.ImageServices
             return downloadedImages;
         }
 
-        // Строю строку для запроса
-        public string BuildUrl()
-        {
-            var uri = new Uri(SearchPageUrl);
-            var query = HttpUtility.ParseQueryString(uri.Query);
-            query["search"] = Articul;
-            query["brand"] = Brand;
-
-            // Построение нового URL с обновленными параметрами
-            string newUrl = uri.GetLeftPart(UriPartial.Path) + "?" + query.ToString();
-
-            return newUrl;
-        }
-
         // Инициализация драйвера
         private void InitializeDriver()
         {
             UndetectDriver webDriver = new();
             _driver = webDriver.GetDriver();
         }
-
         #endregion
 
     }
