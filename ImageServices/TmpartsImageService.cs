@@ -192,8 +192,7 @@ namespace DromAutoTrader.ImageServices
         }
 
         protected override bool IsImagesVisible()
-        {
-            // id="modalBodyAM"
+        {            
             bool isImagesVisible = false;
             try
             {
@@ -206,7 +205,7 @@ namespace DromAutoTrader.ImageServices
                 anchorElement.Click();
                 //imgElement.Click();
 
-                isImagesVisible = true;
+                isImagesVisible = WaitingImagesPopup();
             }
             catch (Exception)
             {
@@ -237,11 +236,13 @@ namespace DromAutoTrader.ImageServices
             try
             {
                 // Находим все img элементы в li элементах с data-type='thumb'
-                IList<IWebElement> imagesThumb = mainImageParentDiv.FindElements(By.CssSelector("img.infoWinPicBig"));
+                IList<IWebElement> imagesThumb = mainImageParentDiv.FindElements(By.CssSelector("a.imgLink.mainImg"));
 
                 foreach (var image in imagesThumb)
                 {
-                    string imagePath = image.GetAttribute("src");
+                    string imagePath = image.GetAttribute("href");
+                    //string fullPath = LoginPageUrl + imagePath;
+
                     images.Add(imagePath);
                 }
             }
@@ -281,6 +282,33 @@ namespace DromAutoTrader.ImageServices
         #endregion
 
         #region Специфичные методы класса 
+        // Ожидание открытого Popup с изображениями
+        private bool WaitingImagesPopup()
+        {
+            // id="modalBodyAM"
+            bool isPopupOpened = false;
+            int tryCount = 0;
+
+            while (!isPopupOpened)
+            {
+                Thread.Sleep(700);
+                tryCount++;
+                if (tryCount > 50) return isPopupOpened;
+                try
+                {
+                    IWebElement imagesPopup = _driver.FindElement(By.Id("modalBodyAM"));
+
+                    isPopupOpened = true;
+                    return isPopupOpened;
+                }
+                catch (Exception)
+                {
+                    continue;
+                }               
+            }
+            return isPopupOpened;
+        }
+
         // Метод для формирования Url поискового запроса
         public string BuildUrl()
         {
