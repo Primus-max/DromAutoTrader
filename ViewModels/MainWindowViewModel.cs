@@ -522,7 +522,7 @@ namespace DromAutoTrader.ViewModels
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
                 Multiselect = true, // Разрешить выбор нескольких файлов
-                Filter = "Excel Files (*.xlsx)|*.xlsx|CSV Files (*.csv)|*.csv|All Files (*.*)|*.*"
+                Filter = "Excel Files (*.xlsx;*.xls)|*.xlsx;*.xls|CSV Files (*.csv)|*.csv|All Files (*.*)|*.*"
             };
 
             if (openFileDialog.ShowDialog() == true)
