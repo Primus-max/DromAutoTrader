@@ -12,9 +12,9 @@ namespace DromAutoTrader.Services
     {
         private string? _articul = string.Empty;
         private string? _downloadDirectory = string.Empty;
-        private List<string> _imageUrls = null!;      
+        private List<string> _imageUrls = null!;         
 
-        public ImageDownloader(string articul, string downloadDirectory, List<string> imageUrls) 
+        public ImageDownloader( string articul, string downloadDirectory, List<string> imageUrls) 
         {
             _articul = articul;
             _downloadDirectory = downloadDirectory;
@@ -61,6 +61,70 @@ namespace DromAutoTrader.Services
 
             return downloadedImagePaths;
         }
+
+        /// <summary>
+        /// Асинхронный метод для скачивания изображений из удалённых источников с использованием 
+        /// <see cref="HttpResponseMessage"/>
+        /// и <see cref="CookieContainer"/> поученный от авторизованной сессии. 
+        /// </summary>
+        /// <param name="driver"></param>
+        /// <param name="articul"></param>
+        /// <param name="downloadDirectory"></param>
+        /// <param name="images"></param>
+        /// <returns></returns>
+        public async Task<List<string>> DownloadImageWithCookiesAsync(IWebDriver driver)
+        {
+            List<string> downloadedImagePaths = new();
+            try
+            {
+                string imageUrl = _imageUrls[0];
+                string fileName = $"{_articul}_{0:00}.jpg";
+                // Получение кук из WebDriver
+                var seleniumCookies = driver.Manage().Cookies.AllCookies;
+
+                using HttpClient client = new HttpClient();
+                var cookieContainer = new CookieContainer();
+
+                // Преобразовываем куки из Cookie (Selenium) в Cookie (HttpClient)
+                foreach (var seleniumCookie in seleniumCookies)
+                {
+                    var httpClientCookie = new System.Net.Cookie(seleniumCookie.Name, seleniumCookie.Value, seleniumCookie.Path, seleniumCookie.Domain);
+                    cookieContainer.Add(new Uri(imageUrl), httpClientCookie);
+                }
+
+                // Устанавливаем CookieContainer в HttpClient
+                var clientHandler = new HttpClientHandler
+                {
+                    CookieContainer = cookieContainer
+                };
+
+                using (var httpClient = new HttpClient(clientHandler))
+                {
+                    using HttpResponseMessage response = await httpClient.GetAsync(imageUrl);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        byte[] imageBytes = await response.Content.ReadAsByteArrayAsync();
+
+                        string localFilePath = Path.Combine(_downloadDirectory, fileName);
+
+                        // Сохраняем скачанное изображение в файл
+                        File.WriteAllBytes(localFilePath, imageBytes);
+
+                        downloadedImagePaths.Add(localFilePath);
+                        return downloadedImagePaths;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка: {ex.Message}");
+            }
+
+            return downloadedImagePaths;
+        }
+
+
 
         /// <summary>
         /// Синхронный метод для скачивания изображений из удалённых источников с использованием <see cref="WebClient"/>.

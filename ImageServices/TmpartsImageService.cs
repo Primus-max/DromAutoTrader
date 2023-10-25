@@ -21,7 +21,7 @@ namespace DromAutoTrader.ImageServices
         #region Перезапись абстрактных свойст
         protected override string LoginPageUrl => "https://tmparts.ru/";
 
-        protected override string SearchPageUrl => "https://tmparts.ru/Lookup/SecondLook?brand=Mazda&article=F10049686";
+        protected override string SearchPageUrl => "https://tmparts.ru/StaticContent/ProductImages/";
 
         protected override string UserName => "ПЛ0044166";
 
@@ -106,13 +106,11 @@ namespace DromAutoTrader.ImageServices
 
         protected override void SetArticulInSearchInput()
         {
-            // TODO везде обернуть эти места в try catch
-            string imageLink = $"https://tmparts.ru/StaticContent/ProductImages/";
+            // TODO везде обернуть эти места в try catch           
             try
-            {
-                string buildetLink = $"{imageLink}{Brand}/{Articul}.jpg";
-                //string? searchUrl = BuildUrl();
-                _driver.Navigate().GoToUrl(buildetLink);
+            {                
+                string? searchUrl = BuildUrl();
+                _driver.Navigate().GoToUrl(searchUrl);
             }
             catch (Exception)
             {
@@ -123,85 +121,12 @@ namespace DromAutoTrader.ImageServices
 
         protected override bool IsNotMatchingArticul()
         {
-            return false;
-            //// <h4 class="red" style="margin-bottom: 8px;">Извините, артикул не найден!</h4>
-
-            //bool isNotMatchingArticul = false;
-            //try
-            //{
-            //    IWebElement attentionMessage = _driver.FindElement(By.CssSelector("h4.red"));
-
-            //    // Если получили этот элемент значит по запросу ничего не найдено
-            //    return true;
-
-            //}
-            //catch (Exception)
-            //{
-            //    return isNotMatchingArticul;
-            //}
+            return false;           
         }
 
         protected override void OpenSearchedCard()
         {
-            //try
-            //{
-            //    IWebElement imgElement = _driver.FindElement(By.XPath("//img[contains(@src, '/Images/i.png')]"));
-            //    IWebElement anchorElement = imgElement.FindElement(By.XPath("./..")); // Выбрать родительский элемент <a>
-
-            //    anchorElement.Click();
-            //}
-            //catch (Exception)
-            //{
-
-            //}
-            ////https://tmparts.ru/Lookup/SecondLook?brand=Mazda&article=F10049686
-            //string secondLookUrl = "https://tmparts.ru/Lookup/SecondLook?brand=Mazda&article=F10049686";
-
-            //var uri = new Uri(secondLookUrl);
-            //var query = HttpUtility.ParseQueryString(uri.Query);
-            //query["brand"] = Brand;
-            //query["article"] = Articul;
-
-            //// Построение нового URL с обновленными параметрами
-            //string newUrl = uri.GetLeftPart(UriPartial.Path) + "?" + query.ToString();
-
-            //_driver.Navigate().GoToUrl(secondLookUrl);
-
-
-            //IWebElement searchedCard = null!;
-
-            //try
-            //{
-            //    searchedCard = _driver.FindElement(By.CssSelector("div.panelpanel-default"));
-            //    IWebElement titleCard = _driver.FindElement(By.CssSelector("h3.panel-title"));
-
-            //    string titleCardText = titleCard.Text;
-            //    if (titleCardText.Contains("Полное совпадение запроса "))
-            //    {
-            //        try
-            //        {
-            //            IList<IWebElement> searchCardTrs = searchedCard.FindElements(By.CssSelector("tr.tissTooltip"));
-            //            IWebElement searchCardLink = searchCardTrs[1];
-
-            //            IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
-            //            js.ExecuteScript("arguments[0].click();", searchCardLink);
-            //        }
-            //        catch (Exception)
-            //        {
-
-            //            throw;
-            //        }
-            //    }
-
-
-
-
-            //}
-            //catch (Exception ex)
-            //{
-            //    string message = $"Произошла ошибка в методе GetSearchedCard: {ex.Message}";
-            //    Console.WriteLine(message);
-            //}
+           
         }
 
         protected override bool IsImagesVisible()
@@ -213,17 +138,7 @@ namespace DromAutoTrader.ImageServices
                 IWebElement documentBody = _driver.FindElement(By.TagName("body"));
                 IWebElement img = documentBody.FindElement(By.TagName("img"));
                 isImagesVisible = true;
-                return isImagesVisible;
-                 //IWebElement trElement = _driver.FindElement(By.CssSelector("td.tdpart"));
-                //IWebElement imgElement = trElement.FindElement(By.CssSelector("img[src*='/Images/ph.png']"));
-
-
-                //IWebElement anchorElement = imgElement.FindElement(By.XPath("./..")); // Выбрать родительский элемент <a>
-
-                //anchorElement.Click();
-                ////imgElement.Click();
-
-                //isImagesVisible = WaitingImagesPopup();
+                return isImagesVisible;               
             }
             catch (Exception)
             {
@@ -287,10 +202,8 @@ namespace DromAutoTrader.ImageServices
             if (!folderContainsFiles)
             {
                 // Скачиваю изображения
-                ImageDownloader? downloader = new(Articul, _imagesLocalPath, images);
-                //downloadedImages = await downloader.DownloadImagesAsync();
-                //string path = TakeAndSaveScreenshot(Articul, _imagesLocalPath);
-                downloadedImages = await DownloadImageWithCookiesAsync(Articul, _imagesLocalPath, images);
+                ImageDownloader? downloader = new(Articul, _imagesLocalPath, images);                
+                downloadedImages = await downloader.DownloadImageWithCookiesAsync(_driver);
             }
             return downloadedImages;
         }
@@ -301,142 +214,13 @@ namespace DromAutoTrader.ImageServices
         }
         #endregion
 
-        #region Специфичные методы класса    
-        public async Task<List<string>> DownloadImageWithCookiesAsync(string articul, string downloadDirectory, List<string>images)
-        {
-            List<string> downloadedImagePaths = new();
-            try
-            {
-                string imageUrl = images[0];
-                string fileName = $"{articul}_{0:00}.jpg";
-                // Получение кук из WebDriver
-                var seleniumCookies = _driver.Manage().Cookies.AllCookies;
-
-                using HttpClient client = new HttpClient();
-                var cookieContainer = new CookieContainer();
-
-                // Преобразовываем куки из Cookie (Selenium) в Cookie (HttpClient)
-                foreach (var seleniumCookie in seleniumCookies)
-                {
-                    var httpClientCookie = new System.Net.Cookie(seleniumCookie.Name, seleniumCookie.Value, seleniumCookie.Path, seleniumCookie.Domain);
-                    cookieContainer.Add(new Uri(imageUrl), httpClientCookie);
-                }
-
-                // Устанавливаем CookieContainer в HttpClient
-                var clientHandler = new HttpClientHandler
-                {
-                    CookieContainer = cookieContainer
-                };
-
-                using (var httpClient = new HttpClient(clientHandler))
-                {
-                    using HttpResponseMessage response = await httpClient.GetAsync(imageUrl);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        byte[] imageBytes = await response.Content.ReadAsByteArrayAsync();
-
-                        string localFilePath = Path.Combine(downloadDirectory, fileName);
-
-                        // Сохраняем скачанное изображение в файл
-                        File.WriteAllBytes(localFilePath, imageBytes);
-
-                        downloadedImagePaths.Add(localFilePath);
-                        return downloadedImagePaths;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка: {ex.Message}");
-            }
-
-            return downloadedImagePaths;
-        }
-
-
-        // Метод получения скриншота
-        public string TakeAndSaveScreenshot(string articul, string downloadDirectory)
-        {
-            try
-            {
-                // Выполните здесь код для обрезки изображения в нужных пропорциях (cropImage)
-                int x = 100; // Начальная координата X для обрезки
-                int y = 100; // Начальная координата Y для обрезки
-                int width = 800; // Ширина обрезанной области
-                int height = 600; // Высота обрезанной области
-
-                var screenshot = ((ITakesScreenshot)_driver).GetScreenshot();
-                using (var fullScreen = Image.FromStream(new MemoryStream(screenshot.AsByteArray)))
-                {
-                    var croppedImage = CropImage(fullScreen, x, y, width, height);
-                    string croppedFilePath = Path.Combine(downloadDirectory, $"{articul}.jpg");
-                    croppedImage.Save(croppedFilePath, ImageFormat.Jpeg);
-                    
-                    return croppedFilePath;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка: {ex.Message}");
-                return null;
-            }
-        }
-
-        public Bitmap CropImage(Image img, int x, int y, int width, int height)
-        {
-            var bmp = new Bitmap(width, height);
-            using (var g = Graphics.FromImage(bmp))
-            {
-                g.DrawImage(img, new Rectangle(0, 0, width, height), new Rectangle(x, y, width, height), GraphicsUnit.Pixel);
-            }
-            return bmp;
-        }
-
-
-        // Ожидание открытого Popup с изображениями
-        private bool WaitingImagesPopup()
-        {
-            // id="modalBodyAM"
-            bool isPopupOpened = false;
-            int tryCount = 0;
-
-            while (!isPopupOpened)
-            {
-                Thread.Sleep(700);
-                tryCount++;
-                if (tryCount > 50) return isPopupOpened;
-                try
-                {
-                    IWebElement imagesPopup = _driver.FindElement(By.Id("modalBodyAM"));
-
-                    isPopupOpened = true;
-                    return isPopupOpened;
-                }
-                catch (Exception)
-                {
-                    continue;
-                }               
-            }
-            return isPopupOpened;
-        }
-
+        #region Специфичные методы класса   
         // Метод для формирования Url поискового запроса
         public string BuildUrl()
         {
-            //var uri = new Uri(SearchPageUrl);
-            //var query = HttpUtility.ParseQueryString(uri.Query);
-            //query["SearchNumber"] = Articul;
+            string buildetLink = $"{SearchPageUrl}{Brand}/{Articul}.jpg";          
 
-            var uri = new Uri(SearchPageUrl);
-            var query = HttpUtility.ParseQueryString(uri.Query);
-            query["brand"] = Brand;
-            query["article"] = Articul;
-
-            // Построение нового URL с обновленными параметрами
-            string newUrl = uri.GetLeftPart(UriPartial.Path) + "?" + query.ToString();
-
-            return newUrl;
+            return buildetLink;
         }
 
         // Инициализация драйвера
