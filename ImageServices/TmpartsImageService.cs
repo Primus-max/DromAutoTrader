@@ -1,9 +1,17 @@
 ﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
+using System.Drawing.Imaging;
+using System.Drawing;
+using System.Net.Http;
 using System.Threading;
 using System.Web;
+using System.IO;
+using Image = System.Drawing.Image;
+using System.Net;
+using System.Windows.Media.Imaging;
 
 namespace DromAutoTrader.ImageServices
 {
@@ -21,6 +29,8 @@ namespace DromAutoTrader.ImageServices
 
         public override string ServiceName => "tmparts.ru";
         #endregion
+
+        
 
         public TmpartsImageService()
         {
@@ -97,10 +107,12 @@ namespace DromAutoTrader.ImageServices
         protected override void SetArticulInSearchInput()
         {
             // TODO везде обернуть эти места в try catch
+            string imageLink = $"https://tmparts.ru/StaticContent/ProductImages/";
             try
             {
-                string? searchUrl = BuildUrl();
-                _driver.Navigate().GoToUrl(searchUrl);
+                string buildetLink = $"{imageLink}{Brand}/{Articul}.jpg";
+                //string? searchUrl = BuildUrl();
+                _driver.Navigate().GoToUrl(buildetLink);
             }
             catch (Exception)
             {
@@ -111,21 +123,22 @@ namespace DromAutoTrader.ImageServices
 
         protected override bool IsNotMatchingArticul()
         {
-            // <h4 class="red" style="margin-bottom: 8px;">Извините, артикул не найден!</h4>
+            return false;
+            //// <h4 class="red" style="margin-bottom: 8px;">Извините, артикул не найден!</h4>
 
-            bool isNotMatchingArticul = false;
-            try
-            {
-                IWebElement attentionMessage = _driver.FindElement(By.CssSelector("h4.red"));
+            //bool isNotMatchingArticul = false;
+            //try
+            //{
+            //    IWebElement attentionMessage = _driver.FindElement(By.CssSelector("h4.red"));
 
-                // Если получили этот элемент значит по запросу ничего не найдено
-                return true;
+            //    // Если получили этот элемент значит по запросу ничего не найдено
+            //    return true;
 
-            }
-            catch (Exception)
-            {
-                return isNotMatchingArticul;
-            }
+            //}
+            //catch (Exception)
+            //{
+            //    return isNotMatchingArticul;
+            //}
         }
 
         protected override void OpenSearchedCard()
@@ -192,20 +205,25 @@ namespace DromAutoTrader.ImageServices
         }
 
         protected override bool IsImagesVisible()
-        {            
+        {
+            Thread.Sleep(700);
             bool isImagesVisible = false;
             try
             {
-                IWebElement trElement = _driver.FindElement(By.CssSelector("td.tdpart"));
-                IWebElement imgElement = trElement.FindElement(By.CssSelector("img[src*='/Images/ph.png']"));
+                IWebElement documentBody = _driver.FindElement(By.TagName("body"));
+                IWebElement img = documentBody.FindElement(By.TagName("img"));
+                isImagesVisible = true;
+                return isImagesVisible;
+                 //IWebElement trElement = _driver.FindElement(By.CssSelector("td.tdpart"));
+                //IWebElement imgElement = trElement.FindElement(By.CssSelector("img[src*='/Images/ph.png']"));
 
 
-                IWebElement anchorElement = imgElement.FindElement(By.XPath("./..")); // Выбрать родительский элемент <a>
+                //IWebElement anchorElement = imgElement.FindElement(By.XPath("./..")); // Выбрать родительский элемент <a>
 
-                anchorElement.Click();
-                //imgElement.Click();
+                //anchorElement.Click();
+                ////imgElement.Click();
 
-                isImagesVisible = WaitingImagesPopup();
+                //isImagesVisible = WaitingImagesPopup();
             }
             catch (Exception)
             {
@@ -215,8 +233,7 @@ namespace DromAutoTrader.ImageServices
         }
 
         protected override async Task<List<string>> GetImagesAsync()
-        {
-            // //img[@src='/Images/ph.png']
+        {            
             // Список изображений которые возвращаем из метода
             List<string> downloadedImages = new List<string>();
 
@@ -228,23 +245,24 @@ namespace DromAutoTrader.ImageServices
             // Получаю контейнер с картинками
             try
             {
-                mainImageParentDiv = _driver.FindElement(By.CssSelector("div.container_img"));
+                mainImageParentDiv = _driver.FindElement(By.TagName("body"));               
             }
             catch (Exception) { }
 
             // Получаю все картинки thumbs
             try
             {
-                // Находим все img элементы в li элементах с data-type='thumb'
-                IList<IWebElement> imagesThumb = mainImageParentDiv.FindElements(By.CssSelector("a.imgLink.mainImg"));
+                IWebElement img = mainImageParentDiv.FindElement(By.TagName("img"));                
 
-                foreach (var image in imagesThumb)
+                if (img != null)
                 {
-                    string imagePath = image.GetAttribute("href");
+                    string imagePath = img.GetAttribute("src");
                     //string fullPath = LoginPageUrl + imagePath;
 
                     images.Add(imagePath);
                 }
+                    
+                
             }
             catch (Exception) { }
 
@@ -253,6 +271,7 @@ namespace DromAutoTrader.ImageServices
 
             return downloadedImages;
         }
+
 
         // Метод создания директории и скачивания изображений
         private async Task<List<string>> ImagesProcessAsync(List<string> images)
@@ -269,9 +288,10 @@ namespace DromAutoTrader.ImageServices
             {
                 // Скачиваю изображения
                 ImageDownloader? downloader = new(Articul, _imagesLocalPath, images);
-                downloadedImages = await downloader.DownloadImagesAsync();
+                //downloadedImages = await downloader.DownloadImagesAsync();
+                //string path = TakeAndSaveScreenshot(Articul, _imagesLocalPath);
+                downloadedImages = await DownloadImageWithCookiesAsync(Articul, _imagesLocalPath, images);
             }
-
             return downloadedImages;
         }
 
@@ -281,7 +301,99 @@ namespace DromAutoTrader.ImageServices
         }
         #endregion
 
-        #region Специфичные методы класса 
+        #region Специфичные методы класса    
+        public async Task<List<string>> DownloadImageWithCookiesAsync(string articul, string downloadDirectory, List<string>images)
+        {
+            List<string> downloadedImagePaths = new();
+            try
+            {
+                string imageUrl = images[0];
+                string fileName = $"{articul}_{0:00}.jpg";
+                // Получение кук из WebDriver
+                var seleniumCookies = _driver.Manage().Cookies.AllCookies;
+
+                using HttpClient client = new HttpClient();
+                var cookieContainer = new CookieContainer();
+
+                // Преобразовываем куки из Cookie (Selenium) в Cookie (HttpClient)
+                foreach (var seleniumCookie in seleniumCookies)
+                {
+                    var httpClientCookie = new System.Net.Cookie(seleniumCookie.Name, seleniumCookie.Value, seleniumCookie.Path, seleniumCookie.Domain);
+                    cookieContainer.Add(new Uri(imageUrl), httpClientCookie);
+                }
+
+                // Устанавливаем CookieContainer в HttpClient
+                var clientHandler = new HttpClientHandler
+                {
+                    CookieContainer = cookieContainer
+                };
+
+                using (var httpClient = new HttpClient(clientHandler))
+                {
+                    using HttpResponseMessage response = await httpClient.GetAsync(imageUrl);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        byte[] imageBytes = await response.Content.ReadAsByteArrayAsync();
+
+                        string localFilePath = Path.Combine(downloadDirectory, fileName);
+
+                        // Сохраняем скачанное изображение в файл
+                        File.WriteAllBytes(localFilePath, imageBytes);
+
+                        downloadedImagePaths.Add(localFilePath);
+                        return downloadedImagePaths;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка: {ex.Message}");
+            }
+
+            return downloadedImagePaths;
+        }
+
+
+        // Метод получения скриншота
+        public string TakeAndSaveScreenshot(string articul, string downloadDirectory)
+        {
+            try
+            {
+                // Выполните здесь код для обрезки изображения в нужных пропорциях (cropImage)
+                int x = 100; // Начальная координата X для обрезки
+                int y = 100; // Начальная координата Y для обрезки
+                int width = 800; // Ширина обрезанной области
+                int height = 600; // Высота обрезанной области
+
+                var screenshot = ((ITakesScreenshot)_driver).GetScreenshot();
+                using (var fullScreen = Image.FromStream(new MemoryStream(screenshot.AsByteArray)))
+                {
+                    var croppedImage = CropImage(fullScreen, x, y, width, height);
+                    string croppedFilePath = Path.Combine(downloadDirectory, $"{articul}.jpg");
+                    croppedImage.Save(croppedFilePath, ImageFormat.Jpeg);
+                    
+                    return croppedFilePath;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка: {ex.Message}");
+                return null;
+            }
+        }
+
+        public Bitmap CropImage(Image img, int x, int y, int width, int height)
+        {
+            var bmp = new Bitmap(width, height);
+            using (var g = Graphics.FromImage(bmp))
+            {
+                g.DrawImage(img, new Rectangle(0, 0, width, height), new Rectangle(x, y, width, height), GraphicsUnit.Pixel);
+            }
+            return bmp;
+        }
+
+
         // Ожидание открытого Popup с изображениями
         private bool WaitingImagesPopup()
         {

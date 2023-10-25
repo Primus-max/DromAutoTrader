@@ -41,7 +41,9 @@ namespace DromAutoTrader.Services
                     string fileName = $"{_articul}_{i:00}.jpg";
                     string localFilePath = Path.Combine(_downloadDirectory, fileName);
 
-                    using HttpResponseMessage response = await client.GetAsync(imageUrl);
+                    Uri uri = new(imageUrl);
+
+                    using HttpResponseMessage response = await client.GetAsync(uri);
                     if (response.IsSuccessStatusCode)
                     {
                         using Stream imageStream = await response.Content.ReadAsStreamAsync();
@@ -59,7 +61,6 @@ namespace DromAutoTrader.Services
 
             return downloadedImagePaths;
         }
-
 
         /// <summary>
         /// Синхронный метод для скачивания изображений из удалённых источников с использованием <see cref="WebClient"/>.
