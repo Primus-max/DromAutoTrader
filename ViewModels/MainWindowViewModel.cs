@@ -399,7 +399,7 @@ namespace DromAutoTrader.ViewModels
         {
             //PriceProcessor priceProcessor = new();
             BrandImporter brandImporter = new();
-
+            // Цикл по выбранным прайсам
             foreach (var path in PathsFilePrices)
             {
                 if (string.IsNullOrEmpty(path))
@@ -462,7 +462,7 @@ namespace DromAutoTrader.ViewModels
                               // Строим AdPublishingInfo для данного канала
                               var adInfo = await builder.Build();
 
-                              // Вы можете здесь использовать adInfo для дальнейших операций
+                              // TODO Здесь логика добавления объявления
                           });
                     }
                 }

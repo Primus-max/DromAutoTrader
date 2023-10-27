@@ -13,7 +13,6 @@ namespace DromAutoTrader.ViewModels
         {
             _price = price;
             _channel = channel;
-
             _adPublishingInfo = new();
         }
 
@@ -31,6 +30,9 @@ namespace DromAutoTrader.ViewModels
             _adPublishingInfo.Description = _price?.Description; // Описание товара (из прайса) Пока нигде не потребовалось
             _adPublishingInfo.KatalogName = _price?.KatalogName; // Это попадает в заголовок объявления
             _adPublishingInfo.OutputPrice = CalcPrice.Calculate(_price.PriceBuy, _channel?.PriceIncreases); // Считаю цену исходя из цены прайса
+
+            // Получаю пути к изображениям
+            
 
             // Создаю дату регистрации объявления           
             _adPublishingInfo.DatePublished = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");

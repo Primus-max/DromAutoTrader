@@ -125,7 +125,6 @@ namespace DromAutoTrader.Services
         }
 
 
-
         /// <summary>
         /// Синхронный метод для скачивания изображений из удалённых источников с использованием <see cref="WebClient"/>.
         /// </summary>
