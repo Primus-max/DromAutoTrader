@@ -17,7 +17,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override string Password => "";
 
-        public override string ServiceName => "irk.rossko.ru";
+        public override string ServiceName => "https://irk.rossko.ru";
         #endregion
 
         #region Приватные поля

@@ -1,5 +1,5 @@
-﻿using DromAutoTrader.Models;
-using DromAutoTrader.Prices;
+﻿using DromAutoTrader.Prices;
+using DromAutoTrader.Services;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -24,6 +24,7 @@ namespace DromAutoTrader.ViewModels
             decimal minTo = (decimal)(_channel?.PriceIncreases.Min(inc => (decimal)inc.To));
 
             if (_price.PriceBuy < minTo) return new AdPublishingInfo();
+            List<string> imagesPaths = new List<string>();
 
             _adPublishingInfo.Brand = _price?.Brand; // Имя брэнда
             _adPublishingInfo.Artikul = _price?.Artikul; // Артикул
@@ -32,7 +33,8 @@ namespace DromAutoTrader.ViewModels
             _adPublishingInfo.OutputPrice = CalcPrice.Calculate(_price.PriceBuy, _channel?.PriceIncreases); // Считаю цену исходя из цены прайса
 
             // Получаю пути к изображениям
-            
+            SelectionImagesPathsService imagesPathsservice = new SelectionImagesPathsService();
+            imagesPaths = await imagesPathsservice.SelectPaths(_price?.Brand, _price?.Artikul);
 
             // Создаю дату регистрации объявления           
             _adPublishingInfo.DatePublished = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");

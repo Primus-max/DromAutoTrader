@@ -21,7 +21,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override string Password => "";
 
-        public override string ServiceName => "luzar.ru";
+        public override string ServiceName => "https://luzar.ru";
         #endregion
 
         #region Приватные поля

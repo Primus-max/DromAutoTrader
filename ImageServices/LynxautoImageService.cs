@@ -22,7 +22,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override string Password => "";
 
-        public override string ServiceName => "lynxauto.info";
+        public override string ServiceName => "https://lynxauto.info";
         #endregion
 
         #region Приватные поля

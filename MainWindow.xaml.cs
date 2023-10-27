@@ -42,7 +42,7 @@ namespace DromAutoTrader
 
             // Передаю Frame черерз локатор
             LocatorService.Current.ChannelFrame = ChannelFrame;
-
+                       
             #region Подписка на события
             Loaded += MainWindow_Loaded;
             #endregion
@@ -159,6 +159,9 @@ namespace DromAutoTrader
                 _db = AppContextFactory.GetInstance();
                 
                 _db.BrandImageServiceMappings.Load();
+                _db.Brands
+                   .Include(b => b.ImageServices)
+                   .Load();
             }
             catch (Exception)
             {

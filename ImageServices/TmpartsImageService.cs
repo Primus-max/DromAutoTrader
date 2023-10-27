@@ -27,7 +27,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override string Password => "G97GP?ct4";
 
-        public override string ServiceName => "tmparts.ru";
+        public override string ServiceName => "https://tmparts.ru";
         #endregion
 
         

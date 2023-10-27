@@ -56,6 +56,8 @@ namespace DromAutoTrader.Services
         {
             string articulPath = Path.Combine(_rootPathDirectory, brand, articul);
 
+            EnsureFolderStructure(brand, articul);
+
             if (Directory.Exists(articulPath))
             {
                 string[] files = Directory.GetFiles(articulPath);

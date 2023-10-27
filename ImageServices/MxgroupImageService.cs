@@ -17,7 +17,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override string Password => "H2A8AMZ757";
 
-        public override string ServiceName => "new.mxgroup.ru";
+        public override string ServiceName => "https://new.mxgroup.ru";
         #endregion
 
         public MxgroupImageService()

@@ -59,14 +59,14 @@ namespace DromAutoTrader.ViewModels
                 // Имя файла
                 string fileName = Path.GetFileNameWithoutExtension(path);
 
-                //BergImageService bergImageService = new();
+                BergImageService bergImageService = new();
                 //UnicomImageService unicomImageService = new();
                 //LynxautoImageService lynxautoImageService = new LynxautoImageService();
                 //LuzarImageService LuzarimageService = new LuzarImageService();
                 //StarvoltImageService starvoltImageService = new StarvoltImageService();
                 //IrkRosskoImageService irkRosskoImageService = new();
                 //MxgroupImageService imageService = new MxgroupImageService();
-                TmpartsImageService tmpartsImageService = new TmpartsImageService();
+               // TmpartsImageService tmpartsImageService = new TmpartsImageService();
 
                 foreach (var price in prices)
                 {
@@ -83,9 +83,9 @@ namespace DromAutoTrader.ViewModels
 
 
                    // await bergImageService.RunAsync(brand, articul);
-                    await tmpartsImageService.RunAsync(brand, articul);
+                    await bergImageService.RunAsync(brand, articul);
 
-                    var testImages = tmpartsImageService.BrandImages;
+                    var testImages = bergImageService.BrandImages;
                 }
             }
         }

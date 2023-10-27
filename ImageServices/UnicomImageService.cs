@@ -16,7 +16,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override string Password => "dimonfutboll";
 
-        public override string ServiceName => "uniqom.ru";
+        public override string ServiceName => "https://uniqom.ru";
         #endregion
 
         //#region Приватные поля       
