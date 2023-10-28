@@ -1,4 +1,4 @@
-﻿global using AdsPowerManager;
+﻿
 global using DromAutoTrader.Models;
 global using Microsoft.EntityFrameworkCore;
 global using System;

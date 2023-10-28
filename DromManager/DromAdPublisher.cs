@@ -1,5 +1,6 @@
 ﻿using DromAutoTrader.AdsPowerManager;
 using OpenQA.Selenium;
+using System.IO;
 using System.Threading;
 
 namespace DromAutoTrader.DromManager
@@ -12,12 +13,12 @@ namespace DromAutoTrader.DromManager
         private string gooodsUrl = new("https://baza.drom.ru/adding?type=goods");
         private string archivedUrl = new("https://baza.drom.ru/personal/archived/bulletins");
         private IWebDriver _driver = null!;
+        private BrowserManager adsPower = null!;
+        private List<Profile> profiles = null!;
 
-
-        public DromAdPublisher(string channelName)
+        public DromAdPublisher()
         {
-            // Инициализация драйвера Chrome
-            InitializeDriver(channelName);
+            adsPower = new BrowserManager();
         }
         // TODO сделать проверку при запуске на окно выбора города публикации объявления
         // <input class="bzr-field__text-input bzr-field__text-input_search bzr-field__text-input_clearable" name="search" placeholder="Название города">
@@ -25,9 +26,12 @@ namespace DromAutoTrader.DromManager
         /// Метод точка входа для размещения объявления на Drom
         /// </summary>
         /// <param name="adTitle"></param>
-        public void PublishAd(AdPublishingInfo adPublishingInfo)
+        public async Task PublishAd(AdPublishingInfo adPublishingInfo, string channelName)
         {
             if (adPublishingInfo == null) return;
+            // Инициализация драйвера Chrome
+            await InitializeDriver(channelName);
+
 
             OpenGoodsPage();
             SetWindowSize();
@@ -45,11 +49,14 @@ namespace DromAutoTrader.DromManager
             // Вставляю изображение
             foreach (var imagePath in adPublishingInfo.ImagesPaths)
             {
-                InsertImage(imagePath);
+                string absolutePath = Path.Combine(Environment.CurrentDirectory, imagePath);
+                InsertImage(absolutePath);
             }
 
             // Бренд для публикации
             BrandInput(adPublishingInfo.Brand);
+
+           
             // Артикул для публикации
             ArticulInput(adPublishingInfo.Artikul);
             // Цена для публикации
@@ -58,11 +65,19 @@ namespace DromAutoTrader.DromManager
             Thread.Sleep(500);
 
             DescriptionTextInput(adPublishingInfo.Description);
-
-            CheckAndFillRequiredFields();
+                        
             Thread.Sleep(500);
-
+            // Кнопка наличие или под заказ
             GoodPresentState();
+
+            // Проверяю заполненность полей
+            CheckAndFillRequiredFields();
+            
+            Thread.Sleep(500);
+            // Публикую
+            ClickPublishButton();
+
+            adsPower.CloseBrowser(channelName);
         }
 
         // Метод открытия страницы с размещением объявления
@@ -122,7 +137,6 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод получение input заголовка и ввода текста
-
         public void TitleInput(string text)
         {
             try
@@ -431,10 +445,18 @@ namespace DromAutoTrader.DromManager
 
         }
         // Инициализация драйвера
-        private async void InitializeDriver(string channelName)
+        private async Task InitializeDriver(string channelName)
         {
-            AdsPower adsPower = new AdsPower();
-            _driver = await adsPower.GetDriverByChannel(channelName);
+            BrowserManager adsPower = new();
+            List<Profile> profiles = await ProfileManager.GetProfiles();
+
+            foreach (Profile profile in profiles)
+            {
+                if (profile.Name != channelName || profile == null) continue;
+
+                _driver = await adsPower.InitializeDriver(profile.UserId);
+            }
+
         }
 
     }

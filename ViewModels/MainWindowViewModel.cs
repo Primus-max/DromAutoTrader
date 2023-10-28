@@ -474,8 +474,8 @@ namespace DromAutoTrader.ViewModels
                               var adInfo = await builder.Build();
 
                               // TODO Здесь логика добавления объявления
-                              DromAdPublisher dromAdPublisher = new DromAdPublisher(priceChannelMapping.Name);
-                              dromAdPublisher.PublishAd(adInfo);
+                              DromAdPublisher dromAdPublisher = new DromAdPublisher();
+                              await dromAdPublisher.PublishAd(adInfo, priceChannelMapping.Name);
                           });
                     }
                 }
