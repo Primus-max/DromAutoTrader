@@ -1,4 +1,5 @@
 ﻿using DromAutoTrader.Data;
+using DromAutoTrader.DromManager;
 using DromAutoTrader.Infrastacture.Commands;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
@@ -247,6 +248,7 @@ namespace DromAutoTrader.ViewModels
         #endregion
 
         #region Брэнды
+        // Команда выбора сервисов для бренда
         public ICommand SelectImageServiceCommand { get; } = null!;
         private bool CanSelectImageServiceCommandExecute(object p) => true;
         private void OnSelectImageServiceCommandExecuted(object sender)
@@ -296,6 +298,14 @@ namespace DromAutoTrader.ViewModels
                 }
             }
         }
+
+        // Команда выбора изображения по умолчанию
+        public ICommand SelectImageServiceDefaultCommand { get; } = null!;
+        private bool CanSelectImageServiceDefaultCommandExecute(object p) => true;
+        private void OnSelectImageServiceDefaultCommandExecuted(object sender)
+        {
+            SaveDefaultImageForBrand(SelectedBrand);
+        }
         #endregion
 
         #region Команда для получения нескольких параметров
@@ -344,6 +354,7 @@ namespace DromAutoTrader.ViewModels
 
             #region Брэнды
             SelectImageServiceCommand = new LambdaCommand(OnSelectImageServiceCommandExecuted, CanSelectImageServiceCommandExecute);
+            SelectImageServiceDefaultCommand= new LambdaCommand(OnSelectImageServiceDefaultCommandExecuted, CanSelectImageServiceDefaultCommandExecute);    
             #endregion
             #endregion
 
@@ -463,6 +474,8 @@ namespace DromAutoTrader.ViewModels
                               var adInfo = await builder.Build();
 
                               // TODO Здесь логика добавления объявления
+                              DromAdPublisher dromAdPublisher = new DromAdPublisher(priceChannelMapping.Name);
+                              dromAdPublisher.PublishAd(adInfo);
                           });
                     }
                 }
@@ -607,6 +620,34 @@ namespace DromAutoTrader.ViewModels
         #endregion
 
         #region Брэнды
+        // Открываю окно для выбора картинки и сохранения по дефолту
+        private void SaveDefaultImageForBrand(Brand selectedBrand)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Title = "Выберите изображение для бренда",
+                Filter = "Изображения (*.jpg, *.jpeg, *.png)|*.jpg;*.jpeg;*.png|Все файлы (*.*)|*.*"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string selectedImagePath = openFileDialog.FileName;
+
+                // Сохраните выбранный путь к файлу в поле DefaultImage для выбранного бренда
+                selectedBrand.DefaultImage = selectedImagePath;
+
+                // Сохраните изменения в базе данных
+                try
+                {
+                    _db.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Не удалось сохранить изображение по умолчанию {ex.Message}", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+        }
+
         public ObservableCollection<BrandWithSelectedImageServices> GetBrandsWithSelectedImageServices()
         {
             var brandImageServiceMappings = _db.BrandImageServiceMappings.ToList();

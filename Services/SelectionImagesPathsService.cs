@@ -16,7 +16,7 @@ namespace DromAutoTrader.Services
 
     {
         private AppContext _db = null!;
-
+        // Словарь хранит соответствия между ImageService (выбранные для брэнда) и классы для парсинга этих сервисов
         Dictionary<int, Type> imageServiceTypes = new Dictionary<int, Type>
         {
                 { 1, typeof(BergImageService) },
@@ -40,12 +40,10 @@ namespace DromAutoTrader.Services
         /// <returns>Список путей к изображениям (List&lt;string&gt;)</returns>
         public async Task<List<string>> SelectPaths(string Brand, string Articul)
         {
-            List<string> imagesPaths = new List<string>();
-            List<string> allImagePaths = new List<string>(); // Дополнительный список для сохранения всех путей
+            // Получаем изображения локально
+            List<string> imagesPaths = SelectLocalPaths(Brand, Articul);
 
-            imagesPaths = SelectLocalPaths(Brand, Articul);
-
-            // Если локально не получили картинки, получаем с сайтов
+            // Если локально не получили пробуем получить удалённо (скачиваем)
             if (imagesPaths.Count == 0)
             {
                 List<int> imageServices = GetImageServicesForBrand(Brand);
@@ -53,14 +51,47 @@ namespace DromAutoTrader.Services
                 foreach (var imageService in imageServices)
                 {
                     List<string> serviceImages = await RunImageServiceAsync(Brand, Articul, imageService);
-                    allImagePaths.AddRange(serviceImages); // Добавляем пути изображений из текущего сервиса
+
+                    if (serviceImages.Count > 0)
+                    {
+                        return serviceImages; // Если получили изображения, возвращаем их
+                    }
+                }
+
+                // Если не получили изображений из сервисов, используем DefaultImage из Brand
+                string defaultImage = GetDefaultImageForBrand(Brand);
+
+                if (!string.IsNullOrEmpty(defaultImage))
+                {
+                    imagesPaths.Add(defaultImage);
                 }
             }
 
-            // Добавляем пути изображений из локального хранились, если они есть
-            allImagePaths.AddRange(imagesPaths);
+            return imagesPaths;
+        }
 
-            return allImagePaths; // Возвращаем все пути изображений
+        // Получаю изображение по умолчанию, если больше нигде не получили
+        private string GetDefaultImageForBrand(string brandName)
+        {
+            try
+            {
+                // Пытаемся получить Brand по имени
+                var brand = _db.Brands.FirstOrDefault(b => b.Name == brandName);
+
+                if (brand != null)
+                {
+                    // Если Brand найден, возвращаем значение DefaultImage
+                    return brand.DefaultImage;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Обработка исключений и логирование ошибки
+                // Console.WriteLine($"Ошибка при получении DefaultImage для бренда: {ex.Message}");
+            }
+
+            // Если не удалось получить DefaultImage, возвращаем пустую строку или другое значение по умолчанию
+            return string.Empty;
         }
 
         // Метод получения адресов картинок из локального хранилища
@@ -84,7 +115,7 @@ namespace DromAutoTrader.Services
             return imagePaths;
         }
 
-        // Метод получения списка сервисов картинок для бренда
+        // Метод получения списка сервисов картинок для бренда, возвращает ImageServiceId
         private List<int> GetImageServicesForBrand(string brandName)
         {
             List<int> imageServiceIds = new List<int>();
@@ -116,12 +147,10 @@ namespace DromAutoTrader.Services
             return imageServiceIds;
         }
 
-
         // Скачивам картинки с сайтов
-        public async Task<List<string>> RunImageServiceAsync(string brand, string articul, int imageServiceUrl)
+        private async Task<List<string>> RunImageServiceAsync(string brand, string articul, int imageServiceUrl)
         {
-            List<string> downLoadedImagesPaths = new List<string>();
-            
+            List<string> downLoadedImagesPaths = new List<string>();            
 
             // Проверяем, есть ли URL-адрес сервиса в словаре
             if (imageServiceTypes.TryGetValue(imageServiceUrl, out Type imageServiceType))

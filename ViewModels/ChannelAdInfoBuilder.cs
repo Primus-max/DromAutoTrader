@@ -1,4 +1,5 @@
-﻿using DromAutoTrader.Prices;
+﻿using DromAutoTrader.Models;
+using DromAutoTrader.Prices;
 using DromAutoTrader.Services;
 
 namespace DromAutoTrader.ViewModels
@@ -35,7 +36,7 @@ namespace DromAutoTrader.ViewModels
             // Получаю пути к изображениям
             SelectionImagesPathsService imagesPathsservice = new SelectionImagesPathsService();
             imagesPaths = await imagesPathsservice.SelectPaths(_price?.Brand, _price?.Artikul);
-
+            _adPublishingInfo.ImagesPaths = imagesPaths;
             // Создаю дату регистрации объявления           
             _adPublishingInfo.DatePublished = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
@@ -44,7 +45,6 @@ namespace DromAutoTrader.ViewModels
 
 
             return _adPublishingInfo;
-
 
         }
     }

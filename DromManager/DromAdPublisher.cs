@@ -1,45 +1,63 @@
-﻿
+﻿using DromAutoTrader.AdsPowerManager;
 using OpenQA.Selenium;
-using System.Collections.Generic;
 using System.Threading;
-using System;
 
 namespace DromAutoTrader.DromManager
 {
+    /// <summary>
+    /// Класс для публикации объявлений на Drom
+    /// </summary>
     public class DromAdPublisher
     {
         private string gooodsUrl = new("https://baza.drom.ru/adding?type=goods");
         private string archivedUrl = new("https://baza.drom.ru/personal/archived/bulletins");
-        private IWebDriver _driver;
+        private IWebDriver _driver = null!;
 
-        public DromAdPublisher(IWebDriver driver)
+
+        public DromAdPublisher(string channelName)
         {
             // Инициализация драйвера Chrome
-            _driver = driver;
+            InitializeDriver(channelName);
         }
-
-        // Метод входная точка
-        public void PublishAd(string adTitle)
+        // TODO сделать проверку при запуске на окно выбора города публикации объявления
+        // <input class="bzr-field__text-input bzr-field__text-input_search bzr-field__text-input_clearable" name="search" placeholder="Название города">
+        /// <summary>
+        /// Метод точка входа для размещения объявления на Drom
+        /// </summary>
+        /// <param name="adTitle"></param>
+        public void PublishAd(AdPublishingInfo adPublishingInfo)
         {
+            if (adPublishingInfo == null) return;
+
             OpenGoodsPage();
             SetWindowSize();
 
             CloseAllTabsExceptCurrent();
 
             //ClickSubjectField();
-            TitleInput(adTitle);
+            // Устанавливаю заголовок объявления
+            TitleInput(adPublishingInfo.KatalogName);
             PressEnterKey();
+
             ClickDirControlVariant();
             ClickBulletinTypeVariant();
-            InsertImage(@"C:\Users\FedoTT\Desktop\0321-re.jpg");
 
-            BrandInput("Brand");
-            ArticulInput("Articul");
-            PriceInput("3453.8");
+            // Вставляю изображение
+            foreach (var imagePath in adPublishingInfo.ImagesPaths)
+            {
+                InsertImage(imagePath);
+            }
+
+            // Бренд для публикации
+            BrandInput(adPublishingInfo.Brand);
+            // Артикул для публикации
+            ArticulInput(adPublishingInfo.Artikul);
+            // Цена для публикации
+            PriceInput(adPublishingInfo.OutputPrice.ToString());
             //Сondition();
             Thread.Sleep(500);
 
-            DescriptionTextInput("Новые запчасти");
+            DescriptionTextInput(adPublishingInfo.Description);
 
             CheckAndFillRequiredFields();
             Thread.Sleep(500);
@@ -412,6 +430,13 @@ namespace DromAutoTrader.DromManager
             }
 
         }
+        // Инициализация драйвера
+        private async void InitializeDriver(string channelName)
+        {
+            AdsPower adsPower = new AdsPower();
+            _driver = await adsPower.GetDriverByChannel(channelName);
+        }
+
     }
 }
 
