@@ -82,6 +82,8 @@ namespace DromAutoTrader.ImageServices.Base
             {
                 BrandImages = null;
             }
+
+            _driver.Quit();
         }
 
         /// <summary>

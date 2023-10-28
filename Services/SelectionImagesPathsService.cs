@@ -17,6 +17,16 @@ namespace DromAutoTrader.Services
     {
         private AppContext _db = null!;
 
+        Dictionary<int, Type> imageServiceTypes = new Dictionary<int, Type>
+        {
+                { 1, typeof(BergImageService) },
+                { 2, typeof(UnicomImageService) },
+                { 3, typeof(LynxautoImageService) },
+                { 4, typeof(LuzarImageService) },
+                { 5, typeof(StarvoltImageService) },
+                { 6, typeof(IrkRosskoImageService) },
+                { 7, typeof(TmpartsImageService) },
+        };
         public SelectionImagesPathsService()
         {
             InitializeDatabase();
@@ -28,24 +38,29 @@ namespace DromAutoTrader.Services
         /// <param name="Brand">Марка</param>
         /// <param name="Articul">Артикул</param>
         /// <returns>Список путей к изображениям (List&lt;string&gt;)</returns>
-        public async Task< List<string>> SelectPaths(string Brand, string Articul)
+        public async Task<List<string>> SelectPaths(string Brand, string Articul)
         {
             List<string> imagesPaths = new List<string>();
+            List<string> allImagePaths = new List<string>(); // Дополнительный список для сохранения всех путей
 
             imagesPaths = SelectLocalPaths(Brand, Articul);
 
             // Если локально не получили картинки, получаем с сайтов
             if (imagesPaths.Count == 0)
             {
-                List<string> imageServices = GetImageServicesForBrand(Brand);
+                List<int> imageServices = GetImageServicesForBrand(Brand);
 
                 foreach (var imageService in imageServices)
                 {
-                    imagesPaths = await RunImageServiceAsync( Brand,  Articul, imageService);
+                    List<string> serviceImages = await RunImageServiceAsync(Brand, Articul, imageService);
+                    allImagePaths.AddRange(serviceImages); // Добавляем пути изображений из текущего сервиса
                 }
             }
 
-            return imagesPaths;
+            // Добавляем пути изображений из локального хранились, если они есть
+            allImagePaths.AddRange(imagesPaths);
+
+            return allImagePaths; // Возвращаем все пути изображений
         }
 
         // Метод получения адресов картинок из локального хранилища
@@ -70,9 +85,9 @@ namespace DromAutoTrader.Services
         }
 
         // Метод получения списка сервисов картинок для бренда
-        private List<string> GetImageServicesForBrand(string brandName)
+        private List<int> GetImageServicesForBrand(string brandName)
         {
-            List<string> imageServicesForBrand = new List<string>();
+            List<int> imageServiceIds = new List<int>();
             try
             {
                 // 1. Получаем BrandId по имени бренда
@@ -84,51 +99,32 @@ namespace DromAutoTrader.Services
                 if (brandId != null)
                 {
                     // 2. Получаем ImageServiceId, принадлежащие бренду
-                    var imageServiceIds = _db.BrandImageServiceMappings
+                    imageServiceIds = _db.BrandImageServiceMappings
                         .Where(mapping => mapping.BrandId == brandId)
-                        .Select(mapping => mapping.ImageServiceId)
+                        .Select(mapping => mapping.ImageServiceId ?? 0) // Преобразуем Nullable<int> в int
                         .ToList();
 
-                    if (imageServiceIds.Any())
-                    {
-                        // 3. Получаем имена ImageService по Id
-                         imageServicesForBrand = _db.ImageServices
-                            .Where(service => imageServiceIds.Contains(service.Id))
-                            .Select(service => service.Name)
-                            .ToList();
-
-                        return imageServicesForBrand;
-                    }
+                    return imageServiceIds;
                 }
             }
             catch (Exception ex)
             {
                 // Обработка исключений и логирование ошибки
                 // Console.WriteLine($"Ошибка при получении ImageService для бренда: {ex.Message}");
-               // return imageServicesForBrand;
+                // В случае ошибки, можно вернуть пустой список или null
             }
-            return imageServicesForBrand;
+            return imageServiceIds;
         }
 
+
         // Скачивам картинки с сайтов
-        public async Task<List<string>> RunImageServiceAsync(string brand, string articul, string imageServiceName)
+        public async Task<List<string>> RunImageServiceAsync(string brand, string articul, int imageServiceUrl)
         {
             List<string> downLoadedImagesPaths = new List<string>();
+            
 
-            Dictionary<string, Type> imageServiceTypes = new Dictionary<string, Type>
-            {
-                { "https://berg.ru/", typeof(BergImageService) },
-                { "https://uniqom.ru/", typeof(UnicomImageService) },
-                { "https://lynxauto.info/", typeof(LynxautoImageService) },
-                { "https://luzar.ru/", typeof(LuzarImageService) },
-                { "https://startvolt.com/", typeof(StarvoltImageService) },
-                { "https://irk.rossko.ru/", typeof(IrkRosskoImageService) },
-                { "https://tmparts.ru/", typeof(TmpartsImageService) },
-            };
-
-
-            // Проверяем, есть ли имя сервиса в словаре
-            if (imageServiceTypes.TryGetValue(imageServiceName, out Type imageServiceType))
+            // Проверяем, есть ли URL-адрес сервиса в словаре
+            if (imageServiceTypes.TryGetValue(imageServiceUrl, out Type imageServiceType))
             {
                 // Создаем экземпляр ImageService
                 var imageService = Activator.CreateInstance(imageServiceType) as IImageService;
@@ -140,15 +136,11 @@ namespace DromAutoTrader.Services
 
                     // Получение результатов
                     downLoadedImagesPaths = imageService.BrandImages;
-                    var serviceName = imageService.ServiceName;
-
-                    return downLoadedImagesPaths;
-                    // Здесь вы можете использовать brandImages и serviceName по вашим потребностям
                 }
             }
+
             return downLoadedImagesPaths;
         }
-
 
         private void InitializeDatabase()
         {
