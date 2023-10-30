@@ -333,6 +333,25 @@ namespace DromAutoTrader.ViewModels
             // Инициализация базы данных
             InitializeDatabase();
 
+            // ТЕСТ
+            AdPublishingInfo adPublishingInfo = new AdPublishingInfo();
+
+            adPublishingInfo.Brand = "dadsf";
+           adPublishingInfo.OutputPrice = 21324;
+            adPublishingInfo.InputPrice = 100;
+            adPublishingInfo.AdDescription = "ыва";
+
+            try
+            {
+                _db.AdPublishingInfo.Add(adPublishingInfo);
+                _db.SaveChanges();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
             #region Инициализация команд
 
             #region Команда для получения нескольких параметров
@@ -354,7 +373,7 @@ namespace DromAutoTrader.ViewModels
 
             #region Брэнды
             SelectImageServiceCommand = new LambdaCommand(OnSelectImageServiceCommandExecuted, CanSelectImageServiceCommandExecute);
-            SelectImageServiceDefaultCommand= new LambdaCommand(OnSelectImageServiceDefaultCommandExecuted, CanSelectImageServiceDefaultCommandExecute);    
+            SelectImageServiceDefaultCommand = new LambdaCommand(OnSelectImageServiceDefaultCommandExecuted, CanSelectImageServiceDefaultCommandExecute);
             #endregion
             #endregion
 
@@ -476,6 +495,11 @@ namespace DromAutoTrader.ViewModels
                               // TODO Здесь логика добавления объявления
                               DromAdPublisher dromAdPublisher = new DromAdPublisher();
                               await dromAdPublisher.PublishAd(adInfo, priceChannelMapping.Name);
+
+                              if (true)
+                              {
+
+                              }
                           });
                     }
                 }
@@ -550,24 +574,7 @@ namespace DromAutoTrader.ViewModels
 
             return PathsFilePrices;
         }
-
-        // Метод выбора файла для парсинга
-        //private void SelectFilePrice()
-        //{
-        //    // Создаем диалоговое окно выбора файла
-        //    OpenFileDialog openFileDialog = new()
-        //    {
-        //        // Устанавливаем фильтры для типов файлов, которые вы хотите разрешить выбирать
-        //        Filter = "Excel Files (*.xlsx)|*.xlsx|CSV Files (*.csv)|*.csv|All Files (*.*)|*.*"
-        //    };
-
-        //    if (openFileDialog.ShowDialog() == true)
-        //    {
-        //        // Получаем путь к выбранному файлу
-        //        PathsFilePrices = openFileDialog.FileName;
-        //    }
-        //}
-
+       
         // Метод инициализации базы данных
         private void InitializeDatabase()
         {
@@ -576,21 +583,20 @@ namespace DromAutoTrader.ViewModels
                 // Экземпляр базы данных
                 _db = AppContextFactory.GetInstance();
                 // загружаем данные о поставщиках из БД и включаем связанные данные (PriceIncreases и Brands)
-                _db.Channels
-                    .Include(c => c.PriceIncreases)
-                    .Include(c => c.Brands)
+                _db.Channels                    
                     .Load();
                 _db.Brands
                     .Include(b => b.ImageServices)
                     .Load();
                 _db.BrandImageServiceMappings
-                    .Include(mapping => mapping.ImageServiceId) // Загрузка связанных ImageService
+                    // Загрузка связанных ImageService
                     .Load();
-
-                _db.BrandImageServiceMappings.Load();
+                _db.BrandImageServiceMappings.Load();   
+                _db.AdPublishingInfo.Load();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                MessageBox.Show(ex.ToString());
                 // TODO сделать запись логов
                 //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
             }
