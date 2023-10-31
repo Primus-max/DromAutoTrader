@@ -333,25 +333,6 @@ namespace DromAutoTrader.ViewModels
             // Инициализация базы данных
             InitializeDatabase();
 
-            // ТЕСТ
-            AdPublishingInfo adPublishingInfo = new AdPublishingInfo();
-
-            adPublishingInfo.Brand = "dadsf";
-           adPublishingInfo.OutputPrice = 21324;
-            adPublishingInfo.InputPrice = 100;
-            adPublishingInfo.AdDescription = "ыва";
-
-            try
-            {
-                _db.AdPublishingInfo.Add(adPublishingInfo);
-                _db.SaveChanges();
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
-
             #region Инициализация команд
 
             #region Команда для получения нескольких параметров
@@ -480,28 +461,31 @@ namespace DromAutoTrader.ViewModels
                         continue; // Если не соответствует ни одному каналу, пропускаем итерацию 
                     #endregion
 
+                    List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
                     // Цикл по каждому каналу в отдельном потоке
                     foreach (var priceChannelMapping in priceChannels.SelectedChannels)
-                    {
-                        // Для каждого канала создаем отдельную задачу
-                        await Task.Run(async () =>
-                          {
-                              // Создаем ChannelAdInfoBuilder для данного канала и цены
-                              var builder = new ChannelAdInfoBuilder(price, priceChannelMapping);
+                    {      
+                        // Создаем ChannelAdInfoBuilder для данного канала и цены
+                        var builder = new ChannelAdInfoBuilder(price, priceChannelMapping);
 
-                              // Строим AdPublishingInfo для данного канала
-                              var adInfo = await builder.Build();
+                        // Строим AdPublishingInfo для данного канала
+                        var adInfo = await builder.Build();
 
-                              // TODO Здесь логика добавления объявления
-                              DromAdPublisher dromAdPublisher = new DromAdPublisher();
-                              await dromAdPublisher.PublishAd(adInfo, priceChannelMapping.Name);
+                        // TODO Здесь логика добавления объявления
+                        DromAdPublisher dromAdPublisher = new DromAdPublisher();
+                        bool isPubished = await dromAdPublisher.PublishAdAsync(adInfo, priceChannelMapping.Name);
 
-                              if (true)
-                              {
+                        if (isPubished)
+                        {
+                            AdPublishingInfo newAdpub = adInfo;
+                            adInfo.ImagesPath = string.Join(";", adInfo?.ImagesPaths);
+                            adPublishingInfoList.Add(newAdpub);
+                        }
 
-                              }
-                          });
                     }
+                    // Сохранение данных в базе данных 
+                    _db.AdPublishingInfo.AddRange(adPublishingInfoList);
+                    _db.SaveChanges();
                 }
             }
         }
@@ -574,7 +558,7 @@ namespace DromAutoTrader.ViewModels
 
             return PathsFilePrices;
         }
-       
+
         // Метод инициализации базы данных
         private void InitializeDatabase()
         {
@@ -583,7 +567,7 @@ namespace DromAutoTrader.ViewModels
                 // Экземпляр базы данных
                 _db = AppContextFactory.GetInstance();
                 // загружаем данные о поставщиках из БД и включаем связанные данные (PriceIncreases и Brands)
-                _db.Channels                    
+                _db.Channels
                     .Load();
                 _db.Brands
                     .Include(b => b.ImageServices)
@@ -591,7 +575,7 @@ namespace DromAutoTrader.ViewModels
                 _db.BrandImageServiceMappings
                     // Загрузка связанных ImageService
                     .Load();
-                _db.BrandImageServiceMappings.Load();   
+                _db.BrandImageServiceMappings.Load();
                 _db.AdPublishingInfo.Load();
             }
             catch (Exception ex)

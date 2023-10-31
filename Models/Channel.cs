@@ -1,7 +1,5 @@
 ﻿using SQLite;
 using SQLiteNetExtensions.Attributes;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
 
 namespace DromAutoTrader.Models
 {
