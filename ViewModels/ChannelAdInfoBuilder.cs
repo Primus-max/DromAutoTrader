@@ -24,7 +24,7 @@ namespace DromAutoTrader.ViewModels
             // Проверяем, что цена в прайсе не меньше чем в таблице накрутки цен
             decimal minTo = (decimal)(_channel?.PriceIncreases.Min(inc => (decimal)inc.To));
 
-            if (_price.PriceBuy < minTo) return new AdPublishingInfo();
+            if (_price.PriceBuy < minTo) return null;
             List<string> imagesPaths = new List<string>();
 
             _adPublishingInfo.Brand = _price?.Brand; // Имя брэнда

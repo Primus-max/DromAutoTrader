@@ -82,11 +82,11 @@ namespace DromAutoTrader.ImageServices.Base
                 BrandImages = null;
             }
 
-            try
-            {
-                _driver.Quit();
-            }
-            catch (Exception) { }
+            //try
+            //{
+            //    _driver.Quit();
+            //}
+            //catch (Exception) { }
         }
 
         /// <summary>

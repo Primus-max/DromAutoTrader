@@ -167,10 +167,8 @@
                             <DataGrid
                                 x:Name="ProcessPostingDataGrid"
                                 Margin="30"
-                                AutoGenerateColumns="False">
-                                <DataGrid.InputBindings>
-                                    <KeyBinding Key="Enter" Command="{Binding EnterKeyPressedCommand}" />
-                                </DataGrid.InputBindings>
+                                AutoGenerateColumns="False"
+                                ItemsSource="{Binding AdPublishingInfos}">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Binding="{Binding Id}" Header="Файл" />
                                     <DataGridTextColumn

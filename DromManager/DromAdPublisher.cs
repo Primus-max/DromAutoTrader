@@ -59,17 +59,17 @@ namespace DromAutoTrader.DromManager
             }
 
             // Бренд для публикации
-            BrandInput(adPublishingInfo.Brand);
+            BrandInput(adPublishingInfo?.Brand);
 
 
             // Артикул для публикации
-            ArticulInput(adPublishingInfo.Artikul);
+            ArticulInput(adPublishingInfo?.Artikul);
             // Цена для публикации
-            PriceInput(adPublishingInfo.OutputPrice.ToString());
+            PriceInput(adPublishingInfo?.OutputPrice?.ToString());
             //Сondition();
             Thread.Sleep(500);
 
-            DescriptionTextInput(adPublishingInfo.Description);
+            DescriptionTextInput(adPublishingInfo?.Description);
 
             Thread.Sleep(500);
             // Кнопка наличие или под заказ
@@ -85,7 +85,7 @@ namespace DromAutoTrader.DromManager
             isPublited = ClickPublishButton();
 
             await adsPower.CloseBrowser(channelName);
-           // _driver.Quit();
+            _driver.Quit();
 
             return isPublited;
         }
@@ -154,8 +154,9 @@ namespace DromAutoTrader.DromManager
                 // Ввод текста в поле ввода
                 IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));
 
-
-                ClearAndEnterText(subjectInput, text);
+                subjectInput.Clear();
+                subjectInput.SendKeys(text);   
+                //ClearAndEnterText(subjectInput, text);
             }
             catch (Exception ex)
             {
@@ -169,7 +170,7 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Нажатие клавиши Enter
-                IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));
+                IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));               
                 subjectInput.SendKeys(Keys.Enter);
             }
             catch (Exception ex)
@@ -479,6 +480,7 @@ namespace DromAutoTrader.DromManager
             }
 
         }
+
 
         // Инициализация драйвера
         private async Task InitializeDriver(string channelName)

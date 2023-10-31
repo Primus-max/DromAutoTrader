@@ -22,6 +22,7 @@ namespace DromAutoTrader.ViewModels
         private List<string>? _prices = null!;
         private Price _selectedPrice = null!;
         private List<PriceChannelMapping> _priceChannelMappings = null!;
+        private ObservableCollection<AdPublishingInfo> _adPublishingInfos = null!;
         #endregion
 
         #region Поставщики
@@ -81,6 +82,12 @@ namespace DromAutoTrader.ViewModels
         {
             get => _priceChannelMappings;
             set => Set(ref _priceChannelMappings, value);
+        }
+
+        public ObservableCollection<AdPublishingInfo> AdPublishingInfos
+        {
+            get => _adPublishingInfos;
+            set => Set(ref _adPublishingInfos, value);
         }
         #endregion
 
@@ -442,61 +449,78 @@ namespace DromAutoTrader.ViewModels
                 foreach (var price in prices)
                 {
                     #region Проверка на наличие брэнда в выбранном канале
-                    bool hasMatchingBrand = false;
+                    //bool hasMatchingBrand = false;
 
-                    foreach (var channel in priceChannels?.SelectedChannels)
-                    {
-                        // Проверяю, есть ли бренд из price в текущем канале
-                        if (channel.Brands.Any(brand => brand.Name == price?.Brand))
-                        {
-                            hasMatchingBrand = true;
-                            break; // Если нашли совпадение, выходим из цикла
-                        }
-                    }
+                    ////foreach (var channel in priceChannels?.SelectedChannels)
+                    ////{
+                    ////    // Проверяю, есть ли бренд из price в текущем канале
+                    ////    if (channel.Brands.Any(brand => brand.Name == price?.Brand))
+                    ////    {
+                    ////        hasMatchingBrand = true;
+                    ////        break; // Если нашли совпадение, выходим из цикла
+                    ////    }
+                    ////}
 
-                    if (!hasMatchingBrand)
-                        continue; // Если не соответствует ни одному каналу, пропускаем итерацию 
+                    //if (!hasMatchingBrand)
+                    //    continue; // Если не соответствует ни одному каналу, пропускаем итерацию 
                     #endregion
 
+
+                    var tasks = new List<Task>();
                     List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
-                    // Цикл по каждому каналу в отдельном потоке
                     foreach (var priceChannelMapping in priceChannels.SelectedChannels)
-                    {      
-                        // Создаем ChannelAdInfoBuilder для данного канала и цены
-                        var builder = new ChannelAdInfoBuilder(price, priceChannelMapping);
-
-                        // Строим AdPublishingInfo для данного канала
-                        var adInfo = await builder.Build();
-
-                        // TODO Здесь логика добавления объявления
-                        DromAdPublisher dromAdPublisher = new DromAdPublisher();
-                        bool isPubished = await dromAdPublisher.PublishAdAsync(adInfo, priceChannelMapping.Name);
-
-                        if (isPubished)
-                        {
-                            AdPublishingInfo newAdpub = adInfo;
-                            adInfo.ImagesPath = string.Join(";", adInfo?.ImagesPaths);
-                            adInfo.ImagesPaths = null;
-                            try
-                            {
-                                _db.AdPublishingInfo.Add(adInfo);
-                                _db.SaveChanges();
-                            }
-                            catch (Exception)
-                            {
-
-                            }
-
-                            adPublishingInfoList.Add(newAdpub);
+                    {
+                        // Проверяю, есть ли бренд из price в текущем канале
+                        if (!priceChannelMapping.Brands.Any(brand => brand.Name == price?.Brand))
+                        {                            
+                            break; // Если нашли совпадение, выходим из цикла
                         }
 
+                        var task = ProcessChannelAsync(priceChannelMapping, price, adPublishingInfoList);
+                        tasks.Add(task);
                     }
-                    // Сохранение данных в базе данных 
-                    _db.AdPublishingInfo.AddRange(adPublishingInfoList);
-                    //_db.SaveChanges();
+
+                    await Task.WhenAll(tasks);
+
                 }
             }
         }
+
+        
+        // Асинхронный метод для обработки каждого канала в собественном потоке
+        public async Task ProcessChannelAsync(Channel priceChannelMapping, FormattedPrice price, List<AdPublishingInfo> adPublishingInfoList)
+        {            
+            // Создаем ChannelAdInfoBuilder для данного канала и цены
+            var builder = new ChannelAdInfoBuilder(price, priceChannelMapping);
+
+            // Строим AdPublishingInfo для данного канала
+            var adInfo = await builder.Build();
+
+            if (adInfo == null) return; 
+
+            // TODO Здесь логика добавления объявления
+            DromAdPublisher dromAdPublisher = new DromAdPublisher();
+            bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, priceChannelMapping.Name);
+
+            if (isPublished)
+            {
+                adInfo.ImagesPath = string.Join(";", adInfo?.ImagesPaths);
+                adInfo.ImagesPaths = null;
+                adInfo.AdDescription = priceChannelMapping.Name;
+                try
+                {
+                    _db.AdPublishingInfo.Add(adInfo);
+                    _db.SaveChanges();
+                }
+                catch (Exception)
+                {
+                    // Обработка ошибки при сохранении в базе данных
+                }
+
+                adPublishingInfoList.Add(adInfo);
+            }
+        }
+
 
         // Метод поиска каналов для выбранного прайса
         private PriceChannelMapping GetChannelsForPrice(string path)
