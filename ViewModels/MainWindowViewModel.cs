@@ -424,11 +424,10 @@ namespace DromAutoTrader.ViewModels
                 AddBrandsAtDb(prices);
 
                 // Модель для публикации объявления
-                AdPublishingInfo adPublishingInfo = new AdPublishingInfo();
+                //AdPublishingInfo adPublishingInfo = new AdPublishingInfo();
 
-                // Получаем к этому прайсу выбранные каналы
-                string fileName = Path.GetFileNameWithoutExtension(path);
-                PriceChannelMapping? priceChannels = PriceChannelMappings?.FirstOrDefault(mapping => mapping?.Price.Name == fileName);
+                // Получаем к этому прайсу выбранные каналы                 
+                PriceChannelMapping? priceChannels = GetChannelsForPrice(path);
 
                 if (priceChannels == null)
                 {
@@ -438,7 +437,7 @@ namespace DromAutoTrader.ViewModels
                     return;
                 }
 
-
+                /************************************************************************/
 
                 foreach (var price in prices)
                 {
@@ -497,6 +496,15 @@ namespace DromAutoTrader.ViewModels
                     //_db.SaveChanges();
                 }
             }
+        }
+
+        // Метод поиска каналов для выбранного прайса
+        private PriceChannelMapping GetChannelsForPrice(string path)
+        {
+            string fileName = Path.GetFileNameWithoutExtension(path);
+            PriceChannelMapping? priceChannels = PriceChannelMappings?.FirstOrDefault(mapping => mapping?.Price.Name == fileName);
+
+            return priceChannels;
         }
 
         // Метод добавления брендов в базу
