@@ -85,7 +85,7 @@ namespace DromAutoTrader.DromManager
             isPublited = ClickPublishButton();
 
             await adsPower.CloseBrowser(channelName);
-            _driver.Quit();
+           // _driver.Quit();
 
             return isPublited;
         }
@@ -152,7 +152,7 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Ввод текста в поле ввода
-                IWebElement subjectInput = _driver.FindElement(By.Name("subject"));
+                IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));
 
 
                 ClearAndEnterText(subjectInput, text);
@@ -169,7 +169,7 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Нажатие клавиши Enter
-                IWebElement subjectInput = _driver.FindElement(By.Name("subject"));
+                IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));
                 subjectInput.SendKeys(Keys.Enter);
             }
             catch (Exception ex)
@@ -222,7 +222,8 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Найти элемент <input type="file>
-                IWebElement fileInput = _driver.FindElement(By.Name("up[]"));
+                //IWebElement fileInput = _driver.FindElement(By.Name("up[]"));
+                IWebElement fileInput = _wait.Until(e => e.FindElement(By.Name("up[]")));
 
                 ScrollToElement(fileInput);
 
@@ -242,7 +243,8 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Найти элемент <input type="file>
-                IWebElement brandNameInput = _driver.FindElement(By.Name("manufacturer"));
+                IWebElement brandNameInput = _wait.Until(e => e.FindElement(By.Name("manufacturer")));
+                //IWebElement fileInput = _wait.Until(e => e.FindElement(By.Name("up[]")));
 
                 if (string.IsNullOrEmpty(brandNameInput.Text))
                 {
@@ -266,7 +268,7 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Найти элемент <input type="file>
-                IWebElement articulNameInput = _driver.FindElement(By.Name("autoPartsOemNumber"));
+                IWebElement articulNameInput = _wait.Until(e => e.FindElement(By.Name("autoPartsOemNumber")));
 
                 if (string.IsNullOrEmpty(articulNameInput.Text))
                 {
@@ -289,7 +291,7 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Найти элемент <input type="file>
-                IWebElement priceInput = _driver.FindElement(By.Name("price"));
+                IWebElement priceInput = _wait.Until(e => e.FindElement(By.Name("price")));
 
                 ScrollToElement(priceInput);
                 ClearAndEnterText(priceInput, price);
@@ -306,7 +308,7 @@ namespace DromAutoTrader.DromManager
         {
             try
             {
-                IWebElement stateButton = _driver.FindElement(By.XPath("//label[text()='Новый']"));
+                IWebElement stateButton = _wait.Until(e => e.FindElement(By.XPath("//label[text()='Новый']")));
 
                 // Выполнить клик на элементе с использованием JavaScript
                 IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)_driver;
@@ -319,12 +321,12 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод получения инпута и вставки описания 
-        public void DescriptionTextInput(string description)
+        public void DescriptionTextInput(string description)    
         {
             try
             {
                 // Найти элемент <input type="file>
-                IWebElement descriptionTextInput = _driver.FindElement(By.Name("text"));
+                IWebElement descriptionTextInput = _wait.Until(e => e.FindElement(By.Name("text")));
 
                 ScrollToElement(descriptionTextInput);
 
@@ -342,7 +344,7 @@ namespace DromAutoTrader.DromManager
             try
             {
 
-                IWebElement presentPartBtn = _driver.FindElement(By.XPath("//label[text()='В наличии']"));
+                IWebElement presentPartBtn = _wait.Until(e => e.FindElement(By.XPath("//label[text()='В наличии']")));
 
                 // Выполнить клик на элементе с использованием JavaScript
                 IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)_driver;
@@ -360,7 +362,7 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Нахождение и клик по элементу по ID
-                IWebElement bulletinPublicationFree = _driver.FindElement(By.Id("bulletin_publication_free"));
+                IWebElement bulletinPublicationFree = _wait.Until(e => e.FindElement(By.Id("bulletin_publication_free")));
 
                 ScrollToElement(bulletinPublicationFree);
 
@@ -433,7 +435,8 @@ namespace DromAutoTrader.DromManager
 
             try
             {
-                liElements = _driver.FindElements(By.CssSelector("ul.bulletin_adding__completeness_watcher__fields li"));
+                //liElements = _driver.FindElements(By.CssSelector("ul.bulletin_adding__completeness_watcher__fields li"));
+                liElements = _wait.Until(e => e.FindElements(By.CssSelector("ul.bulletin_adding__completeness_watcher__fields li")));
             }
             catch (Exception)
             {
@@ -475,34 +478,6 @@ namespace DromAutoTrader.DromManager
                 }
             }
 
-        }
-
-
-        // Ожидание если страница грузится
-        private bool WaitLoadingPage()
-        {
-            //id="loading"
-            bool isLoading = true;
-            int tryCount = 0;
-            while (isLoading)
-            {
-                tryCount++;
-                Thread.Sleep(500);
-
-                if (tryCount > 200) return isLoading;
-                try
-                {
-                    IWebElement spinner = _driver.FindElement(By.Id("loading"));
-
-                    continue;
-                }
-                catch (Exception)
-                {
-                    isLoading = false;
-                    return isLoading;
-                }
-            }
-            return isLoading;
         }
 
         // Инициализация драйвера

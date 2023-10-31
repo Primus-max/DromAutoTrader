@@ -479,13 +479,24 @@ namespace DromAutoTrader.ViewModels
                         {
                             AdPublishingInfo newAdpub = adInfo;
                             adInfo.ImagesPath = string.Join(";", adInfo?.ImagesPaths);
+                            adInfo.ImagesPaths = null;
+                            try
+                            {
+                                _db.AdPublishingInfo.Add(adInfo);
+                                _db.SaveChanges();
+                            }
+                            catch (Exception)
+                            {
+
+                            }
+
                             adPublishingInfoList.Add(newAdpub);
                         }
 
                     }
                     // Сохранение данных в базе данных 
                     _db.AdPublishingInfo.AddRange(adPublishingInfoList);
-                    _db.SaveChanges();
+                    //_db.SaveChanges();
                 }
             }
         }

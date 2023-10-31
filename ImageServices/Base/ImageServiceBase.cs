@@ -1,5 +1,4 @@
 ﻿using DromAutoTrader.ImageServices.Interfaces;
-using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System.Threading;
@@ -83,7 +82,11 @@ namespace DromAutoTrader.ImageServices.Base
                 BrandImages = null;
             }
 
-            _driver.Quit();
+            try
+            {
+                _driver.Quit();
+            }
+            catch (Exception) { }
         }
 
         /// <summary>
@@ -131,11 +134,11 @@ namespace DromAutoTrader.ImageServices.Base
             // Ожидаем, пока загрузится страница
             wait.Until(driver => (bool)js.ExecuteScript("return document.readyState == 'complete'"));
         }
-        
+
         #endregion
 
         #region Абстратные метод
-        protected abstract void GoTo();       
+        protected abstract void GoTo();
         protected abstract void Authorization();
         protected abstract void SetArticulInSearchInput();
         protected abstract bool IsNotMatchingArticul();
