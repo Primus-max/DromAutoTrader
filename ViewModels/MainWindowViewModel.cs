@@ -3,6 +3,7 @@ using DromAutoTrader.DromManager;
 using DromAutoTrader.Infrastacture.Commands;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
+using System.Diagnostics;
 using System.IO;
 
 namespace DromAutoTrader.ViewModels
@@ -409,7 +410,7 @@ namespace DromAutoTrader.ViewModels
         public async Task RunAllWork()
         {
             //PriceProcessor priceProcessor = new();
-            BrandImporter brandImporter = new();
+            
             // Цикл по выбранным прайсам
             foreach (var path in PathsFilePrices)
             {
@@ -420,10 +421,7 @@ namespace DromAutoTrader.ViewModels
 
                 if (prices == null) return;
 
-                // Добавляю брэнды в базу
-                brandImporter.ImportBrandsFromPrices(prices);
-                Brands.Clear();
-                Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); // Обновляю свойство
+                AddBrandsAtDb(prices);
 
                 // Модель для публикации объявления
                 AdPublishingInfo adPublishingInfo = new AdPublishingInfo();
@@ -499,6 +497,15 @@ namespace DromAutoTrader.ViewModels
                     //_db.SaveChanges();
                 }
             }
+        }
+
+        // Метод добавления брендов в базу
+        private void AddBrandsAtDb(PriceList prices)
+        {
+            BrandImporter brandImporter = new();           
+            brandImporter.ImportBrandsFromPrices(prices);
+            Brands.Clear();
+            Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); // Обновляю свойство
         }
 
 
