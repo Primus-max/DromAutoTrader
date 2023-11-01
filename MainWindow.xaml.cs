@@ -1,13 +1,11 @@
-﻿using DromAutoTrader.Data;
-using DromAutoTrader.DromManager;
-using DromAutoTrader.Models;
+﻿using DromAutoTrader.AdsPowerManager;
+using DromAutoTrader.Data;
 using DromAutoTrader.Prices;
 using DromAutoTrader.ViewModels;
 using DromAutoTrader.Views;
 using DromAutoTrader.Views.Pages;
 using OfficeOpenXml;
 using OpenQA.Selenium;
-using System.Drawing.Drawing2D;
 using System.Windows.Data;
 using System.Windows.Media;
 
@@ -31,14 +29,14 @@ namespace DromAutoTrader
             InitializeComponent();
 
             // Инициализация базы данных
-            InitializeDatabase();
+            //InitializeDatabase();
 
             // Объявляю какакую версию EPPlus использую
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
             var viewModel = new MainWindowViewModel();
             _mainViewModel = viewModel;
-            DataContext = _mainViewModel;          
+            DataContext = _mainViewModel;
 
             // Передаю Frame черерз локатор
             LocatorService.Current.ChannelFrame = ChannelFrame;
@@ -46,8 +44,10 @@ namespace DromAutoTrader
             #region Подписка на события
             Loaded += MainWindow_Loaded;
             #endregion
+            
         }
 
+        
         #region Cкрытые метод для разработчика
         // Скрытый метод для добавления сервисов для поиска картинок
         private void AddImageService()
@@ -74,7 +74,7 @@ namespace DromAutoTrader
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             // Устанавливаем начальное содержимое Frame при загрузке окна
-            ChannelFrame.Navigate(new AllChannelPage());            
+            ChannelFrame.Navigate(new AllChannelPage());
         }
 
 
@@ -151,21 +151,24 @@ namespace DromAutoTrader
         #endregion
 
 
-        private void InitializeDatabase()
-        {
-            try
-            {
-                // Экземпляр базы данных
-                _db = AppContextFactory.GetInstance();
-                
-                _db.BrandImageServiceMappings.Load();
-            }
-            catch (Exception)
-            {
-                // TODO сделать запись логов
-                //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
-            }
-        }
+        //private void InitializeDatabase()
+        //{
+        //    try
+        //    {
+        //        // Экземпляр базы данных
+        //        _db = AppContextFactory.GetInstance();
+
+        //        _db.BrandImageServiceMappings.Load();
+        //        _db.Brands
+        //           .Include(b => b.ImageServices)
+        //           .Load();
+        //    }
+        //    catch (Exception)
+        //    {
+        //        // TODO сделать запись логов
+        //        //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
+        //    }
+        //}
 
     }
 }

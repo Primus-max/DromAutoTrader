@@ -1,4 +1,5 @@
-﻿using DromAutoTrader.Data;
+﻿using DromAutoTrader.AdsPowerManager;
+using DromAutoTrader.Data;
 
 namespace DromAutoTrader.DromManager
 {

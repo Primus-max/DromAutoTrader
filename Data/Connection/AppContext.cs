@@ -1,6 +1,4 @@
-﻿using DromAutoTrader.Models;
-using DromAutoTrader.Prices;
-using Microsoft.EntityFrameworkCore;
+﻿using DromAutoTrader.Prices;
 
 namespace DromAutoTrader.Data.Connection
 {
@@ -10,12 +8,22 @@ namespace DromAutoTrader.Data.Connection
         public DbSet<Brand> Brands { get; set; } = null!;
         public DbSet<Channel> Channels { get; set; } = null!;
         public DbSet<TablePriceOfIncrease> TablePriceOfIncreases { get; set; } = null!;
-        public DbSet<PublishedPrice> PublishedPrices  { get; set; } = null!;
+        public DbSet<PublishedPrice> PublishedPrices { get; set; } = null!;
         public DbSet<ImageService> ImageServices { get; set; } = null!;
         public DbSet<BrandImageServiceMapping> BrandImageServiceMappings { get; set; } = null!;
+        public DbSet<AdPublishingInfo> AdPublishingInfo { get; set; } = null!;
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlite("Data Source=main.db");
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // Определение таблицы для AdPublishingInfo
+            modelBuilder.Entity<AdPublishingInfo>()
+                .ToTable("AdPublishingInfo"); // Указываем явное имя таблицы
+
+            // Добавьте здесь другие настройки и связи, если необходимо
         }
     }
 }

@@ -21,7 +21,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override string Password => "dimonfutboll";
 
-        public override string ServiceName => "berg.ru";
+        public override string ServiceName => "https://berg.ru";
         #endregion
 
         //#region Приватный поля        

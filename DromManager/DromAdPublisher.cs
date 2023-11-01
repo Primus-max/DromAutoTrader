@@ -1,50 +1,93 @@
-﻿
+﻿using DromAutoTrader.AdsPowerManager;
 using OpenQA.Selenium;
-using System.Collections.Generic;
+using OpenQA.Selenium.Support.UI;
+using System.IO;
 using System.Threading;
-using System;
 
 namespace DromAutoTrader.DromManager
 {
+    /// <summary>
+    /// Класс для публикации объявлений на Drom
+    /// </summary>
     public class DromAdPublisher
     {
         private string gooodsUrl = new("https://baza.drom.ru/adding?type=goods");
         private string archivedUrl = new("https://baza.drom.ru/personal/archived/bulletins");
-        private IWebDriver _driver;
+        private IWebDriver _driver = null!;
+        private BrowserManager adsPower = null!;
+        private List<Profile> profiles = null!;
+        private WebDriverWait _wait = null!;
 
-        public DromAdPublisher(IWebDriver driver)
+        public DromAdPublisher()
         {
-            // Инициализация драйвера Chrome
-            _driver = driver;
+            adsPower = new BrowserManager();
         }
-
-        // Метод входная точка
-        public void PublishAd(string adTitle)
+        // TODO сделать проверку при запуске на окно выбора города публикации объявления
+        // <input class="bzr-field__text-input bzr-field__text-input_search bzr-field__text-input_clearable" name="search" placeholder="Название города">
+        /// <summary>
+        /// Метод точка входа для размещения объявления на Drom
+        /// </summary>
+        /// <param name="adTitle"></param>
+        public async Task<bool> PublishAdAsync(AdPublishingInfo adPublishingInfo, string channelName)
         {
+            bool isPublited = false;
+            if (adPublishingInfo == null) return isPublited;
+            // Инициализация драйвера Chrome
+            await InitializeDriver(channelName);
+            _wait = new(_driver, TimeSpan.FromSeconds(30));
+
+
             OpenGoodsPage();
             SetWindowSize();
 
             CloseAllTabsExceptCurrent();
 
             //ClickSubjectField();
-            TitleInput(adTitle);
+            // Устанавливаю заголовок объявления
+            TitleInput(adPublishingInfo.KatalogName);
             PressEnterKey();
+
+            await Task.Delay(500);
             ClickDirControlVariant();
             ClickBulletinTypeVariant();
-            InsertImage(@"C:\Users\FedoTT\Desktop\0321-re.jpg");
 
-            BrandInput("Brand");
-            ArticulInput("Articul");
-            PriceInput("3453.8");
+            // Вставляю изображение
+            foreach (var imagePath in adPublishingInfo.ImagesPaths)
+            {
+                string absolutePath = Path.Combine(Environment.CurrentDirectory, imagePath);
+                InsertImage(absolutePath);
+            }
+
+            // Бренд для публикации
+            BrandInput(adPublishingInfo?.Brand);
+
+
+            // Артикул для публикации
+            ArticulInput(adPublishingInfo?.Artikul);
+            // Цена для публикации
+            PriceInput(adPublishingInfo?.OutputPrice?.ToString());
             //Сondition();
             Thread.Sleep(500);
 
-            DescriptionTextInput("Новые запчасти");
+            DescriptionTextInput(adPublishingInfo?.Description);
 
-            CheckAndFillRequiredFields();
             Thread.Sleep(500);
-
+            // Кнопка наличие или под заказ
             GoodPresentState();
+
+            // Проверяю заполненность полей
+            CheckAndFillRequiredFields();
+
+            Thread.Sleep(500);
+            // Публикую
+            //ClickPublishButton();
+
+            isPublited = ClickPublishButton();
+
+            await adsPower.CloseBrowser(channelName);
+            _driver.Quit();
+
+            return isPublited;
         }
 
         // Метод открытия страницы с размещением объявления
@@ -104,16 +147,16 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод получение input заголовка и ввода текста
-
         public void TitleInput(string text)
         {
             try
             {
                 // Ввод текста в поле ввода
-                IWebElement subjectInput = _driver.FindElement(By.Name("subject"));
+                IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));
 
-
-                ClearAndEnterText(subjectInput, text);
+                subjectInput.Clear();
+                subjectInput.SendKeys(text);   
+                //ClearAndEnterText(subjectInput, text);
             }
             catch (Exception ex)
             {
@@ -127,7 +170,7 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Нажатие клавиши Enter
-                IWebElement subjectInput = _driver.FindElement(By.Name("subject"));
+                IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));               
                 subjectInput.SendKeys(Keys.Enter);
             }
             catch (Exception ex)
@@ -141,9 +184,11 @@ namespace DromAutoTrader.DromManager
         {
             try
             {
-                // Нахождение и клик по элементу по CSS селектору
-                IWebElement dirControlVariant = _driver.FindElement(By.CssSelector(".dir_control__variant"));
+                //  WaitLoadingPage();
 
+                // Нахождение и клик по элементу по CSS селектору
+                // IWebElement dirControlVariant = _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".dir_control__variant")));
+                IWebElement dirControlVariant = _wait.Until(e => e.FindElement(By.CssSelector(".dir_control__variant")));
                 ScrollToElement(dirControlVariant);
 
                 dirControlVariant.Click();
@@ -160,8 +205,8 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Нахождение и клик по элементу по CSS селектору
-                IWebElement bulletinTypeVariant = _driver.FindElement(By.CssSelector(".choice-w-caption__variant:nth-child(1) .bulletin-type__variant-title"));
-
+                //IWebElement bulletinTypeVariant = _driver.FindElement(By.CssSelector(".choice-w-caption__variant:nth-child(1) .bulletin-type__variant-title"));
+                IWebElement bulletinTypeVariant = _wait.Until(e => e.FindElement(By.CssSelector(".choice-w-caption__variant:nth-child(1) .bulletin-type__variant-title")));
                 ScrollToElement(bulletinTypeVariant);
 
                 bulletinTypeVariant.Click();
@@ -178,7 +223,8 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Найти элемент <input type="file>
-                IWebElement fileInput = _driver.FindElement(By.Name("up[]"));
+                //IWebElement fileInput = _driver.FindElement(By.Name("up[]"));
+                IWebElement fileInput = _wait.Until(e => e.FindElement(By.Name("up[]")));
 
                 ScrollToElement(fileInput);
 
@@ -198,7 +244,8 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Найти элемент <input type="file>
-                IWebElement brandNameInput = _driver.FindElement(By.Name("manufacturer"));
+                IWebElement brandNameInput = _wait.Until(e => e.FindElement(By.Name("manufacturer")));
+                //IWebElement fileInput = _wait.Until(e => e.FindElement(By.Name("up[]")));
 
                 if (string.IsNullOrEmpty(brandNameInput.Text))
                 {
@@ -222,7 +269,7 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Найти элемент <input type="file>
-                IWebElement articulNameInput = _driver.FindElement(By.Name("autoPartsOemNumber"));
+                IWebElement articulNameInput = _wait.Until(e => e.FindElement(By.Name("autoPartsOemNumber")));
 
                 if (string.IsNullOrEmpty(articulNameInput.Text))
                 {
@@ -245,7 +292,7 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Найти элемент <input type="file>
-                IWebElement priceInput = _driver.FindElement(By.Name("price"));
+                IWebElement priceInput = _wait.Until(e => e.FindElement(By.Name("price")));
 
                 ScrollToElement(priceInput);
                 ClearAndEnterText(priceInput, price);
@@ -262,7 +309,7 @@ namespace DromAutoTrader.DromManager
         {
             try
             {
-                IWebElement stateButton = _driver.FindElement(By.XPath("//label[text()='Новый']"));
+                IWebElement stateButton = _wait.Until(e => e.FindElement(By.XPath("//label[text()='Новый']")));
 
                 // Выполнить клик на элементе с использованием JavaScript
                 IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)_driver;
@@ -275,12 +322,12 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод получения инпута и вставки описания 
-        public void DescriptionTextInput(string description)
+        public void DescriptionTextInput(string description)    
         {
             try
             {
                 // Найти элемент <input type="file>
-                IWebElement descriptionTextInput = _driver.FindElement(By.Name("text"));
+                IWebElement descriptionTextInput = _wait.Until(e => e.FindElement(By.Name("text")));
 
                 ScrollToElement(descriptionTextInput);
 
@@ -298,7 +345,7 @@ namespace DromAutoTrader.DromManager
             try
             {
 
-                IWebElement presentPartBtn = _driver.FindElement(By.XPath("//label[text()='В наличии']"));
+                IWebElement presentPartBtn = _wait.Until(e => e.FindElement(By.XPath("//label[text()='В наличии']")));
 
                 // Выполнить клик на элементе с использованием JavaScript
                 IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)_driver;
@@ -311,20 +358,28 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод публицкации объявления
-        public void ClickPublishButton()
+        public bool ClickPublishButton()
         {
             try
             {
                 // Нахождение и клик по элементу по ID
-                IWebElement bulletinPublicationFree = _driver.FindElement(By.Id("bulletin_publication_free"));
+                IWebElement bulletinPublicationFree = _wait.Until(e => e.FindElement(By.Id("bulletin_publication_free")));
 
                 ScrollToElement(bulletinPublicationFree);
 
-                bulletinPublicationFree.Click();
+
+                // Выполнить клик на элементе с использованием JavaScript
+                IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)_driver;
+                jsExecutor.ExecuteScript("arguments[0].click();", bulletinPublicationFree);
+                //bulletinPublicationFree.Click();
+
+                return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine("Ошибка при клике на кнопку 'Опубликовать': " + ex.Message);
+                //TODO добавить логирование
+                //Console.WriteLine("Ошибка при клике на кнопку 'Опубликовать': " + ex.Message);
+                return false;
             }
         }
 
@@ -381,7 +436,8 @@ namespace DromAutoTrader.DromManager
 
             try
             {
-                liElements = _driver.FindElements(By.CssSelector("ul.bulletin_adding__completeness_watcher__fields li"));
+                //liElements = _driver.FindElements(By.CssSelector("ul.bulletin_adding__completeness_watcher__fields li"));
+                liElements = _wait.Until(e => e.FindElements(By.CssSelector("ul.bulletin_adding__completeness_watcher__fields li")));
             }
             catch (Exception)
             {
@@ -390,8 +446,20 @@ namespace DromAutoTrader.DromManager
 
             foreach (IWebElement liElement in liElements)
             {
-                string dataRequired = liElement.GetAttribute("data-required");
-                string dataName = liElement.GetAttribute("data-name");
+                string dataRequired = string.Empty;
+                string dataName = string.Empty;
+
+                try
+                {
+                    dataRequired = liElement.GetAttribute("data-required");
+                }
+                catch (Exception) { }
+
+                try
+                {
+                    dataName = liElement.GetAttribute("data-name");
+                }
+                catch (Exception) { }
 
                 if (dataRequired == "1")
                 {
@@ -409,6 +477,22 @@ namespace DromAutoTrader.DromManager
                             // Добавьте другие case для других полей
                     }
                 }
+            }
+
+        }
+
+
+        // Инициализация драйвера
+        private async Task InitializeDriver(string channelName)
+        {
+            BrowserManager adsPower = new();
+            List<Profile> profiles = await ProfileManager.GetProfiles();
+
+            foreach (Profile profile in profiles)
+            {
+                if (profile.Name != channelName || profile == null) continue;
+
+                _driver = await adsPower.InitializeDriver(profile.UserId);
             }
 
         }

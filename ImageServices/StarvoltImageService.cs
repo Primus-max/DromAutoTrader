@@ -21,7 +21,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override string Password => "";
 
-        public override string ServiceName => "startvolt.com";
+        public override string ServiceName => "https://startvolt.com";
         #endregion
 
         #region Приватные поля

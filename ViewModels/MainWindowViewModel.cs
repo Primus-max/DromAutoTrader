@@ -1,7 +1,9 @@
 ﻿using DromAutoTrader.Data;
+using DromAutoTrader.DromManager;
 using DromAutoTrader.Infrastacture.Commands;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
+using System.Diagnostics;
 using System.IO;
 
 namespace DromAutoTrader.ViewModels
@@ -20,6 +22,7 @@ namespace DromAutoTrader.ViewModels
         private List<string>? _prices = null!;
         private Price _selectedPrice = null!;
         private List<PriceChannelMapping> _priceChannelMappings = null!;
+        private ObservableCollection<AdPublishingInfo> _adPublishingInfos = null!;
         #endregion
 
         #region Поставщики
@@ -79,6 +82,12 @@ namespace DromAutoTrader.ViewModels
         {
             get => _priceChannelMappings;
             set => Set(ref _priceChannelMappings, value);
+        }
+
+        public ObservableCollection<AdPublishingInfo> AdPublishingInfos
+        {
+            get => _adPublishingInfos;
+            set => Set(ref _adPublishingInfos, value);
         }
         #endregion
 
@@ -247,6 +256,7 @@ namespace DromAutoTrader.ViewModels
         #endregion
 
         #region Брэнды
+        // Команда выбора сервисов для бренда
         public ICommand SelectImageServiceCommand { get; } = null!;
         private bool CanSelectImageServiceCommandExecute(object p) => true;
         private void OnSelectImageServiceCommandExecuted(object sender)
@@ -296,6 +306,14 @@ namespace DromAutoTrader.ViewModels
                 }
             }
         }
+
+        // Команда выбора изображения по умолчанию
+        public ICommand SelectImageServiceDefaultCommand { get; } = null!;
+        private bool CanSelectImageServiceDefaultCommandExecute(object p) => true;
+        private void OnSelectImageServiceDefaultCommandExecuted(object sender)
+        {
+            SaveDefaultImageForBrand(SelectedBrand);
+        }
         #endregion
 
         #region Команда для получения нескольких параметров
@@ -344,6 +362,7 @@ namespace DromAutoTrader.ViewModels
 
             #region Брэнды
             SelectImageServiceCommand = new LambdaCommand(OnSelectImageServiceCommandExecuted, CanSelectImageServiceCommandExecute);
+            SelectImageServiceDefaultCommand = new LambdaCommand(OnSelectImageServiceDefaultCommandExecuted, CanSelectImageServiceDefaultCommandExecute);
             #endregion
             #endregion
 
@@ -398,28 +417,23 @@ namespace DromAutoTrader.ViewModels
         public async Task RunAllWork()
         {
             //PriceProcessor priceProcessor = new();
-            BrandImporter brandImporter = new();
-
+            
+            // Цикл по выбранным прайсам
             foreach (var path in PathsFilePrices)
             {
                 if (string.IsNullOrEmpty(path))
                     MessageBox.Show("Для начала работы необходимо выбрать прайс");
+                               
 
                 PriceList prices = await ProcessPriceAsync(path);
 
                 if (prices == null) return;
 
-                // Добавляю брэнды в базу
-                brandImporter.ImportBrandsFromPrices(prices);
-                Brands.Clear();
-                Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); // Обновляю свойство
+                AddBrandsAtDb(prices);
 
-                // Модель для публикации объявления
-                AdPublishingInfo adPublishingInfo = new AdPublishingInfo();
-
-                // Получаем к этому прайсу выбранные каналы
-                string fileName = Path.GetFileNameWithoutExtension(path);
-                PriceChannelMapping? priceChannels = PriceChannelMappings?.FirstOrDefault(mapping => mapping?.Price.Name == fileName);
+              
+                // Получаем к этому прайсу выбранные каналы                 
+                PriceChannelMapping? priceChannels = GetChannelsForPrice(path);
 
                 if (priceChannels == null)
                 {
@@ -429,44 +443,68 @@ namespace DromAutoTrader.ViewModels
                     return;
                 }
 
-
+                /************************************************************************/
 
                 foreach (var price in prices)
-                {
-                    #region Проверка на наличие брэнда в выбранном канале
-                    bool hasMatchingBrand = false;
+                {                                       
 
-                    foreach (var channel in priceChannels?.SelectedChannels)
-                    {
-                        // Проверяю, есть ли бренд из price в текущем канале
-                        if (channel.Brands.Any(brand => brand.Name == price?.Brand))
-                        {
-                            hasMatchingBrand = true;
-                            break; // Если нашли совпадение, выходим из цикла
-                        }
-                    }
-
-                    if (!hasMatchingBrand)
-                        continue; // Если не соответствует ни одному каналу, пропускаем итерацию 
-                    #endregion
-
-                    // Цикл по каждому каналу в отдельном потоке
+                    List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
                     foreach (var priceChannelMapping in priceChannels.SelectedChannels)
                     {
-                        // Для каждого канала создаем отдельную задачу
-                        await Task.Run(async () =>
-                          {
-                              // Создаем ChannelAdInfoBuilder для данного канала и цены
-                              var builder = new ChannelAdInfoBuilder(price, priceChannelMapping);
+                        // Проверяю, есть ли бренд из price в текущем канале
+                        if (!priceChannelMapping.Brands.Any(brand => brand.Name == price?.Brand))
+                        {                            
+                            break; // Если нашли совпадение, выходим из цикла
+                        }
 
-                              // Строим AdPublishingInfo для данного канала
-                              var adInfo = await builder.Build();
+                        // Создаем ChannelAdInfoBuilder для данного канала и цены
+                        var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
 
-                              // Вы можете здесь использовать adInfo для дальнейших операций
-                          });
-                    }
+                        // Строим AdPublishingInfo для данного канала
+                        var adInfo = await builder.Build();
+
+                        if (adInfo == null) return;
+
+                        PriceFilter priceFilter = new();
+                        priceFilter.FilterAndSaveByPrice(adInfo);
+
+                       // await ProcessChannelAsync(priceChannelMapping, price, adPublishingInfoList);
+
+                    }                    
+
                 }
             }
+        }
+
+        
+        // Асинхронный метод для обработки каждого канала в собественном потоке
+        public async Task ProcessChannelAsync(Channel priceChannelMapping, FormattedPrice price, List<AdPublishingInfo> adPublishingInfoList)
+        {            
+            
+
+            // TODO Здесь логика добавления объявления
+            //DromAdPublisher dromAdPublisher = new DromAdPublisher();
+            //bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, priceChannelMapping.Name);
+
+        }
+
+
+        // Метод поиска каналов для выбранного прайса
+        private PriceChannelMapping GetChannelsForPrice(string path)
+        {
+            string fileName = Path.GetFileNameWithoutExtension(path);
+            PriceChannelMapping? priceChannels = PriceChannelMappings?.FirstOrDefault(mapping => mapping?.Price.Name == fileName);
+
+            return priceChannels;
+        }
+
+        // Метод добавления брендов в базу
+        private void AddBrandsAtDb(PriceList prices)
+        {
+            BrandImporter brandImporter = new();           
+            brandImporter.ImportBrandsFromPrices(prices);
+            Brands.Clear();
+            Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); // Обновляю свойство
         }
 
 
@@ -522,7 +560,7 @@ namespace DromAutoTrader.ViewModels
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
                 Multiselect = true, // Разрешить выбор нескольких файлов
-                Filter = "Excel Files (*.xlsx)|*.xlsx|CSV Files (*.csv)|*.csv|All Files (*.*)|*.*"
+                Filter = "Excel Files (*.xlsx;*.xls)|*.xlsx;*.xls|CSV Files (*.csv)|*.csv|All Files (*.*)|*.*"
             };
 
             if (openFileDialog.ShowDialog() == true)
@@ -538,23 +576,6 @@ namespace DromAutoTrader.ViewModels
             return PathsFilePrices;
         }
 
-        // Метод выбора файла для парсинга
-        //private void SelectFilePrice()
-        //{
-        //    // Создаем диалоговое окно выбора файла
-        //    OpenFileDialog openFileDialog = new()
-        //    {
-        //        // Устанавливаем фильтры для типов файлов, которые вы хотите разрешить выбирать
-        //        Filter = "Excel Files (*.xlsx)|*.xlsx|CSV Files (*.csv)|*.csv|All Files (*.*)|*.*"
-        //    };
-
-        //    if (openFileDialog.ShowDialog() == true)
-        //    {
-        //        // Получаем путь к выбранному файлу
-        //        PathsFilePrices = openFileDialog.FileName;
-        //    }
-        //}
-
         // Метод инициализации базы данных
         private void InitializeDatabase()
         {
@@ -564,20 +585,19 @@ namespace DromAutoTrader.ViewModels
                 _db = AppContextFactory.GetInstance();
                 // загружаем данные о поставщиках из БД и включаем связанные данные (PriceIncreases и Brands)
                 _db.Channels
-                    .Include(c => c.PriceIncreases)
-                    .Include(c => c.Brands)
                     .Load();
                 _db.Brands
                     .Include(b => b.ImageServices)
                     .Load();
                 _db.BrandImageServiceMappings
-                    .Include(mapping => mapping.ImageServiceId) // Загрузка связанных ImageService
+                    // Загрузка связанных ImageService
                     .Load();
-
                 _db.BrandImageServiceMappings.Load();
+                _db.AdPublishingInfo.Load();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                MessageBox.Show(ex.ToString());
                 // TODO сделать запись логов
                 //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
             }
@@ -607,6 +627,34 @@ namespace DromAutoTrader.ViewModels
         #endregion
 
         #region Брэнды
+        // Открываю окно для выбора картинки и сохранения по дефолту
+        private void SaveDefaultImageForBrand(Brand selectedBrand)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Title = "Выберите изображение для бренда",
+                Filter = "Изображения (*.jpg, *.jpeg, *.png)|*.jpg;*.jpeg;*.png|Все файлы (*.*)|*.*"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string selectedImagePath = openFileDialog.FileName;
+
+                // Сохраните выбранный путь к файлу в поле DefaultImage для выбранного бренда
+                selectedBrand.DefaultImage = selectedImagePath;
+
+                // Сохраните изменения в базе данных
+                try
+                {
+                    _db.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Не удалось сохранить изображение по умолчанию {ex.Message}", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+        }
+
         public ObservableCollection<BrandWithSelectedImageServices> GetBrandsWithSelectedImageServices()
         {
             var brandImageServiceMappings = _db.BrandImageServiceMappings.ToList();
