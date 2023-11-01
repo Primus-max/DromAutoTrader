@@ -1,4 +1,5 @@
-﻿using DromAutoTrader.Services;
+﻿using DromAutoTrader.Data;
+using DromAutoTrader.Services;
 using DromAutoTrader.ViewModels;
 using System.Drawing;
 using System.Windows.Data;
@@ -12,10 +13,12 @@ namespace DromAutoTrader.Views.Windows
     {
         public int _selectedCHannelId;
         private AddBrandsToChannelaWindowViewModel _brandsToChannelaWindowViewModel = null!;
+        private AppContext _db = null!;
 
         public AddBrandsToChannelaWindow(int channelId)
         {
             InitializeComponent();
+            InitializeDatabase();
 
             _selectedCHannelId = channelId;
 
@@ -72,26 +75,42 @@ namespace DromAutoTrader.Views.Windows
         // Метод отображения выбранных брэндов для канала
         private void SelectItemsForChannel()
         {
-            foreach (Brand brand in BrandsListBox.Items)
+            foreach (BrandChannelMapping mapping in _db.BrandChannelMappings.Include(m => m.Brand).Where(m => m.ChannelId == _selectedCHannelId))
             {
-                if (brand.ChannelId == _selectedCHannelId)
+                Brand brand = mapping.Brand;
+                int index = BrandsListBox.Items.IndexOf(brand);
+
+                if (index >= 0 && index < BrandsListBox.Items.Count)
                 {
-                    // Получите индекс элемента в коллекции
-                    int index = BrandsListBox.Items.IndexOf(brand);
+                    ListBoxItem listBoxItem = BrandsListBox.ItemContainerGenerator.ContainerFromIndex(index) as ListBoxItem;
 
-                    // Если элемент находится в видимой области, выделите его
-                    if (index >= 0 && index < BrandsListBox.Items.Count)
+                    if (listBoxItem != null)
                     {
-
-                        ListBoxItem listBoxItem = BrandsListBox.ItemContainerGenerator.ContainerFromIndex(index) as ListBoxItem;
-
-                        if (listBoxItem != null)
-                        {
-                            listBoxItem.IsSelected = true;
-                        }
+                        listBoxItem.IsSelected = true;
                     }
                 }
             }
         }
+
+        private void InitializeDatabase()
+        {
+            try
+            {
+                // Экземпляр базы данных
+                _db = AppContextFactory.GetInstance();
+               
+                // Загружаем данные о BrandChannelMappings с зависимостями
+                _db.BrandChannelMappings
+                    .Include(mapping => mapping.Brand)
+                    .Include(mapping => mapping.Channel)
+                    .Load();
+            }
+            catch (Exception)
+            {
+                // TODO сделать запись логов
+                //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
+            }
+        }
+
     }
 }
