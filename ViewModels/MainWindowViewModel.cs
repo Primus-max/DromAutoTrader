@@ -423,12 +423,7 @@ namespace DromAutoTrader.ViewModels
             {
                 if (string.IsNullOrEmpty(path))
                     MessageBox.Show("Для начала работы необходимо выбрать прайс");
-
-                // Получаю только имя прайс
-                string priceName = Path.GetFileName(path);
-
-                AdPublishingInfo ad = new();
-                ad.PriceName = priceName;
+                               
 
                 PriceList prices = await ProcessPriceAsync(path);
 
@@ -436,9 +431,7 @@ namespace DromAutoTrader.ViewModels
 
                 AddBrandsAtDb(prices);
 
-                // Модель для публикации объявления
-                //AdPublishingInfo adPublishingInfo = new AdPublishingInfo();
-
+              
                 // Получаем к этому прайсу выбранные каналы                 
                 PriceChannelMapping? priceChannels = GetChannelsForPrice(path);
 
@@ -453,9 +446,8 @@ namespace DromAutoTrader.ViewModels
                 /************************************************************************/
 
                 foreach (var price in prices)
-                {          
+                {                                       
 
-                    var tasks = new List<Task>();
                     List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
                     foreach (var priceChannelMapping in priceChannels.SelectedChannels)
                     {
@@ -465,11 +457,20 @@ namespace DromAutoTrader.ViewModels
                             break; // Если нашли совпадение, выходим из цикла
                         }
 
-                        var task = ProcessChannelAsync(priceChannelMapping, price, adPublishingInfoList);
-                        tasks.Add(task);
-                    }
+                        // Создаем ChannelAdInfoBuilder для данного канала и цены
+                        var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
 
-                    await Task.WhenAll(tasks);
+                        // Строим AdPublishingInfo для данного канала
+                        var adInfo = await builder.Build();
+
+                        if (adInfo == null) return;
+
+                        PriceFilter priceFilter = new();
+                        priceFilter.FilterAndSaveByPrice(adInfo);
+
+                       // await ProcessChannelAsync(priceChannelMapping, price, adPublishingInfoList);
+
+                    }                    
 
                 }
             }
@@ -479,35 +480,12 @@ namespace DromAutoTrader.ViewModels
         // Асинхронный метод для обработки каждого канала в собественном потоке
         public async Task ProcessChannelAsync(Channel priceChannelMapping, FormattedPrice price, List<AdPublishingInfo> adPublishingInfoList)
         {            
-            // Создаем ChannelAdInfoBuilder для данного канала и цены
-            var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
-
-            // Строим AdPublishingInfo для данного канала
-            var adInfo = await builder.Build();
-
-            if (adInfo == null) return; 
+            
 
             // TODO Здесь логика добавления объявления
-            DromAdPublisher dromAdPublisher = new DromAdPublisher();
-            bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, priceChannelMapping.Name);
+            //DromAdPublisher dromAdPublisher = new DromAdPublisher();
+            //bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, priceChannelMapping.Name);
 
-            if (isPublished)
-            {
-                adInfo.ImagesPath = string.Join(";", adInfo?.ImagesPaths);
-                adInfo.ImagesPaths = null;
-                adInfo.AdDescription = priceChannelMapping.Name;
-                try
-                {
-                    _db.AdPublishingInfo.Add(adInfo);
-                    _db.SaveChanges();
-                }
-                catch (Exception)
-                {
-                    // Обработка ошибки при сохранении в базе данных
-                }
-
-                adPublishingInfoList.Add(adInfo);
-            }
         }
 
 
