@@ -115,7 +115,7 @@ namespace DromAutoTrader.ViewModels
 
             #region Инициализация источников данных
             TablePriceOfIncreases = new ObservableCollection<TablePriceOfIncrease>(_db.TablePriceOfIncreases.ToList());
-            TotalBrandCount = SelectedChannel.BrandsCount;
+            TotalBrandCount = CalcCountBrandsForChannel();
             DescriptionChannel = SelectedChannel.Description;
             #endregion
 
@@ -140,7 +140,16 @@ namespace DromAutoTrader.ViewModels
         // Обновляю колличество выбранных каналов
         private void UpdateAddedBrandsCount()
         {
-            TotalBrandCount = SelectedChannel.BrandsCount;
+            CalcCountBrandsForChannel();
+        }
+
+        private int CalcCountBrandsForChannel()
+        {
+            int count = 0;
+            count = _db.BrandChannelMappings.Count(m => m.ChannelId == SelectedChannel.Id);
+
+            TotalBrandCount = count;    
+            return count;
         }
         private void AddRowTablePriceOfIncreases(DataGrid dataGrid)
         {
@@ -151,7 +160,7 @@ namespace DromAutoTrader.ViewModels
 
         // Сохраняем таблицу накрутки цен
         public void SaveTablePriceOfIncreases()
-        {            
+        {
             try
             {
                 foreach (var price in FilteredTablePriceOfIncreases)
@@ -266,6 +275,12 @@ namespace DromAutoTrader.ViewModels
                 _db = AppContextFactory.GetInstance();
                 // загружаем данные о поставщиках из БД
                 _db.TablePriceOfIncreases.Load();
+
+                // Загружаем данные о BrandChannelMappings с зависимостями
+                _db.BrandChannelMappings
+                    .Include(mapping => mapping.Brand)
+                    .Include(mapping => mapping.Channel)
+                    .Load();
             }
             catch (Exception)
             {
