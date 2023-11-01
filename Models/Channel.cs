@@ -15,7 +15,7 @@ namespace DromAutoTrader.Models
         public List<TablePriceOfIncrease>? PriceIncreases { get; set; }
 
         // Брэнды для этого канала
-        [OneToMany]
+        [ManyToMany(typeof(BrandChannelMapping))]
         public List<Brand>? Brands { get; set; }
 
         [Ignore] // Используем атрибут Ignore, чтобы это свойство не сохранялось в базу данных

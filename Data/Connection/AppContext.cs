@@ -11,6 +11,7 @@ namespace DromAutoTrader.Data.Connection
         public DbSet<PublishedPrice> PublishedPrices { get; set; } = null!;
         public DbSet<ImageService> ImageServices { get; set; } = null!;
         public DbSet<BrandImageServiceMapping> BrandImageServiceMappings { get; set; } = null!;
+        public DbSet<BrandChannelMapping> BrandChannelMappings { get; set; } = null!;
         public DbSet<AdPublishingInfo> AdPublishingInfo { get; set; } = null!;
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -19,11 +20,12 @@ namespace DromAutoTrader.Data.Connection
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Определение таблицы для AdPublishingInfo
-            modelBuilder.Entity<AdPublishingInfo>()
-                .ToTable("AdPublishingInfo"); // Указываем явное имя таблицы
+            //// Определение таблицы для AdPublishingInfo
+            //modelBuilder.Entity<AdPublishingInfo>()
+            //    .ToTable("AdPublishingInfo"); // Указываем явное имя таблицы
 
-            // Добавьте здесь другие настройки и связи, если необходимо
+            //modelBuilder.Entity<BrandChannelMapping>().HasNoKey();
+            //// Добавьте здесь другие настройки и связи, если необходимо
         }
     }
 }

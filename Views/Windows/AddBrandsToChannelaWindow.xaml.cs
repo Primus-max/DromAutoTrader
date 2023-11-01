@@ -57,7 +57,7 @@ namespace DromAutoTrader.Views.Windows
         {
             List<Brand> selectedBrands = BrandsListBox.SelectedItems.Cast<Brand>().ToList();
 
-            _brandsToChannelaWindowViewModel.AddBrandsToChannelInDb(_selectedCHannelId, selectedBrands, this);
+            _brandsToChannelaWindowViewModel.UpdateBrandChannelMappings(_selectedCHannelId, selectedBrands, this);
 
             SelectItemsForChannel();
 

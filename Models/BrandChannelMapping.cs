@@ -2,6 +2,8 @@
 {
     public class BrandChannelMapping
     {
+        [SQLite.PrimaryKey, SQLite.AutoIncrement]
+        public int? Id { get; set; }
         public int BrandId { get; set; }
         public Brand? Brand { get; set; }
 

@@ -58,28 +58,26 @@ namespace DromAutoTrader.ViewModels
 
         #region Методы
         // Метод записи и соотношения брэндов к каналу
-        public void AddBrandsToChannelInDb(int selectedChannelId, List<Brand> brands, Window curWindow)
+        public void UpdateBrandChannelMappings(int selectedChannelId, List<Brand> selectedBrands, Window curWindow)
         {
-            foreach (var brand in brands)
+            // Получаем текущие связи из таблицы BrandChannelMapping
+            var existingMappings = _db.BrandChannelMappings.ToList();
+
+            // Создаем новые связи для выбранных брендов
+            var newMappings = selectedBrands.Select(brand => new BrandChannelMapping
             {
-                Brand? existedBrand = _db.Brands.FirstOrDefault(b => b.Id == brand.Id);
+                BrandId = brand.Id,
+                ChannelId = selectedChannelId
+            }).ToList();
 
-                if (existedBrand != null)
-                {
-                    // Обновляем только ChannelId, не изменяя Id
-                    existedBrand.ChannelId = selectedChannelId;
-                }
-                else
-                {
-                    // Создаем новый объект Brand, если он не существует
-                    brand.ChannelId = selectedChannelId;
-                    _db.Brands.Add(brand);
-                }
-            }
+            // Удаляем устаревшие связи, которых больше нет в выбранных брендах
+            var mappingsToRemove = existingMappings
+                .Where(existingMapping => !newMappings.Any(newMapping => newMapping.BrandId == existingMapping.BrandId))
+                .ToList();
+            _db.BrandChannelMappings.RemoveRange(mappingsToRemove);
 
-            // Добавляем новые бренды, которых ранее не было
-            var newBrands = brands.Where(brand => !_db.Brands.Any(b => b.Id == brand.Id));
-            _db.Brands.AddRange(newBrands);
+            // Добавляем новые связи
+            _db.BrandChannelMappings.AddRange(newMappings);
 
             try
             {
@@ -89,24 +87,6 @@ namespace DromAutoTrader.ViewModels
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка при сохранении: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-
-            // Удаляем связи с брендами, которые больше не выбраны
-            var allBrandIds = brands.Select(b => b.Id).ToList();
-            var brandsToRemoveChannel = _db.Brands.Where(b => b.ChannelId == selectedChannelId && !allBrandIds.Contains(b.Id)).ToList();
-
-            foreach (var unselectedBrand in brandsToRemoveChannel)
-            {
-                unselectedBrand.ChannelId = null;
-            }
-
-            try
-            {
-                _db.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при удалении связей: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -119,6 +99,12 @@ namespace DromAutoTrader.ViewModels
                 _db = AppContextFactory.GetInstance();
                 // загружаем данные о поставщиках из БД
                 _db.Brands.Load();
+
+                // Загружаем данные о BrandChannelMappings с зависимостями
+                _db.BrandChannelMappings
+                    .Include(mapping => mapping.Brand)
+                    .Include(mapping => mapping.Channel)
+                    .Load();
             }
             catch (Exception)
             {
