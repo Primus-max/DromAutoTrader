@@ -2,6 +2,7 @@
 using DromAutoTrader.Views;
 using DromAutoTrader.Views.Windows;
 using MaterialDesignThemes.MahApps;
+using Microsoft.EntityFrameworkCore;
 using System.Drawing;
 
 namespace DromAutoTrader.ViewModels
@@ -60,8 +61,10 @@ namespace DromAutoTrader.ViewModels
         // Метод записи и соотношения брэндов к каналу
         public void UpdateBrandChannelMappings(int selectedChannelId, List<Brand> selectedBrands, Window curWindow)
         {
-            // Получаем текущие связи из таблицы BrandChannelMapping
-            var existingMappings = _db.BrandChannelMappings.ToList();
+            // Получаем текущие связи из таблицы BrandChannelMapping для выбранного канала
+            var existingMappingsForChannel = _db.BrandChannelMappings
+                .Where(mapping => mapping.ChannelId == selectedChannelId)
+                .ToList();
 
             // Создаем новые связи для выбранных брендов
             var newMappings = selectedBrands.Select(brand => new BrandChannelMapping
@@ -71,13 +74,16 @@ namespace DromAutoTrader.ViewModels
             }).ToList();
 
             // Удаляем устаревшие связи, которых больше нет в выбранных брендах
-            var mappingsToRemove = existingMappings
+            var mappingsToRemove = existingMappingsForChannel
                 .Where(existingMapping => !newMappings.Any(newMapping => newMapping.BrandId == existingMapping.BrandId))
                 .ToList();
             _db.BrandChannelMappings.RemoveRange(mappingsToRemove);
 
             // Добавляем новые связи
-            _db.BrandChannelMappings.AddRange(newMappings);
+            var mappingsToAdd = newMappings
+                .Where(newMapping => !existingMappingsForChannel.Any(existingMapping => existingMapping.BrandId == newMapping.BrandId))
+                .ToList();
+            _db.BrandChannelMappings.AddRange(mappingsToAdd);
 
             try
             {
@@ -89,6 +95,7 @@ namespace DromAutoTrader.ViewModels
                 MessageBox.Show($"Ошибка при сохранении: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         // Метод получения базы данных
         private void InitializeDatabase()
