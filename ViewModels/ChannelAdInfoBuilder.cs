@@ -1,6 +1,7 @@
 ﻿using DromAutoTrader.Models;
 using DromAutoTrader.Prices;
 using DromAutoTrader.Services;
+using System.IO;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -9,12 +10,14 @@ namespace DromAutoTrader.ViewModels
         private AdPublishingInfo? _adPublishingInfo = null;
         private readonly Channel? _channel = null;
         private readonly FormattedPrice? _price = null;
+        private readonly string? _pricePath = null;
 
-        public ChannelAdInfoBuilder(FormattedPrice price, Channel channel)
+        public ChannelAdInfoBuilder(FormattedPrice price, Channel channel, string pricePath)
         {
             _price = price;
             _channel = channel;
             _adPublishingInfo = new();
+            _pricePath = pricePath;
         }
 
         public async Task<AdPublishingInfo> Build()
@@ -26,7 +29,9 @@ namespace DromAutoTrader.ViewModels
 
             if (_price.PriceBuy < minTo) return null;
             List<string> imagesPaths = new List<string>();
+            string? namePrice = Path.GetFileName(_pricePath);
 
+            _adPublishingInfo.PriceName = namePrice;
             _adPublishingInfo.Brand = _price?.Brand; // Имя брэнда
             _adPublishingInfo.Artikul = _price?.Artikul; // Артикул
             _adPublishingInfo.Description = _channel.Description; // Описание товара (из прайса) Пока нигде не потребовалось

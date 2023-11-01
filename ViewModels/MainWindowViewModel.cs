@@ -424,6 +424,12 @@ namespace DromAutoTrader.ViewModels
                 if (string.IsNullOrEmpty(path))
                     MessageBox.Show("Для начала работы необходимо выбрать прайс");
 
+                // Получаю только имя прайс
+                string priceName = Path.GetFileName(path);
+
+                AdPublishingInfo ad = new();
+                ad.PriceName = priceName;
+
                 PriceList prices = await ProcessPriceAsync(path);
 
                 if (prices == null) return;
@@ -447,24 +453,7 @@ namespace DromAutoTrader.ViewModels
                 /************************************************************************/
 
                 foreach (var price in prices)
-                {
-                    #region Проверка на наличие брэнда в выбранном канале
-                    //bool hasMatchingBrand = false;
-
-                    ////foreach (var channel in priceChannels?.SelectedChannels)
-                    ////{
-                    ////    // Проверяю, есть ли бренд из price в текущем канале
-                    ////    if (channel.Brands.Any(brand => brand.Name == price?.Brand))
-                    ////    {
-                    ////        hasMatchingBrand = true;
-                    ////        break; // Если нашли совпадение, выходим из цикла
-                    ////    }
-                    ////}
-
-                    //if (!hasMatchingBrand)
-                    //    continue; // Если не соответствует ни одному каналу, пропускаем итерацию 
-                    #endregion
-
+                {          
 
                     var tasks = new List<Task>();
                     List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
@@ -491,7 +480,7 @@ namespace DromAutoTrader.ViewModels
         public async Task ProcessChannelAsync(Channel priceChannelMapping, FormattedPrice price, List<AdPublishingInfo> adPublishingInfoList)
         {            
             // Создаем ChannelAdInfoBuilder для данного канала и цены
-            var builder = new ChannelAdInfoBuilder(price, priceChannelMapping);
+            var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
 
             // Строим AdPublishingInfo для данного канала
             var adInfo = await builder.Build();

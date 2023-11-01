@@ -5,6 +5,7 @@ namespace DromAutoTrader.Models
     public class AdPublishingInfo
     {
         public int? Id { get; set; }
+        public string? PriceName { get; set; }
         public decimal? InputPrice { get; set; }
         public decimal? OutputPrice { get; set; }
         public string? DatePublished { get; set; }
