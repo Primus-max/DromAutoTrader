@@ -31,6 +31,7 @@ namespace DromAutoTrader.ViewModels
             _adPublishingInfo.Artikul = _price?.Artikul; // Артикул
             _adPublishingInfo.Description = _channel.Description; // Описание товара (из прайса) Пока нигде не потребовалось
             _adPublishingInfo.KatalogName = _price?.KatalogName; // Это попадает в заголовок объявления
+            _adPublishingInfo.InputPrice = _price.PriceBuy; // Прайс на деталь от поставщика
             _adPublishingInfo.OutputPrice = CalcPrice.Calculate(_price.PriceBuy, _channel?.PriceIncreases); // Считаю цену исходя из цены прайса
 
             // Получаю пути к изображениям
