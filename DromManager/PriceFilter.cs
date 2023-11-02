@@ -16,10 +16,12 @@ namespace DromAutoTrader.DromManager
             var existingAds = _db.AdPublishingInfo
                 .Where(a =>
                         a.Brand == adInfo.Brand &&
-                        a.Artikul == adInfo.Artikul)
-                .ToList()
-                .Where(a => DateTime.Parse(a.DatePublished).Date == DateTime.Now.Date)
+                        a.Artikul == adInfo.Artikul &&
+                        a.KatalogName == adInfo.KatalogName
+                        )
                 .ToList();
+                //.Where(a => DateTime.Parse(a.DatePublished).Date == DateTime.Now.Date)
+                //.ToList();
 
 
             if (existingAds.Count == 0)
@@ -51,9 +53,10 @@ namespace DromAutoTrader.DromManager
                         {
                             _db.SaveChanges();
                         }
-                        catch (Exception ex)
+                        catch (Exception )
                         {
-                            Console.WriteLine($"Не удалось сохранить новый объект публикации {ex.Message}");
+                            // TODO сделат логирование
+                           // Console.WriteLine($"Не удалось сохранить новый объект публикации {ex.Message}");
                         }
                     }
                 }
