@@ -65,7 +65,7 @@ namespace DromAutoTrader.DromManager
         /// <param name="channelName"></param>
         /// <param name="adPublishings"></param>
         /// <returns></returns>
-        public async Task RemoveByArticul(string channelName, List<AdPublishingInfo> adPublishings)
+        public async Task RemoveByFlag(string channelName, List<AdPublishingInfo> adPublishings)
         {
             await InitializeDriver(channelName);            
 
@@ -73,8 +73,9 @@ namespace DromAutoTrader.DromManager
             foreach (var ads in adPublishings)
             {
                 if(ads.Artikul == null || ads.Brand == null) continue;
-                // Котрываю страницу со всеми объявлениями
+               if(ads.IsArchived == false) continue;
 
+               // Формирую поисковую строку
                 string serachString = BuildSearchString(ads.Artikul);
 
                 // Перехожу на поисковую страницу по артикулу
@@ -91,7 +92,6 @@ namespace DromAutoTrader.DromManager
 
                 // Подтеверждаю, что убираю в архив
                 SubnitRemove();
-
             }
            
         }

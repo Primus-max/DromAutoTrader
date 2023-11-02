@@ -48,6 +48,9 @@ namespace DromAutoTrader.DromManager
                         existingAd.ImagesPath = adInfo.ImagesPath;
                         existingAd.IsArchived = adInfo.IsArchived;
                         existingAd.KatalogName = adInfo.KatalogName;
+                        existingAd.PriceName = adInfo.PriceName;
+                        existingAd.Description = adInfo.Description;
+
 
                         // Сохраняю
                         try

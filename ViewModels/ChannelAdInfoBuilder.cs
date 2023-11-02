@@ -1,5 +1,4 @@
-﻿using DromAutoTrader.Models;
-using DromAutoTrader.Prices;
+﻿using DromAutoTrader.Prices;
 using DromAutoTrader.Services;
 using System.IO;
 
@@ -38,8 +37,8 @@ namespace DromAutoTrader.ViewModels
             _adPublishingInfo.KatalogName = _price?.KatalogName; // Это попадает в заголовок объявления
             _adPublishingInfo.InputPrice = _price.PriceBuy; // Прайс на деталь от поставщика
             _adPublishingInfo.OutputPrice = CalcPrice.Calculate(_price.PriceBuy, _channel?.PriceIncreases); // Считаю цену исходя из цены прайса
-            _adPublishingInfo.AdDescription = _channel.Name;
-            
+            _adPublishingInfo.AdDescription = _channel.Name; // Имя канала в котором опубликовал
+            _adPublishingInfo.Count = _price.Count; // Количество запчастей у поставщика
             SelectionImagesPathsService imagesPathsservice = new SelectionImagesPathsService(); // Фабрика для выбора нужного сервиса по поиску изображения
             imagesPaths = await imagesPathsservice.SelectPaths(_price?.Brand, _price?.Artikul); // Получаю путь к изображению
             _adPublishingInfo.ImagesPaths = imagesPaths; // TODO временное хранение путей в виде List, далее надо обнулить (в базе не хранится)
@@ -47,7 +46,7 @@ namespace DromAutoTrader.ViewModels
             // Создаю дату регистрации объявления
             // // TODO(Делать только посе публикации объявления) Дата формирования объявления
             _adPublishingInfo.DatePublished = DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss");
-            
+
 
             return _adPublishingInfo;
 

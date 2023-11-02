@@ -343,6 +343,7 @@ namespace DromAutoTrader.ViewModels
             #region Инициализация команд
             
 
+
             #region Команда для получения нескольких параметров
             MyCommand = new RelayCommand(ExecuteMethod, CanExecuteMethod);
             #endregion
@@ -488,12 +489,25 @@ namespace DromAutoTrader.ViewModels
             // Публикация объявлений
             await ProcessPublishingAdsAtDrom();
 
+            // Убираю в архив неакутальные
+            RemoveAtArchive();
+
             // Удаляю все публикации не за сегодняшнюю дату
             DeleteOutdatedAdsAtDb();
         }
 
 
-        // Асинхронный метод для обработки каждого канала в собественном потоке
+        // Метод для формирования прайса
+        private void ExportPrice()
+        {
+            if (_db == null) return;
+
+            List<AdPublishingInfo> prices  = _db.AdPublishingInfo.ToList();
+            ExcelPriceExporter priceExporter = new ExcelPriceExporter();
+            priceExporter.ExportPricesToExcel(prices);
+        }
+
+        // Асинхронный метод публикации объявления        
         public async Task ProcessPublishingAdsAtDrom()
         {
             var adInfos = _db.AdPublishingInfo.ToList(); // Загрузка всех объявлений
@@ -530,6 +544,15 @@ namespace DromAutoTrader.ViewModels
                     }
                 }
             }
+        }
+
+        // Метод для перещения публикаций в архив
+        private async void RemoveAtArchive()
+        {
+            List<AdPublishingInfo> adPublishings = _db.AdPublishingInfo.ToList();
+            RemoveAdsArchive remover = new();
+
+            await remover.RemoveByFlag(SelectedBrand?.Name, adPublishings);
         }
 
         // Удаляю публикации не за сегодня (оставляю только актуальные)
@@ -576,7 +599,6 @@ namespace DromAutoTrader.ViewModels
             Brands.Clear();
             Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); // Обновляю свойство
         }
-
 
 
         #region Асинхронные методы
