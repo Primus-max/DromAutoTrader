@@ -50,9 +50,10 @@ namespace DromAutoTrader.DromManager
             await Task.Delay(500);
             ClickDirControlVariant();
             ClickBulletinTypeVariant();
+            List<string> ImagesPaths = adPublishingInfo.ImagesPath.Split(";").ToList();
 
             // Вставляю изображение
-            foreach (var imagePath in adPublishingInfo.ImagesPaths)
+            foreach (var imagePath in ImagesPaths)
             {
                 string absolutePath = Path.Combine(Environment.CurrentDirectory, imagePath);
                 InsertImage(absolutePath);
@@ -379,6 +380,7 @@ namespace DromAutoTrader.DromManager
             {
                 //TODO добавить логирование
                 //Console.WriteLine("Ошибка при клике на кнопку 'Опубликовать': " + ex.Message);
+                CheckAndFillRequiredFields(); // Если попали сюда, надо проверить, все ли поля заполнены
                 return false;
             }
         }

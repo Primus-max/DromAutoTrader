@@ -1,11 +1,7 @@
 ﻿using DromAutoTrader.Data;
 using DromAutoTrader.ImageServices;
-using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.ImageServices.Interfaces;
-using DromAutoTrader.Models;
-using System.Drawing.Drawing2D;
 using System.IO;
-using System.Reflection;
 
 namespace DromAutoTrader.Services
 {
@@ -152,7 +148,7 @@ namespace DromAutoTrader.Services
         // Скачивам картинки с сайтов
         private async Task<List<string>> RunImageServiceAsync(string brand, string articul, int imageServiceUrl)
         {
-            List<string> downLoadedImagesPaths = new List<string>();            
+            List<string> downLoadedImagesPaths = new List<string>();
 
             // Проверяем, есть ли URL-адрес сервиса в словаре
             if (imageServiceTypes.TryGetValue(imageServiceUrl, out Type imageServiceType))
@@ -187,7 +183,7 @@ namespace DromAutoTrader.Services
                     .Load();
                 _db.BrandImageServiceMappings
                     .Include(mapping => mapping.ImageServiceId)
-                    .Load();               
+                    .Load();
             }
             catch (Exception ex)
             {

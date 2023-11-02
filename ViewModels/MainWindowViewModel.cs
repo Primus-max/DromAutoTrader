@@ -3,7 +3,6 @@ using DromAutoTrader.DromManager;
 using DromAutoTrader.Infrastacture.Commands;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
-using System.Diagnostics;
 using System.IO;
 
 namespace DromAutoTrader.ViewModels
@@ -482,14 +481,17 @@ namespace DromAutoTrader.ViewModels
             }
 
             // Убираю в архив, если в прайсах такого обхявления нет
-            AdsArchiver adsArchiver = new AdsArchiver();
+            AdsArchiver adsArchiver = new();
             adsArchiver.CompareAndArchiveAds();
 
             // Публикация объявлений
             await ProcessPublishingAdsAtDrom();
+
+            // Удаляю все публикации не за сегодняшнюю дату
+            DeleteOutdatedAdsAtDb();
         }
 
-        
+
         // Асинхронный метод для обработки каждого канала в собественном потоке
         public async Task ProcessPublishingAdsAtDrom()
         {
@@ -502,22 +504,59 @@ namespace DromAutoTrader.ViewModels
 
             foreach (var adInfo in sortedAdInfos)
             {
-                if (adInfo.Artikul == null || adInfo.Brand == null) continue;
+                if (adInfo.IsArchived == true) continue; // Если объявление в архиве
 
-                bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, adInfo.AdDescription);
+                if (adInfo.PriceBuy != 1) continue; // Если уже публиковал (название поля не имеет общего с данной логикой. Просто было пустое поле)
 
-                //if (isPublished)
-                //{
-                //    // Маркируем объявление как опубликованное в канале
-                //    adInfo.IsPublishedInChannel = true;
+                if (adInfo.Artikul == null || adInfo.Brand == null ) continue; // Если бренд или артикул пустые
 
-                //    // Сохраняем изменения в базе данных
-                //    _db.SaveChanges();
-                //}
+                // Получаю имя канала, название поля просто было пустым
+                string channelName = adInfo.AdDescription;
+
+                bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, channelName);
+
+                if (isPublished)
+                {
+                    adInfo.PriceBuy = 1;
+
+                    try
+                    {
+                        _db.AdPublishingInfo.Add(adInfo);
+                    }
+                    catch (Exception)
+                    {
+
+                    }
+                }
             }
-
         }
 
+        // Удаляю публикации не за сегодня (оставляю только актуальные)
+        private void DeleteOutdatedAdsAtDb()
+        {
+            List<AdPublishingInfo> adsPublishedOutDateNow = GetOutdatedAds();
+
+            try
+            {
+                _db.AdPublishingInfo.RemoveRange(adsPublishedOutDateNow);
+                _db.SaveChanges();
+            }
+            catch (Exception)
+            {
+                // TODO сделать логирование
+            }
+        }
+
+        // Получаю объекты публикации не за сегодня
+        private List<AdPublishingInfo> GetOutdatedAds()
+        {
+            var currentDate = DateTime.Now.Date;
+
+            return _db.AdPublishingInfo
+                .ToList()
+                .Where(a => DateTime.Parse(a.DatePublished).Date != currentDate)
+                .ToList();
+        }
 
         // Метод поиска каналов для выбранного прайса
         private PriceChannelMapping GetChannelsForPrice(string path)
@@ -531,7 +570,7 @@ namespace DromAutoTrader.ViewModels
         // Метод добавления брендов в базу
         private void AddBrandsAtDb(PriceList prices)
         {
-            BrandImporter brandImporter = new();           
+            BrandImporter brandImporter = new();
             brandImporter.ImportBrandsFromPrices(prices);
             Brands.Clear();
             Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); // Обновляю свойство
@@ -618,7 +657,7 @@ namespace DromAutoTrader.ViewModels
                     .Load();
                 _db.Brands
                     .Include(b => b.ImageServices)
-                    .Load();               
+                    .Load();
                 _db.BrandImageServiceMappings.Load();
                 _db.AdPublishingInfo.Load();
                 // Загружаем данные о BrandChannelMappings с зависимостями
