@@ -383,6 +383,7 @@ namespace DromAutoTrader.ViewModels
             Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
             TotalBrandCount = Brands.Count;
 
+            // Дабавляю выбранные сервисы картинов в отображение
             var ImageServices = new ObservableCollection<ImageService>(_db.ImageServices.ToList());
 
             foreach (var brand in Brands)
@@ -446,21 +447,28 @@ namespace DromAutoTrader.ViewModels
                 /************************************************************************/
 
                 foreach (var price in prices)
-                {                                       
-
+                {
                     List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
                     foreach (var priceChannelMapping in priceChannels.SelectedChannels)
                     {
-                        // Проверяю, есть ли бренд из price в текущем канале
-                        if (!priceChannelMapping.Brands.Any(brand => brand.Name == price?.Brand))
-                        {                            
-                            break; // Если нашли совпадение, выходим из цикла
+                        var brandChannelMappingsForChannel = _db.BrandChannelMappings
+                            .Where(mapping => mapping.ChannelId == priceChannelMapping.Id)
+                            .ToList();
+
+                        var channelBrands = brandChannelMappingsForChannel
+                            .Select(mapping => mapping.Brand)
+                            .ToList();
+
+
+                        if (!channelBrands.Any(b => b.Name == price.Brand))
+                        {
+                            break; // Если не нашли совпадение, выходите из цикла
                         }
 
-                        // Создаем ChannelAdInfoBuilder для данного канала и цены
+                        // Создайте ChannelAdInfoBuilder для данного канала и цены
                         var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
 
-                        // Строим AdPublishingInfo для данного канала
+                        // Стройте AdPublishingInfo для данного канала
                         var adInfo = await builder.Build();
 
                         if (adInfo == null) return;
@@ -468,11 +476,11 @@ namespace DromAutoTrader.ViewModels
                         PriceFilter priceFilter = new();
                         priceFilter.FilterAndSaveByPrice(adInfo);
 
-                       // await ProcessChannelAsync(priceChannelMapping, price, adPublishingInfoList);
-
-                    }                    
-
+                        // await ProcessChannelAsync(priceChannelMapping, price, adPublishingInfoList);
+                    }
                 }
+
+
             }
         }
 
@@ -588,12 +596,14 @@ namespace DromAutoTrader.ViewModels
                     .Load();
                 _db.Brands
                     .Include(b => b.ImageServices)
-                    .Load();
-                _db.BrandImageServiceMappings
-                    // Загрузка связанных ImageService
-                    .Load();
+                    .Load();               
                 _db.BrandImageServiceMappings.Load();
                 _db.AdPublishingInfo.Load();
+                // Загружаем данные о BrandChannelMappings с зависимостями
+                _db.BrandChannelMappings
+                    .Include(mapping => mapping.Brand)
+                    .Include(mapping => mapping.Channel)
+                    .Load();
             }
             catch (Exception ex)
             {
