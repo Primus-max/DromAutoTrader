@@ -200,6 +200,11 @@ namespace DromAutoTrader.ImageServices
 
             return downloadedImages;
         }
+
+        protected override void CloseDriver()
+        {
+            _driver.Close();
+        }
         #endregion
 
         #region Специфичные методы класса   
