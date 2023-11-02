@@ -118,7 +118,7 @@ namespace DromAutoTrader.ImageServices
 
             // Временное хранилище изображений
             List<string> images = new();
-            
+
             using HttpClient httpClient = new();
 
             try
@@ -156,9 +156,10 @@ namespace DromAutoTrader.ImageServices
             return downloadedImages;
         }
 
-        protected override void SpecificRunAsync(string brandName, string articul)
+        protected override void SpecificRunAsync(string brandName, string articul) { }
+        protected override void CloseDriver()
         {
-            throw new NotImplementedException();
+            
         }
         #endregion
 

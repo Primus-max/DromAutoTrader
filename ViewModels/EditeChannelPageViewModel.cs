@@ -1,4 +1,5 @@
 ﻿using DromAutoTrader.Data;
+using DromAutoTrader.DromManager;
 using DromAutoTrader.Services;
 using DromAutoTrader.Views;
 using DromAutoTrader.Views.Windows;
@@ -51,6 +52,16 @@ namespace DromAutoTrader.ViewModels
         #endregion
 
         #region Команды
+        // Убрать все объявления в архив
+        public ICommand RemoveAllAdsArchiveCommand { get; } = null!;
+
+        private bool CanRemoveAllAdsArchiveCommandExecute(object p) => true;
+
+        private void OnRemoveAllAdsArchiveCommandExecuted(object sender)
+        {
+            RemoveAllAdsArchive();
+        }
+
         public ICommand AddRowTablePriceOfIncreasesCommand { get; } = null!;
 
         private bool CanAddRowTablePriceOfIncreasesCommandExecute(object p) => true;
@@ -115,7 +126,7 @@ namespace DromAutoTrader.ViewModels
 
             #region Инициализация источников данных
             TablePriceOfIncreases = new ObservableCollection<TablePriceOfIncrease>(_db.TablePriceOfIncreases.ToList());
-            TotalBrandCount = SelectedChannel.BrandsCount;
+            TotalBrandCount = CalcCountBrandsForChannel();
             DescriptionChannel = SelectedChannel.Description;
             #endregion
 
@@ -125,6 +136,7 @@ namespace DromAutoTrader.ViewModels
             RemoveTablePriceOfIncreasesCommand = new LambdaCommand(OnRemoveTablePriceOfIncreasesCommandExecuted, CanRemoveTablePriceOfIncreasesCommandExecute);
             GoBackAllChannelsCommand = new LambdaCommand(OnGoBackAllChannelsCommandExecuted, CanGoBackAllChannelsCommandExecute);
             OpenAddBrandToChannelWindowCommand = new LambdaCommand(OnOpenAddBrandToChannelWindowExecuted, CanOpenAddBrandToChannelWindowExecute);
+            RemoveAllAdsArchiveCommand = new LambdaCommand(OnRemoveAllAdsArchiveCommandExecuted, CanRemoveAllAdsArchiveCommandExecute);
             #endregion
 
             #region Вызов методов
@@ -137,10 +149,25 @@ namespace DromAutoTrader.ViewModels
         }
 
         #region Методы
+        // Убираю все объявления в архив
+        private void RemoveAllAdsArchive()
+        {
+            RemoveAdsArchive removeAdsArchive = new RemoveAdsArchive();
+            removeAdsArchive.RemoveAll(SelectedChannel.Name);
+        }
         // Обновляю колличество выбранных каналов
         private void UpdateAddedBrandsCount()
         {
-            TotalBrandCount = SelectedChannel.BrandsCount;
+            CalcCountBrandsForChannel();
+        }
+
+        private int CalcCountBrandsForChannel()
+        {
+            int count = 0;
+            count = _db.BrandChannelMappings.Count(m => m.ChannelId == SelectedChannel.Id);
+
+            TotalBrandCount = count;    
+            return count;
         }
         private void AddRowTablePriceOfIncreases(DataGrid dataGrid)
         {
@@ -151,7 +178,7 @@ namespace DromAutoTrader.ViewModels
 
         // Сохраняем таблицу накрутки цен
         public void SaveTablePriceOfIncreases()
-        {            
+        {
             try
             {
                 foreach (var price in FilteredTablePriceOfIncreases)
@@ -266,6 +293,12 @@ namespace DromAutoTrader.ViewModels
                 _db = AppContextFactory.GetInstance();
                 // загружаем данные о поставщиках из БД
                 _db.TablePriceOfIncreases.Load();
+
+                // Загружаем данные о BrandChannelMappings с зависимостями
+                _db.BrandChannelMappings
+                    .Include(mapping => mapping.Brand)
+                    .Include(mapping => mapping.Channel)
+                    .Load();
             }
             catch (Exception)
             {

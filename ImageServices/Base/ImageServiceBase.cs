@@ -82,6 +82,7 @@ namespace DromAutoTrader.ImageServices.Base
                 BrandImages = null;
             }
 
+            CloseDriver();
             //try
             //{
             //    _driver.Quit();
@@ -145,6 +146,8 @@ namespace DromAutoTrader.ImageServices.Base
         protected abstract void OpenSearchedCard();
         protected abstract bool IsImagesVisible();
         protected abstract Task<List<string>> GetImagesAsync();
+
+        protected abstract void CloseDriver();
 
         protected abstract void SpecificRunAsync(string brandName, string articul);
         #endregion

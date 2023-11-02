@@ -3,7 +3,6 @@ using DromAutoTrader.DromManager;
 using DromAutoTrader.Infrastacture.Commands;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
-using System.Diagnostics;
 using System.IO;
 
 namespace DromAutoTrader.ViewModels
@@ -177,7 +176,7 @@ namespace DromAutoTrader.ViewModels
 
         #region КОМАНДЫ
 
-
+        
 
         #region Поставщики
         public ICommand AddSupplierCommand { get; } = null!;
@@ -342,6 +341,7 @@ namespace DromAutoTrader.ViewModels
             InitializeDatabase();
 
             #region Инициализация команд
+            
 
             #region Команда для получения нескольких параметров
             MyCommand = new RelayCommand(ExecuteMethod, CanExecuteMethod);
@@ -383,6 +383,7 @@ namespace DromAutoTrader.ViewModels
             Brands = new ObservableCollection<Brand>(_db.Brands.ToList());
             TotalBrandCount = Brands.Count;
 
+            // Дабавляю выбранные сервисы картинов в отображение
             var ImageServices = new ObservableCollection<ImageService>(_db.ImageServices.ToList());
 
             foreach (var brand in Brands)
@@ -416,14 +417,14 @@ namespace DromAutoTrader.ViewModels
         // Метод запускающий всю работу
         public async Task RunAllWork()
         {
-            //PriceProcessor priceProcessor = new();
-            
-            // Цикл по выбранным прайсам
+            PriceProcessor priceProcessor = new();
+
+            //Цикл по выбранным прайсам
             foreach (var path in PathsFilePrices)
             {
                 if (string.IsNullOrEmpty(path))
                     MessageBox.Show("Для начала работы необходимо выбрать прайс");
-                               
+
 
                 PriceList prices = await ProcessPriceAsync(path);
 
@@ -431,7 +432,7 @@ namespace DromAutoTrader.ViewModels
 
                 AddBrandsAtDb(prices);
 
-              
+
                 // Получаем к этому прайсу выбранные каналы                 
                 PriceChannelMapping? priceChannels = GetChannelsForPrice(path);
 
@@ -446,48 +447,117 @@ namespace DromAutoTrader.ViewModels
                 /************************************************************************/
 
                 foreach (var price in prices)
-                {                                       
-
+                {
                     List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
                     foreach (var priceChannelMapping in priceChannels.SelectedChannels)
                     {
-                        // Проверяю, есть ли бренд из price в текущем канале
-                        if (!priceChannelMapping.Brands.Any(brand => brand.Name == price?.Brand))
-                        {                            
-                            break; // Если нашли совпадение, выходим из цикла
+                        // Получаю канал
+                        var brandChannelMappingsForChannel = _db.BrandChannelMappings
+                            .Where(mapping => mapping.ChannelId == priceChannelMapping.Id)
+                            .ToList();
+                        // Получаю бренды связанные с каналом
+                        var channelBrands = brandChannelMappingsForChannel
+                            .Select(mapping => mapping.Brand)
+                            .ToList();
+
+                        // Проверяю бренд из прайса с выбранным для канала и прайса
+                        if (!channelBrands.Any(b => b.Name == price.Brand))
+                        {
+                            break; // Если не нашли совпадение, выходите из цикла
                         }
 
-                        // Создаем ChannelAdInfoBuilder для данного канала и цены
+                        // Констурктор строителя объекта для публикации
                         var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
-
-                        // Строим AdPublishingInfo для данного канала
+                        // Строю объект для публикации
                         var adInfo = await builder.Build();
-
                         if (adInfo == null) return;
 
+                        // Фильтр цен перед сохранением объекта публикации в базе
                         PriceFilter priceFilter = new();
                         priceFilter.FilterAndSaveByPrice(adInfo);
 
-                       // await ProcessChannelAsync(priceChannelMapping, price, adPublishingInfoList);
+                        // await ProcessChannelAsync(priceChannelMapping, price, adPublishingInfoList);
+                    }
+                }
+            }
 
-                    }                    
+            // Убираю в архив, если в прайсах такого обхявления нет
+            AdsArchiver adsArchiver = new();
+            adsArchiver.CompareAndArchiveAds();
 
+            // Публикация объявлений
+            await ProcessPublishingAdsAtDrom();
+
+            // Удаляю все публикации не за сегодняшнюю дату
+            DeleteOutdatedAdsAtDb();
+        }
+
+
+        // Асинхронный метод для обработки каждого канала в собественном потоке
+        public async Task ProcessPublishingAdsAtDrom()
+        {
+            var adInfos = _db.AdPublishingInfo.ToList(); // Загрузка всех объявлений
+
+            // Отсортируем объявления по названию канала (AdDescription)
+            var sortedAdInfos = adInfos.OrderBy(a => a.AdDescription).ToList();
+
+            DromAdPublisher dromAdPublisher = new DromAdPublisher();
+
+            foreach (var adInfo in sortedAdInfos)
+            {
+                if (adInfo.IsArchived == true) continue; // Если объявление в архиве
+
+                if (adInfo.PriceBuy != 1) continue; // Если уже публиковал (название поля не имеет общего с данной логикой. Просто было пустое поле)
+
+                if (adInfo.Artikul == null || adInfo.Brand == null) continue; // Если бренд или артикул пустые
+
+                // Получаю имя канала, название поля просто было пустым
+                string channelName = adInfo.AdDescription;
+
+                bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, channelName);
+
+                if (isPublished)
+                {
+                    adInfo.PriceBuy = 1;
+
+                    try
+                    {
+                        _db.AdPublishingInfo.Add(adInfo);
+                    }
+                    catch (Exception)
+                    {
+
+                    }
                 }
             }
         }
 
-        
-        // Асинхронный метод для обработки каждого канала в собественном потоке
-        public async Task ProcessChannelAsync(Channel priceChannelMapping, FormattedPrice price, List<AdPublishingInfo> adPublishingInfoList)
-        {            
-            
+        // Удаляю публикации не за сегодня (оставляю только актуальные)
+        private void DeleteOutdatedAdsAtDb()
+        {
+            List<AdPublishingInfo> adsPublishedOutDateNow = GetOutdatedAds();
 
-            // TODO Здесь логика добавления объявления
-            //DromAdPublisher dromAdPublisher = new DromAdPublisher();
-            //bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, priceChannelMapping.Name);
-
+            try
+            {
+                _db.AdPublishingInfo.RemoveRange(adsPublishedOutDateNow);
+                _db.SaveChanges();
+            }
+            catch (Exception)
+            {
+                // TODO сделать логирование
+            }
         }
 
+        // Получаю объекты публикации не за сегодня
+        private List<AdPublishingInfo> GetOutdatedAds()
+        {
+            var currentDate = DateTime.Now.Date;
+
+            return _db.AdPublishingInfo
+                .ToList()
+                .Where(a => DateTime.Parse(a.DatePublished).Date != currentDate)
+                .ToList();
+        }
 
         // Метод поиска каналов для выбранного прайса
         private PriceChannelMapping GetChannelsForPrice(string path)
@@ -501,7 +571,7 @@ namespace DromAutoTrader.ViewModels
         // Метод добавления брендов в базу
         private void AddBrandsAtDb(PriceList prices)
         {
-            BrandImporter brandImporter = new();           
+            BrandImporter brandImporter = new();
             brandImporter.ImportBrandsFromPrices(prices);
             Brands.Clear();
             Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); // Обновляю свойство
@@ -550,7 +620,7 @@ namespace DromAutoTrader.ViewModels
 
         #endregion
 
-        #region Базовые
+        #region Базовые        
 
         // Метод получения прайсов
         private List<string> GetSelectedFilePaths()
@@ -589,11 +659,13 @@ namespace DromAutoTrader.ViewModels
                 _db.Brands
                     .Include(b => b.ImageServices)
                     .Load();
-                _db.BrandImageServiceMappings
-                    // Загрузка связанных ImageService
-                    .Load();
                 _db.BrandImageServiceMappings.Load();
                 _db.AdPublishingInfo.Load();
+                // Загружаем данные о BrandChannelMappings с зависимостями
+                _db.BrandChannelMappings
+                    .Include(mapping => mapping.Brand)
+                    .Include(mapping => mapping.Channel)
+                    .Load();
             }
             catch (Exception ex)
             {

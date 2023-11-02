@@ -18,6 +18,9 @@ namespace DromAutoTrader.Models
         [ManyToMany(typeof(BrandImageServiceMapping))] // Многие-ко-многим через промежуточную таблицу
         public List<ImageService>? ImageServices { get; set; }
 
+        //[ManyToMany(typeof(BrandChannelMapping))]
+       // public List<Channel>? Channels { get; set; }  // Связываю с каналами в которых выбран бренд
+
         [NotMapped]
         public List<ImageServiceWithState> ImageServicesWithState { get; set; } = new List<ImageServiceWithState>();
     }

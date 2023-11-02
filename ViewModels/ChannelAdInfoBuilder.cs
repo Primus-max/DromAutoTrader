@@ -38,17 +38,16 @@ namespace DromAutoTrader.ViewModels
             _adPublishingInfo.KatalogName = _price?.KatalogName; // Это попадает в заголовок объявления
             _adPublishingInfo.InputPrice = _price.PriceBuy; // Прайс на деталь от поставщика
             _adPublishingInfo.OutputPrice = CalcPrice.Calculate(_price.PriceBuy, _channel?.PriceIncreases); // Считаю цену исходя из цены прайса
-
-            // Получаю пути к изображениям
-            SelectionImagesPathsService imagesPathsservice = new SelectionImagesPathsService();
-            imagesPaths = await imagesPathsservice.SelectPaths(_price?.Brand, _price?.Artikul);
-            _adPublishingInfo.ImagesPaths = imagesPaths;
-            // Создаю дату регистрации объявления           
-            _adPublishingInfo.DatePublished = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-
-            // TODO получние адресов картинки (ок) 
-
-
+            _adPublishingInfo.AdDescription = _channel.Name;
+            
+            SelectionImagesPathsService imagesPathsservice = new SelectionImagesPathsService(); // Фабрика для выбора нужного сервиса по поиску изображения
+            imagesPaths = await imagesPathsservice.SelectPaths(_price?.Brand, _price?.Artikul); // Получаю путь к изображению
+            _adPublishingInfo.ImagesPaths = imagesPaths; // TODO временное хранение путей в виде List, далее надо обнулить (в базе не хранится)
+            _adPublishingInfo.ImagesPath = string.Join(";", imagesPaths); // Формирую пути в одну строку с разделителем для хранения в базе
+            // Создаю дату регистрации объявления
+            // // TODO(Делать только посе публикации объявления) Дата формирования объявления
+            _adPublishingInfo.DatePublished = DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss");
+            
 
             return _adPublishingInfo;
 

@@ -44,7 +44,10 @@ namespace DromAutoTrader
             #region Подписка на события
             Loaded += MainWindow_Loaded;
             #endregion
-            
+
+            InitializeDatabase();
+            // Тесты
+            List<BrandChannelMapping> channelMappings = _db.BrandChannelMappings.ToList();
         }
 
         
@@ -151,24 +154,21 @@ namespace DromAutoTrader
         #endregion
 
 
-        //private void InitializeDatabase()
-        //{
-        //    try
-        //    {
-        //        // Экземпляр базы данных
-        //        _db = AppContextFactory.GetInstance();
+        private void InitializeDatabase()
+        {
+            try
+            {
+                // Экземпляр базы данных
+                _db = AppContextFactory.GetInstance();
 
-        //        _db.BrandImageServiceMappings.Load();
-        //        _db.Brands
-        //           .Include(b => b.ImageServices)
-        //           .Load();
-        //    }
-        //    catch (Exception)
-        //    {
-        //        // TODO сделать запись логов
-        //        //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
-        //    }
-        //}
+                _db.BrandChannelMappings.Load();
+            }
+            catch (Exception)
+            {
+                // TODO сделать запись логов
+                //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
+            }
+        }
 
     }
 }

@@ -122,6 +122,11 @@ namespace DromAutoTrader.ImageServices
         {
             // TODO если метод не пригодился, убрать
         }
+
+        protected override void CloseDriver()
+        {
+            
+        }
         #endregion
 
 

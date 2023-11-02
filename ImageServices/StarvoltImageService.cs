@@ -157,6 +157,11 @@ namespace DromAutoTrader.ImageServices
         }
 
         protected override void SpecificRunAsync(string brandName, string articul) { }
+
+        protected override void CloseDriver()
+        {
+            
+        }
         #endregion
 
         #region Специфичные методы класса
