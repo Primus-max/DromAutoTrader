@@ -33,8 +33,9 @@ namespace DromAutoTrader.DromManager
             {
                 foreach (var existingAd in existingAds)
                 {
+
                     // Проверяю цену, если у нового объявления цена лучше чем у старого, сохраняем новый объект
-                    if (adInfo.InputPrice < existingAd.InputPrice)
+                    if (adInfo.InputPrice  < existingAd.InputPrice)
                     {    
                         // Обновляю обэект в базе
                         existingAd.InputPrice = adInfo.InputPrice;

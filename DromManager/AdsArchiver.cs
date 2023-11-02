@@ -30,6 +30,7 @@ namespace DromAutoTrader.DromManager
             var currentDate = DateTime.Now.Date;
 
             return _db.AdPublishingInfo
+                .ToList()
                 .Where(a => DateTime.Parse(a.DatePublished).Date == currentDate)
                 .ToList();
         }
@@ -39,6 +40,7 @@ namespace DromAutoTrader.DromManager
             var currentDate = DateTime.Now.Date;
 
             return _db.AdPublishingInfo
+                .ToList()
                 .Where(a => DateTime.Parse(a.DatePublished).Date != currentDate)
                 .ToList();
         }

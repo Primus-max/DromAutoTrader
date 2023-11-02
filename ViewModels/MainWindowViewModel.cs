@@ -417,14 +417,14 @@ namespace DromAutoTrader.ViewModels
         // Метод запускающий всю работу
         public async Task RunAllWork()
         {
-            //PriceProcessor priceProcessor = new();
-            
-            // Цикл по выбранным прайсам
+            PriceProcessor priceProcessor = new();
+
+            //Цикл по выбранным прайсам
             foreach (var path in PathsFilePrices)
             {
                 if (string.IsNullOrEmpty(path))
                     MessageBox.Show("Для начала работы необходимо выбрать прайс");
-                               
+
 
                 PriceList prices = await ProcessPriceAsync(path);
 
@@ -432,7 +432,7 @@ namespace DromAutoTrader.ViewModels
 
                 AddBrandsAtDb(prices);
 
-              
+
                 // Получаем к этому прайсу выбранные каналы                 
                 PriceChannelMapping? priceChannels = GetChannelsForPrice(path);
 
