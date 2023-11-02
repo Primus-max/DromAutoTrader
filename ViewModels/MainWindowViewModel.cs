@@ -465,14 +465,13 @@ namespace DromAutoTrader.ViewModels
                             break; // Если не нашли совпадение, выходите из цикла
                         }
 
-                        // Создайте ChannelAdInfoBuilder для данного канала и цены
+                        // Констурктор строителя объекта для публикации
                         var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
-
-                        // Стройте AdPublishingInfo для данного канала
+                        // Строю объект для публикации
                         var adInfo = await builder.Build();
-
                         if (adInfo == null) return;
 
+                        // Фильтр цен перед сохранением объекта публикации в базе
                         PriceFilter priceFilter = new();
                         priceFilter.FilterAndSaveByPrice(adInfo);
 

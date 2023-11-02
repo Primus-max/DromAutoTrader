@@ -12,17 +12,15 @@ namespace DromAutoTrader.DromManager
 
         public void FilterAndSaveByPrice(AdPublishingInfo adInfo)
         {
-            // Ваша логика по фильтрации и сохранению данных в базе
-            // (без публикации)
-
             // Проверка на существующие объявления
             var existingAds = _db.AdPublishingInfo
                 .Where(a =>
-                    a.Brand == adInfo.Brand &&
-                    a.Artikul == adInfo.Artikul &&
-                    a.DatePublished == DateTime.Now.Date.ToString()
-                )
+                        a.Brand == adInfo.Brand &&
+                        a.Artikul == adInfo.Artikul)
+                .ToList()
+                .Where(a => DateTime.Parse(a.DatePublished).Date == DateTime.Now.Date)
                 .ToList();
+
 
             if (existingAds.Count == 0)
             {
@@ -31,15 +29,32 @@ namespace DromAutoTrader.DromManager
             }
             else
             {
-                // Если есть существующие объявления, выполним сравнение и обновление данных
                 foreach (var existingAd in existingAds)
                 {
-                    if (adInfo.InputPrice >= existingAd.InputPrice)
-                    {
-                        // Выполняем обновление существующего объявления или другую необходимую логику
+                    // Проверяю цену, если у нового объявления цена лучше чем у старого, сохраняем новый объект
+                    if (adInfo.InputPrice < existingAd.InputPrice)
+                    {    
+                        // Обновляю обэект в базе
+                        existingAd.InputPrice = adInfo.InputPrice;
                         existingAd.OutputPrice = adInfo.OutputPrice;
-                        // Другие обновления
-                        _db.SaveChanges();
+                        existingAd.Brand = adInfo.Brand;
+                        existingAd.Artikul = adInfo.Artikul;
+                        existingAd.DatePublished = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                        existingAd.AdDescription = adInfo.AdDescription;
+                        existingAd.Count = adInfo.Count;
+                        existingAd.ImagesPath = adInfo.ImagesPath;
+                        existingAd.IsArchived = adInfo.IsArchived;
+                        existingAd.KatalogName = adInfo.KatalogName;
+
+                        // Сохраняю
+                        try
+                        {
+                            _db.SaveChanges();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Не удалось сохранить новый объект публикации {ex.Message}");
+                        }
                     }
                 }
             }
@@ -48,8 +63,15 @@ namespace DromAutoTrader.DromManager
         private void SaveAd(AdPublishingInfo adInfo)
         {
             // Сохраняем новое объявление в базу
-            _db.AdPublishingInfo.Add(adInfo);
-            _db.SaveChanges();
+            try
+            {
+                _db.AdPublishingInfo.Add(adInfo);
+                _db.SaveChanges();
+            }
+            catch (Exception)
+            {
+
+            }
         }
 
         // Метод инициализации базы данных
@@ -59,16 +81,8 @@ namespace DromAutoTrader.DromManager
             {
                 // Экземпляр базы данных
                 _db = AppContextFactory.GetInstance();
-                // загружаем данные о поставщиках из БД и включаем связанные данные (PriceIncreases и Brands)
-                _db.Channels
-                    .Load();
-                _db.Brands
-                    .Include(b => b.ImageServices)
-                    .Load();
-                _db.BrandImageServiceMappings
-                    // Загрузка связанных ImageService
-                    .Load();
-                _db.BrandImageServiceMappings.Load();
+                
+                // Загружаю таблицу
                 _db.AdPublishingInfo.Load();
             }
             catch (Exception ex)
