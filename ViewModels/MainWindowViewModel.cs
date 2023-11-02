@@ -176,7 +176,7 @@ namespace DromAutoTrader.ViewModels
 
         #region КОМАНДЫ
 
-
+        
 
         #region Поставщики
         public ICommand AddSupplierCommand { get; } = null!;
@@ -341,6 +341,7 @@ namespace DromAutoTrader.ViewModels
             InitializeDatabase();
 
             #region Инициализация команд
+            
 
             #region Команда для получения нескольких параметров
             MyCommand = new RelayCommand(ExecuteMethod, CanExecuteMethod);
@@ -508,7 +509,7 @@ namespace DromAutoTrader.ViewModels
 
                 if (adInfo.PriceBuy != 1) continue; // Если уже публиковал (название поля не имеет общего с данной логикой. Просто было пустое поле)
 
-                if (adInfo.Artikul == null || adInfo.Brand == null ) continue; // Если бренд или артикул пустые
+                if (adInfo.Artikul == null || adInfo.Brand == null) continue; // Если бренд или артикул пустые
 
                 // Получаю имя канала, название поля просто было пустым
                 string channelName = adInfo.AdDescription;
@@ -619,7 +620,7 @@ namespace DromAutoTrader.ViewModels
 
         #endregion
 
-        #region Базовые
+        #region Базовые        
 
         // Метод получения прайсов
         private List<string> GetSelectedFilePaths()

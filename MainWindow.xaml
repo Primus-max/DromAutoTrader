@@ -128,31 +128,32 @@
                             </ListBox>
                         </StackPanel>
                         <StackPanel DockPanel.Dock="Top">
-                            <StackPanel
+                            <!--<StackPanel
                                 Height="60"
-                                Margin="20,20,0,0"
+                                Margin="0"
                                 HorizontalAlignment="Left"
                                 Orientation="Horizontal">
-                                <TextBlock
+                                --><!--<TextBlock
                                     Margin="0,0,9,0"
                                     VerticalAlignment="Center"
                                     FontWeight="Bold"
                                     Foreground="White"
-                                    Text="3." />
+                                    Text="3." />--><!--
                                 <StackPanel>
-                                    <TextBlock Foreground="White">
-                                        <Run FontWeight="Bold" Text="Убирать в архив старые объявления и доставать из архива ранее загруженные?" />
+                                    --><!--<TextBlock Foreground="White">
+                                        <Run FontWeight="Bold" Text="Убирать в архив все сообщения" />
                                         <LineBreak />
                                         <Run FontWeight="Bold" Text="По умолчанию Да" />
-                                    </TextBlock>
-                                    <CheckBox
+                                    </TextBlock>-->
+                                   
+                                    <!--<CheckBox
                                         Width="Auto"
                                         Margin="10"
                                         HorizontalAlignment="Left">
                                         <Label Content="Нет" />
-                                    </CheckBox>
+                                    </CheckBox>--><!--
                                 </StackPanel>
-                            </StackPanel>
+                            </StackPanel>-->
                         </StackPanel>
                         <DockPanel DockPanel.Dock="Top">
                             <Button

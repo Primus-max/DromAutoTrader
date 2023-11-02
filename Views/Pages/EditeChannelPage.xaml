@@ -122,7 +122,14 @@ Text="Текст сообщения о продаже:" />-->
                                         Text="{Binding TotalBrandCount}" />
                                 </StackPanel>
                             </StackPanel>
-
+                            <StackPanel Margin="0,25,0,0" Orientation="Horizontal">
+                                <Button
+                                    Width="Auto"
+                                    Command="{Binding RemoveAllAdsArchiveCommand}"
+                                    Content="Убрать все объявления канала в архив"
+                                    Cursor="Hand"
+                                    Style="{StaticResource MaterialDesignPaperButton}" />
+                            </StackPanel>
                         </StackPanel>
                     </StackPanel>
                     <StackPanel DockPanel.Dock="Top">

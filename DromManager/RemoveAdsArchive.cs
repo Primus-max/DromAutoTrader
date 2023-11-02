@@ -18,7 +18,7 @@ namespace DromAutoTrader.DromManager
 
         public RemoveAdsArchive()
         {
-            _wait = new(_driver, TimeSpan.FromSeconds(30));
+           
         }
 
         /// <summary>
@@ -29,11 +29,12 @@ namespace DromAutoTrader.DromManager
         public async Task RemoveAll(string channelName)
         {
             await InitializeDriver(channelName);
+            _wait = new(_driver, TimeSpan.FromSeconds(30));
 
             bool isBulletinExistsOnPage = true;
 
             // Открываю страницу  с объявлениями
-            OpenAllBulletinsPage();
+            OpenAllBulletinsPage(actualUrl);
 
             // Размер окна
             SetWindowSize();
@@ -96,12 +97,12 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод открытия актуальных объявлений
-        public void OpenAllBulletinsPage()
+        public void OpenAllBulletinsPage(string url)
         {
             try
             {
                 // Открытие URL
-                _driver.Navigate().GoToUrl(allUrl);
+                _driver.Navigate().GoToUrl(url);
             }
             catch (Exception ex)
             {
@@ -178,6 +179,8 @@ namespace DromAutoTrader.DromManager
             try
             {
                 IWebElement submitRemoveBtn = _wait.Until(e => e.FindElement(By.Id("serviceSubmit")));
+
+                submitRemoveBtn.Click();
             }
             catch (Exception)
             {
@@ -198,37 +201,6 @@ namespace DromAutoTrader.DromManager
                 return false;
             }
         }
-
-        // Метод открытия страницы с архивом
-        //public void OpenArchivesPage()
-        //{
-        //    try
-        //    {
-        //        // Открытие URL
-        //        _driver.Navigate().GoToUrl(actualUrl);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine("Ошибка при открытии веб-сайта: " + ex.Message);
-        //    }
-        //}
-
-        // Метод открытия страницы с размещением объявления
-        //public void OpenGoodsPage()
-        //{
-        //    try
-        //    {
-        //        // Открытие URL
-        //        _driver.Navigate().GoToUrl(gooodsUrl);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine("Ошибка при открытии веб-сайта: " + ex.Message);
-        //    }
-        //}
-
-
-
 
         // Инициализация драйвера
         private async Task InitializeDriver(string channelName)
