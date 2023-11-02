@@ -1,4 +1,5 @@
 ﻿using DromAutoTrader.Data;
+using DromAutoTrader.DromManager;
 using DromAutoTrader.Services;
 using DromAutoTrader.Views;
 using DromAutoTrader.Views.Windows;
@@ -51,6 +52,16 @@ namespace DromAutoTrader.ViewModels
         #endregion
 
         #region Команды
+        // Убрать все объявления в архив
+        public ICommand RemoveAllAdsArchiveCommand { get; } = null!;
+
+        private bool CanRemoveAllAdsArchiveCommandExecute(object p) => true;
+
+        private void OnRemoveAllAdsArchiveCommandExecuted(object sender)
+        {
+            RemoveAllAdsArchive();
+        }
+
         public ICommand AddRowTablePriceOfIncreasesCommand { get; } = null!;
 
         private bool CanAddRowTablePriceOfIncreasesCommandExecute(object p) => true;
@@ -125,6 +136,7 @@ namespace DromAutoTrader.ViewModels
             RemoveTablePriceOfIncreasesCommand = new LambdaCommand(OnRemoveTablePriceOfIncreasesCommandExecuted, CanRemoveTablePriceOfIncreasesCommandExecute);
             GoBackAllChannelsCommand = new LambdaCommand(OnGoBackAllChannelsCommandExecuted, CanGoBackAllChannelsCommandExecute);
             OpenAddBrandToChannelWindowCommand = new LambdaCommand(OnOpenAddBrandToChannelWindowExecuted, CanOpenAddBrandToChannelWindowExecute);
+            RemoveAllAdsArchiveCommand = new LambdaCommand(OnRemoveAllAdsArchiveCommandExecuted, CanRemoveAllAdsArchiveCommandExecute);
             #endregion
 
             #region Вызов методов
@@ -137,6 +149,12 @@ namespace DromAutoTrader.ViewModels
         }
 
         #region Методы
+        // Убираю все объявления в архив
+        private void RemoveAllAdsArchive()
+        {
+            RemoveAdsArchive removeAdsArchive = new RemoveAdsArchive();
+            removeAdsArchive.RemoveAll(SelectedChannel.Name);
+        }
         // Обновляю колличество выбранных каналов
         private void UpdateAddedBrandsCount()
         {

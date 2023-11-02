@@ -18,7 +18,7 @@ namespace DromAutoTrader.DromManager
 
         public RemoveAdsArchive()
         {
-            _wait = new(_driver, TimeSpan.FromSeconds(30));
+           
         }
 
         /// <summary>
@@ -29,11 +29,12 @@ namespace DromAutoTrader.DromManager
         public async Task RemoveAll(string channelName)
         {
             await InitializeDriver(channelName);
+            _wait = new(_driver, TimeSpan.FromSeconds(30));
 
             bool isBulletinExistsOnPage = true;
 
             // Открываю страницу  с объявлениями
-            OpenAllBulletinsPage();
+            OpenAllBulletinsPage(actualUrl);
 
             // Размер окна
             SetWindowSize();
@@ -64,7 +65,7 @@ namespace DromAutoTrader.DromManager
         /// <param name="channelName"></param>
         /// <param name="adPublishings"></param>
         /// <returns></returns>
-        public async Task RemoveByArticul(string channelName, List<AdPublishingInfo> adPublishings)
+        public async Task RemoveByFlag(string channelName, List<AdPublishingInfo> adPublishings)
         {
             await InitializeDriver(channelName);            
 
@@ -72,8 +73,9 @@ namespace DromAutoTrader.DromManager
             foreach (var ads in adPublishings)
             {
                 if(ads.Artikul == null || ads.Brand == null) continue;
-                // Котрываю страницу со всеми объявлениями
+               if(ads.IsArchived == false) continue;
 
+               // Формирую поисковую строку
                 string serachString = BuildSearchString(ads.Artikul);
 
                 // Перехожу на поисковую страницу по артикулу
@@ -90,18 +92,17 @@ namespace DromAutoTrader.DromManager
 
                 // Подтеверждаю, что убираю в архив
                 SubnitRemove();
-
             }
            
         }
 
         // Метод открытия актуальных объявлений
-        public void OpenAllBulletinsPage()
+        public void OpenAllBulletinsPage(string url)
         {
             try
             {
                 // Открытие URL
-                _driver.Navigate().GoToUrl(allUrl);
+                _driver.Navigate().GoToUrl(url);
             }
             catch (Exception ex)
             {
@@ -178,6 +179,8 @@ namespace DromAutoTrader.DromManager
             try
             {
                 IWebElement submitRemoveBtn = _wait.Until(e => e.FindElement(By.Id("serviceSubmit")));
+
+                submitRemoveBtn.Click();
             }
             catch (Exception)
             {
@@ -198,37 +201,6 @@ namespace DromAutoTrader.DromManager
                 return false;
             }
         }
-
-        // Метод открытия страницы с архивом
-        //public void OpenArchivesPage()
-        //{
-        //    try
-        //    {
-        //        // Открытие URL
-        //        _driver.Navigate().GoToUrl(actualUrl);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine("Ошибка при открытии веб-сайта: " + ex.Message);
-        //    }
-        //}
-
-        // Метод открытия страницы с размещением объявления
-        //public void OpenGoodsPage()
-        //{
-        //    try
-        //    {
-        //        // Открытие URL
-        //        _driver.Navigate().GoToUrl(gooodsUrl);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine("Ошибка при открытии веб-сайта: " + ex.Message);
-        //    }
-        //}
-
-
-
 
         // Инициализация драйвера
         private async Task InitializeDriver(string channelName)

@@ -342,6 +342,7 @@ namespace DromAutoTrader.ViewModels
 
             #region Инициализация команд
 
+
             #region Команда для получения нескольких параметров
             MyCommand = new RelayCommand(ExecuteMethod, CanExecuteMethod);
             #endregion
@@ -487,12 +488,25 @@ namespace DromAutoTrader.ViewModels
             // Публикация объявлений
             await ProcessPublishingAdsAtDrom();
 
+            // Убираю в архив неакутальные
+            RemoveAtArchive();
+
             // Удаляю все публикации не за сегодняшнюю дату
             DeleteOutdatedAdsAtDb();
         }
 
 
-        // Асинхронный метод для обработки каждого канала в собественном потоке
+        // Метод для формирования прайса
+        private void ExportPrice()
+        {
+            if (_db == null) return;
+
+            List<AdPublishingInfo> prices  = _db.AdPublishingInfo.ToList();
+            ExcelPriceExporter priceExporter = new ExcelPriceExporter();
+            priceExporter.ExportPricesToExcel(prices);
+        }
+
+        // Асинхронный метод публикации объявления        
         public async Task ProcessPublishingAdsAtDrom()
         {
             var adInfos = _db.AdPublishingInfo.ToList(); // Загрузка всех объявлений
@@ -508,7 +522,7 @@ namespace DromAutoTrader.ViewModels
 
                 if (adInfo.PriceBuy != 1) continue; // Если уже публиковал (название поля не имеет общего с данной логикой. Просто было пустое поле)
 
-                if (adInfo.Artikul == null || adInfo.Brand == null ) continue; // Если бренд или артикул пустые
+                if (adInfo.Artikul == null || adInfo.Brand == null) continue; // Если бренд или артикул пустые
 
                 // Получаю имя канала, название поля просто было пустым
                 string channelName = adInfo.AdDescription;
@@ -529,6 +543,15 @@ namespace DromAutoTrader.ViewModels
                     }
                 }
             }
+        }
+
+        // Метод для перещения публикаций в архив
+        private async void RemoveAtArchive()
+        {
+            List<AdPublishingInfo> adPublishings = _db.AdPublishingInfo.ToList();
+            RemoveAdsArchive remover = new();
+
+            await remover.RemoveByFlag(SelectedBrand?.Name, adPublishings);
         }
 
         // Удаляю публикации не за сегодня (оставляю только актуальные)
@@ -577,7 +600,6 @@ namespace DromAutoTrader.ViewModels
         }
 
 
-
         #region Асинхронные методы
 
         #region Прайс
@@ -619,7 +641,7 @@ namespace DromAutoTrader.ViewModels
 
         #endregion
 
-        #region Базовые
+        #region Базовые        
 
         // Метод получения прайсов
         private List<string> GetSelectedFilePaths()
