@@ -1,21 +1,22 @@
 ﻿using DromAutoTrader.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DromAutoTrader.DromManager
 {
-    public class AdsComparisonExistsFilter
+    /// <summary>
+    /// Класс для проверки актуальности объявлений
+    /// </summary>
+    public class AdsArchiver
     {
         private AppContext _db = null!;
 
-        public AdsComparisonExistsFilter()
+        public AdsArchiver()
         {
             InitializeDatabase();
         }
 
+        /// <summary>
+        /// Метод проверяет объявления по прайсу, если в прайсе нет такого объявления, убирает в архив       
+        /// </summary>
         public void CompareAndArchiveAds()
         {
             var todayAds = GetAdsForToday();
@@ -80,5 +81,5 @@ namespace DromAutoTrader.DromManager
             }
         }
 
-    }   
+    }
 }

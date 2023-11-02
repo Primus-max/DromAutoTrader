@@ -52,6 +52,8 @@ namespace DromAutoTrader.Services
                 {
                     List<string> serviceImages = await RunImageServiceAsync(Brand, Articul, imageService);
 
+                    await Task.Delay(500); // Задерживаюсь чтобы изображение докачалось
+
                     if (serviceImages.Count > 0)
                     {
                         return serviceImages; // Если получили изображения, возвращаем их

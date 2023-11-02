@@ -451,15 +451,16 @@ namespace DromAutoTrader.ViewModels
                     List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
                     foreach (var priceChannelMapping in priceChannels.SelectedChannels)
                     {
+                        // Получаю канал
                         var brandChannelMappingsForChannel = _db.BrandChannelMappings
                             .Where(mapping => mapping.ChannelId == priceChannelMapping.Id)
                             .ToList();
-
+                        // Получаю бренды связанные с каналом
                         var channelBrands = brandChannelMappingsForChannel
                             .Select(mapping => mapping.Brand)
                             .ToList();
 
-
+                        // Проверяю бренд из прайса с выбранным для канала и прайса
                         if (!channelBrands.Any(b => b.Name == price.Brand))
                         {
                             break; // Если не нашли совпадение, выходите из цикла
@@ -478,20 +479,42 @@ namespace DromAutoTrader.ViewModels
                         // await ProcessChannelAsync(priceChannelMapping, price, adPublishingInfoList);
                     }
                 }
-
-
             }
+
+            // Убираю в архив, если в прайсах такого обхявления нет
+            AdsArchiver adsArchiver = new AdsArchiver();
+            adsArchiver.CompareAndArchiveAds();
+
+            // Публикация объявлений
+            await ProcessPublishingAdsAtDrom();
         }
 
         
         // Асинхронный метод для обработки каждого канала в собественном потоке
-        public async Task ProcessChannelAsync(Channel priceChannelMapping, FormattedPrice price, List<AdPublishingInfo> adPublishingInfoList)
-        {            
-            
+        public async Task ProcessPublishingAdsAtDrom()
+        {
+            var adInfos = _db.AdPublishingInfo.ToList(); // Загрузка всех объявлений
 
-            // TODO Здесь логика добавления объявления
-            //DromAdPublisher dromAdPublisher = new DromAdPublisher();
-            //bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, priceChannelMapping.Name);
+            // Отсортируем объявления по названию канала (AdDescription)
+            var sortedAdInfos = adInfos.OrderBy(a => a.AdDescription).ToList();
+
+            DromAdPublisher dromAdPublisher = new DromAdPublisher();
+
+            foreach (var adInfo in sortedAdInfos)
+            {
+                if (adInfo.Artikul == null || adInfo.Brand == null) continue;
+
+                bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, adInfo.AdDescription);
+
+                //if (isPublished)
+                //{
+                //    // Маркируем объявление как опубликованное в канале
+                //    adInfo.IsPublishedInChannel = true;
+
+                //    // Сохраняем изменения в базе данных
+                //    _db.SaveChanges();
+                //}
+            }
 
         }
 
