@@ -82,6 +82,7 @@ namespace DromAutoTrader.AdsPowerManager
             string? chromeDriverDirectory = System.IO.Path.GetDirectoryName(webdriverPath);
             service.DriverServicePath = chromeDriverDirectory;
             service.DriverServiceExecutableName = "chromedriver.exe";
+            service.HideCommandPromptWindow = true;
             var driver = new ChromeDriver(service, options, TimeSpan.FromMinutes(5));
 
             return driver;
