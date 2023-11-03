@@ -152,7 +152,7 @@ namespace DromAutoTrader.ViewModels
         // Убираю все объявления в архив
         private void RemoveAllAdsArchive()
         {
-            RemoveAdsArchive removeAdsArchive = new RemoveAdsArchive();
+            WorkOnAds removeAdsArchive = new WorkOnAds();
             removeAdsArchive.RemoveAll(SelectedChannel.Name);
         }
         // Обновляю колличество выбранных каналов

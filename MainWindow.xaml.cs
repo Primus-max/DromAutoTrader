@@ -83,10 +83,11 @@ namespace DromAutoTrader
         // Получю данные из полей для ставок
         private void DoRate_Click(object sender, RoutedEventArgs e)
         {
-            string PartsText = PartsTextBox.Text;
-            string SelectedChannel = ChannelCombobox.Text;
+            List<string> partsText = PartsTextBox.Text.Split(",").ToList();
+            string selectedChannel = ChannelCombobox.Text;
             string rate = RateTextBox.Text;
-            
+
+            _mainViewModel.SetRates(partsText, rate, selectedChannel);
         }
 
         #region ФИЛЬТРЫ

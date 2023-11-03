@@ -1,10 +1,11 @@
 ﻿using DromAutoTrader.AdsPowerManager;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using System.Threading;
 
 namespace DromAutoTrader.DromManager
 {
-    public class RemoveAdsArchive
+    public class WorkOnAds
     {
         private string gooodsUrl = new("https://baza.drom.ru/adding?type=goods");
         private string archivedUrl = new("https://baza.drom.ru/personal/archived/bulletins");
@@ -18,9 +19,9 @@ namespace DromAutoTrader.DromManager
         private BrowserManager adsPower = null!;
         private WebDriverWait _wait = null!;
 
-        public RemoveAdsArchive()
+        public WorkOnAds()
         {
-           
+
         }
 
         /// <summary>
@@ -54,7 +55,7 @@ namespace DromAutoTrader.DromManager
                 RemoveToArchive();
 
                 // Подтеверждаю, что убираю в архив
-                SubmitRemove();
+                SubmitBtn();
 
                 isBulletinExistsOnPage = ExistsElementChecker();
             }
@@ -74,10 +75,10 @@ namespace DromAutoTrader.DromManager
 
             foreach (var ads in adPublishings)
             {
-                if(ads.Artikul == null || ads.Brand == null) continue;
-               if(ads.IsArchived == false) continue;
+                if (ads.Artikul == null || ads.Brand == null) continue;
+                if (ads.IsArchived == false) continue;
 
-               // Формирую поисковую строку
+                // Формирую поисковую строку
                 string serachString = BuildSearchString(ads.Artikul);
 
                 // Перехожу на поисковую страницу по артикулу
@@ -87,35 +88,43 @@ namespace DromAutoTrader.DromManager
                 SetWindowSize();
 
                 // Выбираю все элементы
-               GetInputSelectAll();
+                GetInputSelectAll();
 
                 // Убираю в архив
                 RemoveToArchive();
 
                 // Подтеверждаю, что убираю в архив
-                SubmitRemove();
+                SubmitBtn();
             }
-           
+
         }
 
-        public void PaymentForImpressions(List<string> parts)
+        public async Task SetRatesForWatchingAsync(List<string> parts, string rate, string selectedChannel)
         {
-            GoSearchByArticul(partSearchLink);
+            await InitializeDriver(selectedChannel);
+            _wait = new(_driver, TimeSpan.FromSeconds(30));
+
 
             foreach (var part in parts)
             {
-                BuildSearchString(part);
+                string searchUrl = BuildSearchString(part);
+
+                GoSearchByArticul(searchUrl);
 
                 SetWindowSize();
 
                 // Получаю чекбокс [выбрать все]
                 GetInputSelectAll();
 
-                // Открывать окно с указанием ставки для показов
-                // 
-            }
+                // Открываю окно с указанием ставки для показов
+                OpenRatePageButton();
 
-            
+                // Устанавливаю ставки для выбранных категорий
+                SetRates(rate);
+
+                // Подтеверждаю ставки
+                SubmitBtn();
+            }
         }
 
 
@@ -178,7 +187,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception)
             {
-               
+
             }
         }
 
@@ -196,8 +205,8 @@ namespace DromAutoTrader.DromManager
             }
         }
 
-        // Нажимаю кнопку "Включить ставку"
-        private void OnPaidButton()
+        // Открываю окно для выбора ставок для показов
+        private void OpenRatePageButton()
         {
             try
             {
@@ -210,9 +219,32 @@ namespace DromAutoTrader.DromManager
             }
         }
 
+        // Устанавливаю ставки во все поля
+        private void SetRates(string rate)
+        {
+            IList<IWebElement> rateInputs = null!;
+            try
+            {
+                rateInputs = _wait.Until(e => e.FindElements(By.CssSelector("input[id^='rate_input']")));
+            }
+            catch (Exception) { }
+
+            foreach (var input in rateInputs)
+            {
+                try
+                {
+                    input.Clear();
+                    Thread.Sleep(100);
+                    input.SendKeys(rate);
+                    Thread.Sleep(200);
+                }
+                catch (Exception) { }
+            }
+        }
+              
 
         // Метод подтверждения удаления
-        public void SubmitRemove()
+        private void SubmitBtn()
         { //serviceSubmit
             try
             {
