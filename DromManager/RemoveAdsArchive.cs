@@ -67,8 +67,8 @@ namespace DromAutoTrader.DromManager
         /// <returns></returns>
         public async Task RemoveByFlag(string channelName, List<AdPublishingInfo> adPublishings)
         {
-            await InitializeDriver(channelName);            
-
+            await InitializeDriver(channelName);
+            _wait = new(_driver, TimeSpan.FromSeconds(30));
 
             foreach (var ads in adPublishings)
             {
