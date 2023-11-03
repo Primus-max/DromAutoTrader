@@ -133,25 +133,29 @@
                                 Margin="0"
                                 HorizontalAlignment="Left"
                                 Orientation="Horizontal">
-                                --><!--<TextBlock
+                            -->
+                            <!--<TextBlock
                                     Margin="0,0,9,0"
                                     VerticalAlignment="Center"
                                     FontWeight="Bold"
                                     Foreground="White"
-                                    Text="3." />--><!--
+                                    Text="3." />-->
+                            <!--
                                 <StackPanel>
-                                    --><!--<TextBlock Foreground="White">
+                            -->
+                            <!--<TextBlock Foreground="White">
                                         <Run FontWeight="Bold" Text="Убирать в архив все сообщения" />
                                         <LineBreak />
                                         <Run FontWeight="Bold" Text="По умолчанию Да" />
                                     </TextBlock>-->
-                                   
-                                    <!--<CheckBox
+
+                            <!--<CheckBox
                                         Width="Auto"
                                         Margin="10"
                                         HorizontalAlignment="Left">
                                         <Label Content="Нет" />
-                                    </CheckBox>--><!--
+                                    </CheckBox>-->
+                            <!--
                                 </StackPanel>
                             </StackPanel>-->
                         </StackPanel>
@@ -164,25 +168,70 @@
                                 Command="{Binding RunAllWorkCommand}"
                                 Content="Поехали"
                                 DockPanel.Dock="Top" />
-
                             <DataGrid
                                 x:Name="ProcessPostingDataGrid"
                                 Margin="30"
                                 AutoGenerateColumns="False"
-                                ItemsSource="{Binding AdPublishingInfos}">
+                                IsReadOnly="True"
+                                ItemsSource="{Binding PostingProgressItems}">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Binding="{Binding Id}" Header="Файл" />
-                                    <DataGridTextColumn
-                                        MinWidth="300"
-                                        Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
-                                        Header="Статус" />
-                                    <DataGridTemplateColumn Header="Канал" />
-                                    <DataGridTemplateColumn Header="Процесс" />
-                                    <DataGridTemplateColumn Header="Всего" />
-                                    <DataGridTemplateColumn Header="Дата размещения" />
-                                    <DataGridTemplateColumn Header="Получить файл" />
+                                    <DataGridTemplateColumn Header="Канал">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding ChannelName}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Прайс">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding PriceName}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Что происходит">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding ProcessName}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Процесс">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ProgressBar Maximum="13" Value="{Binding CurrentStage}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Всего">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding TotalStages}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Дата размещения">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding DatePublished}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Получить файл">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock>
+                                                    <Hyperlink Command="{Binding DownloadFileCommand}" NavigateUri="{Binding FileDownloadUri}">
+                                                        Скачать файл
+                                                    </Hyperlink>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
                                 </DataGrid.Columns>
                             </DataGrid>
+
                         </DockPanel>
                     </DockPanel>
                 </TabItem>
