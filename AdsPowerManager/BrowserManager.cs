@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 
 namespace DromAutoTrader.AdsPowerManager
 {
@@ -47,6 +48,16 @@ namespace DromAutoTrader.AdsPowerManager
             catch (Exception)
             {
                 // Обработка исключения по необходимости
+            }
+
+            // Если браузера нет и надо скачать, информирую
+            string pattern = @"SunBrowser.*is not ready,please to download!";
+
+            if (Regex.IsMatch(status, pattern))
+            {
+                MessageBox.Show("Скорее всего не скачан нужный браузер в программе AdsPower, перейдите в настройки профиля и проверьте" +
+                    "наличие нужного браузера" +
+                    $"{status}");
             }
 
             if (status == "failed")
