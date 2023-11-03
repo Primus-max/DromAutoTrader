@@ -17,17 +17,22 @@ namespace DromAutoTrader.Services
         /// <returns>IWebDriver</returns>
         public  IWebDriver GetDriver()
         {
-            ChromeOptions options = new ChromeOptions();
+            ChromeOptions options = new();
+            options.AddArgument("--silent");
             options.AddArgument("--disable-notifications");
+
+            //var chromeService = ChromeDriverService.CreateDefaultService();
+            //chromeService.HideCommandPromptWindow = true;
+
             IWebDriver driver = null!;
 
             try
             {
-                driver = UndetectedChromeDriver.Create(options: options, driverExecutablePath: "chromedriver.exe");
+                driver = UndetectedChromeDriver.Create(options: options, hideCommandPromptWindow: true ,driverExecutablePath: "chromedriver.exe");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Не удалось получить драйвер, причина: {ex.Message}");
+                MessageBox.Show($"Не удалось получить драйвер, причина: {ex.ToString()}");
             }
 
             return driver;

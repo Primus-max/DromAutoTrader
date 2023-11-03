@@ -52,7 +52,6 @@ namespace DromAutoTrader.ImageServices.Base
             Brand = brandName;
             Articul = articul;
 
-
             if (_isFirstRunning)
             {
                 _isFirstRunning = false;
