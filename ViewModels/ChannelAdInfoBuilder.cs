@@ -1,6 +1,8 @@
-﻿using DromAutoTrader.Prices;
+﻿using ControlzEx.Standard;
+using DromAutoTrader.Prices;
 using DromAutoTrader.Services;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -32,7 +34,7 @@ namespace DromAutoTrader.ViewModels
 
             _adPublishingInfo.PriceName = namePrice;
             _adPublishingInfo.Brand = _price?.Brand; // Имя брэнда
-            _adPublishingInfo.Artikul = _price?.Artikul; // Артикул
+            _adPublishingInfo.Artikul = RemoveNonAlphanumeric(_price?.Artikul) ; // Артикул
             _adPublishingInfo.Description = _channel.Description; // Описание товара (из прайса) Пока нигде не потребовалось
             _adPublishingInfo.KatalogName = _price?.KatalogName; // Это попадает в заголовок объявления
             _adPublishingInfo.InputPrice = _price.PriceBuy; // Прайс на деталь от поставщика
@@ -50,6 +52,16 @@ namespace DromAutoTrader.ViewModels
 
             return _adPublishingInfo;
 
+        }
+
+        // Убираю лишние символы из арткула
+        public static string RemoveNonAlphanumeric(string input)
+        {
+            // Создаем регулярное выражение, которое соответствует всем символам, кроме букв и цифр
+            string pattern = @"[^\p{L}\p{N}]";
+            // Заменяем найденные символы пустой строкой
+            string result = Regex.Replace(input, pattern, "");
+            return result;
         }
     }
 }

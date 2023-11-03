@@ -46,7 +46,8 @@ namespace DromAutoTrader.Services
 
                 foreach (var imageService in imageServices)
                 {
-                    List<string> serviceImages = await RunImageServiceAsync(Brand, Articul, imageService);
+                    List<string>? serviceImages = await RunImageServiceAsync(Brand, Articul, imageService);
+                    if (serviceImages == null) continue;
 
                     await Task.Delay(500); // Задерживаюсь чтобы изображение докачалось
 
@@ -182,11 +183,12 @@ namespace DromAutoTrader.Services
                     .Include(b => b.ImageServices)
                     .Load();
                 _db.BrandImageServiceMappings
-                    .Include(mapping => mapping.ImageServiceId)
+                    
                     .Load();
             }
             catch (Exception ex)
             {
+                MessageBox.Show($"Не удалось получить данные из базы в методе SelectionImagesPathsService {ex.ToString()}");
                 // Добавьте логирование ошибки для более детального анализа
                 // Вместо вывода сообщения в консоль, рекомендуется использовать библиотеки логирования, такие как Serilog, NLog, или другие.
                 // Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");

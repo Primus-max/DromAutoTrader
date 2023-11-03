@@ -513,8 +513,8 @@ namespace DromAutoTrader.ViewModels
                         var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
                         // Строю объект для публикации
                         var adInfo = await builder.Build();
-                        if (adInfo == null) return;
-                        var test = PostingProgressItems;
+                        if (adInfo == null) break;
+                        
                         // Фильтр цен перед сохранением объекта публикации в базе
                         PriceFilter priceFilter = new();
                         priceFilter.FilterAndSaveByPrice(adInfo);
