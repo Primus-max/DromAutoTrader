@@ -246,7 +246,10 @@ namespace DromAutoTrader.ViewModels
 
         private async void OnRunAllWorkCommandExecuted(object sender)
         {
-            await RunAllWork();
+            await Task.Run(async () =>
+            {
+                await RunAllWork(); // Выполнение RunAllWork в фоновом потоке
+            });            
         }
 
         #endregion
@@ -429,8 +432,13 @@ namespace DromAutoTrader.ViewModels
             // Создаем объекты для отслеживания прогресса
             PriceProcessor priceProcessor = new();
             PostingProgressItem postingProgressItem = new();
-            //postingProgressItem.TotalStages = 13;
-            PostingProgressItems.Add(postingProgressItem);
+
+            // Возвращаемся в основной поток для обновления элементов интерфейса
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                PostingProgressItems.Add(postingProgressItem);
+            });
+            
 
             // Этап 1: Обработка выбранных прайсов
             postingProgressItem.CurrentStage = 1;
@@ -498,15 +506,15 @@ namespace DromAutoTrader.ViewModels
 
                         // Отображаю прогресс
                         postingProgressItem.ChannelName = priceChannelMapping.Name;
-
-
+                        
                         postingProgressItem.ProcessName = $"Cоздание объекта для публикации {price.Brand} и {price.Artikul}";
+                        await Task.Delay(100);
                         // Конструктор строителя объекта для публикации
                         var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
                         // Строю объект для публикации
                         var adInfo = await builder.Build();
                         if (adInfo == null) return;
-                        
+                        var test = PostingProgressItems;
                         // Фильтр цен перед сохранением объекта публикации в базе
                         PriceFilter priceFilter = new();
                         priceFilter.FilterAndSaveByPrice(adInfo);
@@ -560,8 +568,13 @@ namespace DromAutoTrader.ViewModels
             var sortedAdInfos = adInfos.OrderBy(a => a.AdDescription).ToList();
 
             PostingProgressItem postingProgressItem = new();
-            //postingProgressItem.TotalStages = 13;
-            PostingProgressItems.Add(postingProgressItem);
+
+            // Возвращаемся в основной поток для обновления элементов интерфейса
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                PostingProgressItems.Add(postingProgressItem);
+            });
+            
             DromAdPublisher dromAdPublisher = new DromAdPublisher();
 
             foreach (var adInfo in sortedAdInfos)
@@ -646,7 +659,11 @@ namespace DromAutoTrader.ViewModels
         {
             BrandImporter brandImporter = new();
             brandImporter.ImportBrandsFromPrices(prices);
-            Brands.Clear();
+            // Возвращаемся в основной поток для обновления элементов интерфейса
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Brands.Clear();
+            });            
             Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); // Обновляю свойство
         }
 

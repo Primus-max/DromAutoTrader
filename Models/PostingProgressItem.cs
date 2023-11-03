@@ -1,6 +1,8 @@
-﻿namespace DromAutoTrader.Models
+﻿using DromAutoTrader.ViewModels;
+
+namespace DromAutoTrader.Models
 {
-    public class PostingProgressItem
+    public class PostingProgressItem:BaseViewModel
     {
         public string? ChannelName { get; set; }
         public string? PriceName { get; set; } // Имя прайса

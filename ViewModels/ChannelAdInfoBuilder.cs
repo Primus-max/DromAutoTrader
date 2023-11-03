@@ -38,7 +38,7 @@ namespace DromAutoTrader.ViewModels
             _adPublishingInfo.InputPrice = _price.PriceBuy; // Прайс на деталь от поставщика
             _adPublishingInfo.OutputPrice = CalcPrice.Calculate(_price.PriceBuy, _channel?.PriceIncreases); // Считаю цену исходя из цены прайса
             _adPublishingInfo.AdDescription = _channel.Name; // Имя канала в котором опубликовал
-            _adPublishingInfo.Count = _price.Count; // Количество запчастей у поставщика
+            _adPublishingInfo.Count = _price.Count; // Количество запчастей у поставщика // TODO изменить при парсинге, иногда приходит 10-100 (от и до, в этом случае мы получаем 0)
             SelectionImagesPathsService imagesPathsservice = new SelectionImagesPathsService(); // Фабрика для выбора нужного сервиса по поиску изображения
             imagesPaths = await imagesPathsservice.SelectPaths(_price?.Brand, _price?.Artikul); // Получаю путь к изображению
             _adPublishingInfo.ImagesPaths = imagesPaths; // TODO временное хранение путей в виде List, далее надо обнулить (в базе не хранится)
