@@ -12,6 +12,8 @@ namespace DromAutoTrader.DromManager
         private string allUrl = new("https://baza.drom.ru/personal/all/bulletins");
         private string searchUrl = new("https://baza.drom.ru/personal/actual/bulletins?find=");
 
+        private string partSearchLink = new("https://baza.drom.ru/personal/actual/bulletins?find=");
+
         private IWebDriver _driver = null!;
         private BrowserManager adsPower = null!;
         private WebDriverWait _wait = null!;
@@ -52,7 +54,7 @@ namespace DromAutoTrader.DromManager
                 RemoveToArchive();
 
                 // Подтеверждаю, что убираю в архив
-                SubnitRemove();
+                SubmitRemove();
 
                 isBulletinExistsOnPage = ExistsElementChecker();
             }
@@ -91,13 +93,34 @@ namespace DromAutoTrader.DromManager
                 RemoveToArchive();
 
                 // Подтеверждаю, что убираю в архив
-                SubnitRemove();
+                SubmitRemove();
             }
            
         }
 
+        public void PaymentForImpressions(List<string> parts)
+        {
+            GoSearchByArticul(partSearchLink);
+
+            foreach (var part in parts)
+            {
+                BuildSearchString(part);
+
+                SetWindowSize();
+
+                // Получаю чекбокс [выбрать все]
+                GetInputSelectAll();
+
+                // Открывать окно с указанием ставки для показов
+                // 
+            }
+
+            
+        }
+
+
         // Метод открытия актуальных объявлений
-        public void OpenAllBulletinsPage(string url)
+        private void OpenAllBulletinsPage(string url)
         {
             try
             {
@@ -139,9 +162,9 @@ namespace DromAutoTrader.DromManager
         }
 
         // Строю поисковую строку с артикулом
-        private string BuildSearchString(string articul)
+        private string BuildSearchString(string searchParam)
         {
-            return searchUrl + actualUrl;
+            return searchUrl + searchParam;
         }
 
         // Метод получения чекбокса (выбрать все) 
@@ -173,8 +196,23 @@ namespace DromAutoTrader.DromManager
             }
         }
 
+        // Нажимаю кнопку "Включить ставку"
+        private void OnPaidButton()
+        {
+            try
+            {
+                IWebElement removeBtn = _wait.Until(e => e.FindElement(By.Name("applier[ppcBulletin]")));
+                removeBtn.Click();
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
+
         // Метод подтверждения удаления
-        public void SubnitRemove()
+        public void SubmitRemove()
         { //serviceSubmit
             try
             {
@@ -201,6 +239,8 @@ namespace DromAutoTrader.DromManager
                 return false;
             }
         }
+
+
 
         // Инициализация драйвера
         private async Task InitializeDriver(string channelName)

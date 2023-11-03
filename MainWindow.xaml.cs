@@ -45,9 +45,9 @@ namespace DromAutoTrader
             Loaded += MainWindow_Loaded;
             #endregion
 
-            InitializeDatabase();
-            // Тесты
-            List<BrandChannelMapping> channelMappings = _db.BrandChannelMappings.ToList();
+            //InitializeDatabase();
+            //// Тесты
+            //List<BrandChannelMapping> channelMappings = _db.BrandChannelMappings.ToList();
         }
 
         
@@ -80,7 +80,14 @@ namespace DromAutoTrader
             ChannelFrame.Navigate(new AllChannelPage());
         }
 
-
+        // Получю данные из полей для ставок
+        private void DoRate_Click(object sender, RoutedEventArgs e)
+        {
+            string PartsText = PartsTextBox.Text;
+            string SelectedChannel = ChannelCombobox.Text;
+            string rate = RateTextBox.Text;
+            
+        }
 
         #region ФИЛЬТРЫ
         #region Брэнды       
@@ -154,21 +161,21 @@ namespace DromAutoTrader
         #endregion
 
 
-        private void InitializeDatabase()
-        {
-            try
-            {
-                // Экземпляр базы данных
-                _db = AppContextFactory.GetInstance();
+        //private void InitializeDatabase()
+        //{
+        //    try
+        //    {
+        //        // Экземпляр базы данных
+        //        _db = AppContextFactory.GetInstance();
 
-                _db.BrandChannelMappings.Load();
-            }
-            catch (Exception)
-            {
-                // TODO сделать запись логов
-                //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
-            }
-        }
+        //        _db.BrandChannelMappings.Load();
+        //    }
+        //    catch (Exception)
+        //    {
+        //        // TODO сделать запись логов
+        //        //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
+        //    }
+        //}
 
     }
 }

@@ -362,7 +362,85 @@
                     </DockPanel>
                 </TabItem>
                 <TabItem Header="Ставки">
-                    <TextBlock Margin="10" Text="Раздел ставок" />
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top">
+                            <TextBlockDesc:PageDescriptionTextBlock Margin="0,20,0,0" Description="В этом разделе задаются суммы ставок для показов объявлений" />
+                        </StackPanel>
+
+                        <StackPanel DockPanel.Dock="Top">
+                            <StackPanel Margin="10,40,0,0" Orientation="Vertical">
+                                <TextBlock
+                                    Margin="10,20"
+                                    FontSize="14"
+                                    FontWeight="Heavy"
+                                    Foreground="#838383"
+                                    Text="Название детали для которой будет указана ставка" />
+                                <TextBox
+                                    x:Name="PartsTextBox"
+                                    Width="700"
+                                    Margin="15,0"
+                                    Padding="10"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Stretch"
+                                    materialDesign:HintAssist.Hint="Категория: рычаг, сайлентблок, стойка [каждое слово через запятую]"
+                                    materialDesign:TextFieldAssist.DecorationVisibility="Visible"
+                                    materialDesign:TextFieldAssist.HasClearButton="True"
+                                    materialDesign:TextFieldAssist.HasFilledTextField="True"
+                                    materialDesign:TextFieldAssist.HasLeadingIcon="True"
+                                    materialDesign:TextFieldAssist.LeadingIcon="Search"
+                                    BorderThickness="0"
+                                    FontSize="16" />
+                            </StackPanel>
+
+                            <StackPanel Margin="0,20,0,0">
+                                <TextBlock
+                                    Margin="10,20"
+                                    FontSize="14"
+                                    FontWeight="Heavy"
+                                    Foreground="#838383"
+                                    Text="Канал в котором будет указана ставка" />
+                                <ComboBox
+                                    x:Name="ChannelCombobox"
+                                    Width="300"
+                                    Margin="15,0,0,0"
+                                    HorizontalAlignment="Left"
+                                    materialDesign:ComboBoxAssist.ShowSelectedItem="True"
+                                    DisplayMemberPath="Name"
+                                    ItemsSource="{Binding Channels}"
+                                    SelectedIndex="1"
+                                    SelectedItem="{Binding SelectedChannel}" />
+                            </StackPanel>
+                            <StackPanel Margin="0,20,0,0">
+                                <TextBlock
+                                    Margin="10,20"
+                                    FontSize="14"
+                                    FontWeight="Heavy"
+                                    Foreground="#838383"
+                                    Text="Сумма ставки" />
+                                <TextBox
+                                    x:Name="RateTextBox"
+                                    Width="120"
+                                    Margin="15,0,0,0"
+                                    HorizontalAlignment="Left"
+                                    materialDesign:HintAssist.HelperText="0,01 - это один рубль"
+                                    materialDesign:TextFieldAssist.SuffixText="₽"
+                                    FontSize="14" />
+
+                                <Button
+                                    Width="290"
+                                    Margin="15,50,0,0"
+                                    HorizontalAlignment="Left"
+                                    Click="DoRate_Click"
+                                    Command=""
+                                    Content="Применить"
+                                    Cursor="Hand"
+                                    Style="{StaticResource MaterialDesignPaperButton}" />
+                            </StackPanel>
+                        </StackPanel>
+
+
+
+                    </DockPanel>
                 </TabItem>
                 <TabItem Header="Парсинг">
                     <TabItem.DataContext>

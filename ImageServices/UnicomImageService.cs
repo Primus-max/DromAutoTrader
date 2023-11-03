@@ -105,6 +105,7 @@ namespace DromAutoTrader.ImageServices
         // Метод проверяет если ничего не найдено
         protected override bool IsNotMatchingArticul()
         {
+            Thread.Sleep(1000);
             bool isNotMatchingArticul = false;
             try
             {
