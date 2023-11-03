@@ -2,6 +2,7 @@
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Support.UI;
 using System.Threading;
 using System.Web;
 
@@ -28,7 +29,7 @@ namespace DromAutoTrader.ImageServices
         //private string? _imagesLocalPath = string.Empty;
         //private IWebDriver _driver = null!;
         //#endregion
-
+        private WebDriverWait _wait = null!;
 
         public BergImageService()
         {
@@ -56,6 +57,7 @@ namespace DromAutoTrader.ImageServices
             {
                 try
                 {
+                    
                     IWebElement logInput = _driver.FindElement(By.Id("username"));
                     Actions builder = new Actions(_driver);
 

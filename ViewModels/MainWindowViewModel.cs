@@ -1,10 +1,8 @@
 ﻿using DromAutoTrader.Data;
 using DromAutoTrader.DromManager;
 using DromAutoTrader.Infrastacture.Commands;
-using DromAutoTrader.Models;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
-using System.IO;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -249,7 +247,7 @@ namespace DromAutoTrader.ViewModels
             await Task.Run(async () =>
             {
                 await RunAllWork(); // Выполнение RunAllWork в фоновом потоке
-            });            
+            });
         }
 
         #endregion
@@ -439,90 +437,90 @@ namespace DromAutoTrader.ViewModels
             {
                 PostingProgressItems.Add(postingProgressItem);
             });
-            
+
 
             // Этап 1: Обработка выбранных прайсов
             postingProgressItem.CurrentStage = 1;
-            //foreach (var path in PathsFilePrices)
-            //{
-            //    postingProgressItem.MaxValue  = PostingProgressItems.Count;
-            //    if (string.IsNullOrEmpty(path))
-            //    {
-            //        MessageBox.Show("Для начала работы необходимо выбрать прайс");
-            //        return;
-            //    }
+            foreach (var path in PathsFilePrices)
+            {
+                postingProgressItem.MaxValue = PostingProgressItems.Count;
+                if (string.IsNullOrEmpty(path))
+                {
+                    MessageBox.Show("Для начала работы необходимо выбрать прайс");
+                    return;
+                }
 
-            //    // Получаю имя прайса
-            //    string priceName = Path.GetFileName(path);
+                // Получаю имя прайса
+                string priceName = System.IO.Path.GetFileName(path);
 
-            //    // Указываю прогресс
-                
-            //    postingProgressItem.PriceName = priceName;
-            //    postingProgressItem.ProcessName = "Идёт парсинг прайса";
+                // Указываю прогресс
 
-            //    // Этап 2: Парсинг прайсов и обработка данных
-            //    PriceList prices = await ProcessPriceAsync(path);                
+                postingProgressItem.PriceName = priceName;
+                postingProgressItem.ProcessName = "Идёт парсинг прайса";
 
-            //    if (prices == null)
-            //    {
-            //        return;
-            //    }
+                // Этап 2: Парсинг прайсов и обработка данных
+                PriceList prices = await ProcessPriceAsync(path);
 
-            //    AddBrandsAtDb(prices);
+                if (prices == null)
+                {
+                    return;
+                }
 
-            //    // Получаем к этому прайсу выбранные каналы
-            //    PriceChannelMapping? priceChannels = GetChannelsForPrice(path);
+                AddBrandsAtDb(prices);
 
-            //    if (priceChannels == null)
-            //    {
-            //        MessageBox.Show("Что-то пошло не так, попробуйте выбрать прайс и каналы для него", "Внимание",
-            //           MessageBoxButton.OK, MessageBoxImage.Warning);
+                // Получаем к этому прайсу выбранные каналы
+                PriceChannelMapping? priceChannels = GetChannelsForPrice(path);
 
-            //        return;
-            //    }
+                if (priceChannels == null)
+                {
+                    MessageBox.Show("Что-то пошло не так, попробуйте выбрать прайс и каналы для него", "Внимание",
+                       MessageBoxButton.OK, MessageBoxImage.Warning);
 
-            //    /************************************************************************/
+                    return;
+                }
 
-            //    foreach (var price in prices)
-            //    {
-            //        postingProgressItem.TotalStages = prices.Count;
+                /************************************************************************/
 
-            //        List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
-            //        foreach (var priceChannelMapping in priceChannels.SelectedChannels)
-            //        {
-            //            // Получаю канал
-            //            var brandChannelMappingsForChannel = _db.BrandChannelMappings
-            //                .Where(mapping => mapping.ChannelId == priceChannelMapping.Id)
-            //                .ToList();
-            //            // Получаю бренды, связанные с каналом
-            //            var channelBrands = brandChannelMappingsForChannel
-            //                .Select(mapping => mapping.Brand)
-            //                .ToList();
+                foreach (var price in prices)
+                {
+                    postingProgressItem.TotalStages = prices.Count;
 
-            //            // Проверяю бренд из прайса с выбранным для канала и прайса
-            //            if (!channelBrands.Any(b => b.Name == price.Brand))
-            //            {
-            //                break; // Если не нашли совпадение, выходим из цикла
-            //            }
+                    List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
+                    foreach (var priceChannelMapping in priceChannels.SelectedChannels)
+                    {
+                        // Получаю канал
+                        var brandChannelMappingsForChannel = _db.BrandChannelMappings
+                            .Where(mapping => mapping.ChannelId == priceChannelMapping.Id)
+                            .ToList();
+                        // Получаю бренды, связанные с каналом
+                        var channelBrands = brandChannelMappingsForChannel
+                            .Select(mapping => mapping.Brand)
+                            .ToList();
 
-            //            // Отображаю прогресс
-            //            postingProgressItem.ChannelName = priceChannelMapping.Name;
-                        
-            //            postingProgressItem.ProcessName = $"Cоздание объекта для публикации {price.Brand} и {price.Artikul}";
-            //            await Task.Delay(100);
-            //            // Конструктор строителя объекта для публикации
-            //            var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
-            //            // Строю объект для публикации
-            //            var adInfo = await builder.Build();
-            //            if (adInfo == null) break;
-                        
-            //            // Фильтр цен перед сохранением объекта публикации в базе
-            //            PriceFilter priceFilter = new();
-            //            priceFilter.FilterAndSaveByPrice(adInfo);
-            //            postingProgressItem.CurrentStage++;
-            //        }
-            //    }
-            //}
+                        // Проверяю бренд из прайса с выбранным для канала и прайса
+                        if (!channelBrands.Any(b => b.Name == price.Brand))
+                        {
+                            break; // Если не нашли совпадение, выходим из цикла
+                        }
+
+                        // Отображаю прогресс
+                        postingProgressItem.ChannelName = priceChannelMapping.Name;
+
+                        postingProgressItem.ProcessName = $"Cоздание объекта для публикации {price.Brand} и {price.Artikul}";
+                        await Task.Delay(100);
+                        // Конструктор строителя объекта для публикации
+                        var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
+                        // Строю объект для публикации
+                        var adInfo = await builder.Build();
+                        if (adInfo == null) break;
+
+                        // Фильтр цен перед сохранением объекта публикации в базе
+                        PriceFilter priceFilter = new();
+                        priceFilter.FilterAndSaveByPrice(adInfo);
+                        postingProgressItem.CurrentStage++;
+                    }
+                }
+            }
 
             // Этап 10: Архивирование объявлений
             AdsArchiver adsArchiver = new();
@@ -575,14 +573,14 @@ namespace DromAutoTrader.ViewModels
             {
                 PostingProgressItems.Add(postingProgressItem);
             });
-            
+
             DromAdPublisher dromAdPublisher = new DromAdPublisher();
 
             foreach (var adInfo in sortedAdInfos)
             {
                 if (adInfo.IsArchived == true) continue; // Если объявление в архиве
 
-                if (adInfo.PriceBuy != 1) continue; // Если уже публиковал (название поля не имеет общего с данной логикой. Просто было пустое поле)
+                if (adInfo.PriceBuy == 1) continue; // Если уже публиковал (название поля не имеет общего с данной логикой. Просто было пустое поле)
 
                 if (adInfo.Artikul == null || adInfo.Brand == null) continue; // Если бренд или артикул пустые
 
@@ -614,9 +612,9 @@ namespace DromAutoTrader.ViewModels
         private async void RemoveAtArchive()
         {
             List<AdPublishingInfo> adPublishings = _db.AdPublishingInfo.ToList();
-            RemoveAdsArchive remover = new();
+            WorkOnAds remover = new();
 
-            await remover.RemoveByFlag(SelectedBrand?.Name, adPublishings);
+            await remover.RemoveByFlag(SelectedChannel?.Name, adPublishings);
         }
 
         // Удаляю публикации не за сегодня (оставляю только актуальные)
@@ -649,7 +647,7 @@ namespace DromAutoTrader.ViewModels
         // Метод поиска каналов для выбранного прайса
         private PriceChannelMapping GetChannelsForPrice(string path)
         {
-            string fileName = Path.GetFileNameWithoutExtension(path);
+            string fileName = System.IO.Path.GetFileNameWithoutExtension(path);
             PriceChannelMapping? priceChannels = PriceChannelMappings?.FirstOrDefault(mapping => mapping?.Price.Name == fileName);
 
             return priceChannels;
@@ -664,7 +662,7 @@ namespace DromAutoTrader.ViewModels
             Application.Current.Dispatcher.Invoke(() =>
             {
                 Brands.Clear();
-            });            
+            });
             Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); // Обновляю свойство
         }
 
@@ -767,6 +765,12 @@ namespace DromAutoTrader.ViewModels
         #endregion
 
         #region Каналы
+        // Устанавливаю ставки за просмотры для канала
+        public async void SetRates(List<string> parts, string rate, string selectedChannel)
+        {
+            WorkOnAds workOnAds = new();
+            await workOnAds.SetRatesForWatchingAsync(parts, rate, selectedChannel);
+        }
         public void OnSelectChannel(Price price, List<Channel> selectedChannels)
         {
             SelectedPrice = price;

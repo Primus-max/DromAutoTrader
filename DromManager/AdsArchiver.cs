@@ -54,7 +54,7 @@ namespace DromAutoTrader.DromManager
                     a.Artikul == outdatedAd.Artikul &&
                     a.KatalogName == outdatedAd.KatalogName);
 
-                if (!adExistsInCurrent)
+                if (adExistsInCurrent)
                 {
                     // Объявление отсутствует в текущих объявлениях, устанавливаем флаг IsArchived
                     outdatedAd.IsArchived = true;
