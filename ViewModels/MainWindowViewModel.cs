@@ -1,8 +1,10 @@
 ﻿using DromAutoTrader.Data;
 using DromAutoTrader.DromManager;
 using DromAutoTrader.Infrastacture.Commands;
+using DromAutoTrader.Models;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
+using System.IO;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -441,12 +443,8 @@ namespace DromAutoTrader.ViewModels
         // Метод запускающий всю работу
         public async Task RunAllWork()
         {
-
-            //PriceProcessor priceProcessor = new(); // Класс для парсинга
-
-
             PostingProgressItem postingProgressItem = new();
-
+                       
             // Возвращаемся в основной поток для обновления элементов интерфейса
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -458,7 +456,7 @@ namespace DromAutoTrader.ViewModels
             /*----------------------------Метод получения прайсов--------------------------*/
 
             // Получаю, обрабатываю, записываю в базу прайсы
-            await ParsingPricesAsync();
+            await ParsingPricesAsync(postingProgressItem);
 
             AdsArchiver adsArchiver = new();
             adsArchiver.CompareAndArchiveAds();
@@ -479,25 +477,40 @@ namespace DromAutoTrader.ViewModels
 
         /*---------------------------------------------------------------------------------------------*/
         // Метод получения и парсинга прайсов
-        private async Task ParsingPricesAsync()
+        private async Task ParsingPricesAsync(PostingProgressItem postingProgressItem = null!)
         {
             var tasks = new List<Task>();
 
             foreach (var path in PathsFilePrices)
-            {
+            {                
+                string priceName = Path.GetFileName(path);
+                postingProgressItem.ProcessName = "Начал обработку прайса";
+                postingProgressItem.MaxValue = PathsFilePrices.Count;
+
+                postingProgressItem.PriceName = priceName;
+               
+
                 if (string.IsNullOrEmpty(path))
                 {
                     MessageBox.Show("Для начала работы необходимо выбрать прайс");
                     return;
                 }
 
-                // Получаю имя прайса
-                string priceName = System.IO.Path.GetFileName(path);
-
                 Task task = Task.Run(async () =>
                 {
                     // Парсинг прайсов и обработка данных
                     PriceList prices = await ProcessPriceAsync(path);
+
+                    // Возвращаемся в основной поток для обновления элементов интерфейса
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        PostingProgressItems.Clear();
+                        postingProgressItem.ProcessName = "Распарсил прайс";
+                        postingProgressItem.MaxValue = prices.Count;
+                        postingProgressItem.TotalStages = prices.Count;
+                        PostingProgressItems.Add(postingProgressItem);
+                    });
+                    
 
                     if (prices == null)
                     {
@@ -506,7 +519,7 @@ namespace DromAutoTrader.ViewModels
 
                     // Передаю полученный прайс для записи в БД, 
                     if (_isModeRunAllWork)
-                        await BuildingAdsAsync(prices, path);
+                        await BuildingAdsAsync(prices, path, postingProgressItem);
 
                     //  Добавляю бренды в базу. Флаг регулирует в каком режиме находится метод,
                     // true = полная работа, false = только получение брендов из прайсов
@@ -522,10 +535,20 @@ namespace DromAutoTrader.ViewModels
 
 
         // Метод построения объектов для публикации на основе каждого прайса
-        private async Task BuildingAdsAsync(PriceList prices, string path)
+        private async Task BuildingAdsAsync(PriceList prices, string path, PostingProgressItem postingProgressItem = null!)
         {
             // Получаем к этому прайсу выбранные каналы
             PriceChannelMapping? priceChannels = GetChannelsForPrice(path);
+
+            // Возвращаемся в основной поток для обновления элементов интерфейса
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                PostingProgressItems.Clear();
+                postingProgressItem.ProcessName = "Создаю объекты для публикации";
+                postingProgressItem.MaxValue = prices.Count;
+                postingProgressItem.TotalStages = prices.Count;
+                PostingProgressItems.Add(postingProgressItem);
+            });
 
             if (priceChannels == null)
             {
@@ -536,7 +559,8 @@ namespace DromAutoTrader.ViewModels
             }
 
             foreach (var price in prices)
-            {
+            {              
+
                 List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
                 foreach (var priceChannelMapping in priceChannels.SelectedChannels)
                 {
