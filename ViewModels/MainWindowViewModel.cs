@@ -1,7 +1,5 @@
-﻿using DromAutoTrader.Data;
-using DromAutoTrader.DromManager;
+﻿using DromAutoTrader.DromManager;
 using DromAutoTrader.Infrastacture.Commands;
-using DromAutoTrader.Models;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
 using System.IO;
@@ -444,7 +442,7 @@ namespace DromAutoTrader.ViewModels
         public async Task RunAllWork()
         {
             PostingProgressItem postingProgressItem = new();
-                       
+
             // Возвращаемся в основной поток для обновления элементов интерфейса
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -482,13 +480,13 @@ namespace DromAutoTrader.ViewModels
             var tasks = new List<Task>();
 
             foreach (var path in PathsFilePrices)
-            {                
+            {
                 string priceName = Path.GetFileName(path);
                 postingProgressItem.ProcessName = "Начал обработку прайса";
                 postingProgressItem.MaxValue = PathsFilePrices.Count;
 
                 postingProgressItem.PriceName = priceName;
-               
+
 
                 if (string.IsNullOrEmpty(path))
                 {
@@ -510,7 +508,7 @@ namespace DromAutoTrader.ViewModels
                         postingProgressItem.TotalStages = prices.Count;
                         PostingProgressItems.Add(postingProgressItem);
                     });
-                    
+
 
                     if (prices == null)
                     {
@@ -559,7 +557,7 @@ namespace DromAutoTrader.ViewModels
             }
 
             foreach (var price in prices)
-            {              
+            {
 
                 List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
                 foreach (var priceChannelMapping in priceChannels.SelectedChannels)
@@ -804,10 +802,13 @@ namespace DromAutoTrader.ViewModels
             try
             {
                 // Экземпляр базы данных
-                _db = AppContextFactory.GetInstance();
+                _db = new AppContext();
                 // загружаем данные о поставщиках из БД и включаем связанные данные (PriceIncreases и Brands)
                 _db.Channels
+                    .Include(channel => channel.Brands)
+                    .Include(channel => channel.PriceIncreases)
                     .Load();
+
                 _db.Brands
                     .Include(b => b.ImageServices)
                     .Load();
