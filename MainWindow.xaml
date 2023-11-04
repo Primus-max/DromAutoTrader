@@ -256,8 +256,9 @@
                                 Width="200"
                                 Margin="20,16,0,30"
                                 HorizontalAlignment="Left"
-                                Command="{Binding AddSupplierCommand}"
-                                Content="Добавить" />
+                                Command="{Binding ToggleModeGettingBrandsCommand}"
+                                Content="Получить бренды"
+                                Style="{StaticResource MaterialDesignPaperButton}" />
                         </StackPanel>
                         <StackPanel
                             Height="60"

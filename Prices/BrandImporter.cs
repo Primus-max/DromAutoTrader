@@ -20,8 +20,10 @@ public class BrandImporter
     /// Импортирует бренды из переданного прайс-листа в базу данных.
     /// </summary>
     /// <param name="prices">Прайс-лист, содержащий информацию о брендах.</param>
-    public void ImportBrandsFromPrices(PriceList prices)
+    public (int, List<string>) ImportBrandsFromPrices(PriceList prices)
     {
+        int countNewElement = 0;
+        List<string> newBrands = new List<string>();
         foreach (var priceItem in prices)
         {
             if (!string.IsNullOrEmpty(priceItem.Brand))
@@ -33,8 +35,18 @@ public class BrandImporter
                 {
                     // Создание нового объекта Brand и добавление его в базу данных
                     var brand = new Brand { Name = priceItem.Brand };
-                    _db.Brands.Add(brand);
-                    _db.SaveChanges(); // Сохранение изменений в базе данных.
+                    try
+                    {
+                        _db.Brands.Add(brand);
+                        _db.SaveChanges(); // Сохранение изменений в базе данных.
+
+                        newBrands.Add(brand.Name);
+
+                        countNewElement++; // Считаем новые элементы
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
                 else
                 {
@@ -42,6 +54,8 @@ public class BrandImporter
                 }
             }
         }
+
+        return (countNewElement, newBrands);
     }
 
     private void InitializeDatabase()
