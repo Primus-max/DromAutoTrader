@@ -3,14 +3,13 @@ using System.IO;
 
 namespace DromAutoTrader.Prices
 {
+    /// <summary>
+    /// Класс для обработки прайс-листов из Excel-файлов.
+    /// </summary>
     public class PriceProcessor
     {
         private PriceFieldMapper fieldMapper;
-
-
-        /// <summary>
-        /// Класс для обработки прайс-листов из Excel-файлов.
-        /// </summary>
+                
         public PriceProcessor()
         {
             fieldMapper = new PriceFieldMapper();

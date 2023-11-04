@@ -22,6 +22,7 @@ namespace DromAutoTrader.ViewModels
         private List<PriceChannelMapping> _priceChannelMappings = null!;
         private ObservableCollection<AdPublishingInfo> _adPublishingInfos = null!;
         private ObservableCollection<PostingProgressItem> _postingProgressItems = null!;
+        private bool _isModeRunAllWork = true;
         #endregion
 
         #region Поставщики
@@ -264,6 +265,18 @@ namespace DromAutoTrader.ViewModels
         #endregion
 
         #region Брэнды
+        // Команда для переключения режима сбора брендов из прайсов
+        public ICommand ToggleModeGettingBrandsCommand { get; } = null!;
+        private bool CanToggleModeGettingBrandsCommandExecute(object p) => true;
+        private async void OnToggleModeGettingBrandsCommandExecuted(object sender)
+        {
+            _isModeRunAllWork = false;
+
+            GetSelectedFilePaths(); // Выбираю прайсы и записываю пути
+
+            await ParsingPricesAsync(); // Обрабатываю прайсы в режиме только для берндов
+        }
+
         // Команда выбора сервисов для бренда
         public ICommand SelectImageServiceCommand { get; } = null!;
         private bool CanSelectImageServiceCommandExecute(object p) => true;
@@ -373,6 +386,7 @@ namespace DromAutoTrader.ViewModels
             #region Брэнды
             SelectImageServiceCommand = new LambdaCommand(OnSelectImageServiceCommandExecuted, CanSelectImageServiceCommandExecute);
             SelectImageServiceDefaultCommand = new LambdaCommand(OnSelectImageServiceDefaultCommandExecuted, CanSelectImageServiceDefaultCommandExecute);
+            ToggleModeGettingBrandsCommand = new LambdaCommand(OnToggleModeGettingBrandsCommandExecuted, CanToggleModeGettingBrandsCommandExecute);
             #endregion
             #endregion
 
@@ -428,8 +442,10 @@ namespace DromAutoTrader.ViewModels
         // Метод запускающий всю работу
         public async Task RunAllWork()
         {
-            // Создаем объекты для отслеживания прогресса
-            PriceProcessor priceProcessor = new();
+
+            //PriceProcessor priceProcessor = new(); // Класс для парсинга
+
+
             PostingProgressItem postingProgressItem = new();
 
             // Возвращаемся в основной поток для обновления элементов интерфейса
@@ -438,12 +454,36 @@ namespace DromAutoTrader.ViewModels
                 PostingProgressItems.Add(postingProgressItem);
             });
 
-
-            // Этап 1: Обработка выбранных прайсов
             postingProgressItem.CurrentStage = 1;
+
+            /*----------------------------Метод получения прайсов--------------------------*/
+
+            // Получаю, обрабатываю, записываю в базу прайсы
+            await ParsingPricesAsync();
+
+            AdsArchiver adsArchiver = new();
+            adsArchiver.CompareAndArchiveAds();
+
+            await ProcessPublishingAdsAtDrom();
+
+            string pricePath = ExportPrice();
+            if (!string.IsNullOrEmpty(pricePath))
+            {
+                postingProgressItem.CurrentStage = 4;
+                postingProgressItem.PriceExportPath = pricePath;
+            }
+
+            RemoveAtArchive(); // Убираю в архив
+
+            DeleteOutdatedAdsAtDb(); // Убираю старые объявления
+        }
+
+        /*---------------------------------------------------------------------------------------------*/
+        // Метод получения и парсинга прайсов
+        private async Task ParsingPricesAsync()
+        {
             foreach (var path in PathsFilePrices)
             {
-                postingProgressItem.MaxValue = PostingProgressItems.Count;
                 if (string.IsNullOrEmpty(path))
                 {
                     MessageBox.Show("Для начала работы необходимо выбрать прайс");
@@ -453,97 +493,73 @@ namespace DromAutoTrader.ViewModels
                 // Получаю имя прайса
                 string priceName = System.IO.Path.GetFileName(path);
 
-                // Указываю прогресс
-
-                postingProgressItem.PriceName = priceName;
-                postingProgressItem.ProcessName = "Идёт парсинг прайса";
-
-                // Этап 2: Парсинг прайсов и обработка данных
+                // Парсинг прайсов и обработка данных
                 PriceList prices = await ProcessPriceAsync(path);
 
                 if (prices == null)
                 {
                     return;
-                }
+                }                               
 
-                AddBrandsAtDb(prices);
+                // Передаю полученный прайс для записи в БД, 
+                if (_isModeRunAllWork)
+                    await BuildingAdsAsync(prices, path);
 
-                // Получаем к этому прайсу выбранные каналы
-                PriceChannelMapping? priceChannels = GetChannelsForPrice(path);
-
-                if (priceChannels == null)
-                {
-                    MessageBox.Show("Что-то пошло не так, попробуйте выбрать прайс и каналы для него", "Внимание",
-                       MessageBoxButton.OK, MessageBoxImage.Warning);
-
-                    return;
-                }
-
-                /************************************************************************/
-
-                foreach (var price in prices)
-                {
-                    postingProgressItem.TotalStages = prices.Count;
-
-                    List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
-                    foreach (var priceChannelMapping in priceChannels.SelectedChannels)
-                    {
-                        // Получаю канал
-                        var brandChannelMappingsForChannel = _db.BrandChannelMappings
-                            .Where(mapping => mapping.ChannelId == priceChannelMapping.Id)
-                            .ToList();
-                        // Получаю бренды, связанные с каналом
-                        var channelBrands = brandChannelMappingsForChannel
-                            .Select(mapping => mapping.Brand)
-                            .ToList();
-
-                        // Проверяю бренд из прайса с выбранным для канала и прайса
-                        if (!channelBrands.Any(b => b.Name == price.Brand))
-                        {
-                            break; // Если не нашли совпадение, выходим из цикла
-                        }
-
-                        // Отображаю прогресс
-                        postingProgressItem.ChannelName = priceChannelMapping.Name;
-
-                        postingProgressItem.ProcessName = $"Cоздание объекта для публикации {price.Brand} и {price.Artikul}";
-                        await Task.Delay(100);
-                        // Конструктор строителя объекта для публикации
-                        var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
-                        // Строю объект для публикации
-                        var adInfo = await builder.Build();
-                        if (adInfo == null) break;
-
-                        // Фильтр цен перед сохранением объекта публикации в базе
-                        PriceFilter priceFilter = new();
-                        priceFilter.FilterAndSaveByPrice(adInfo);
-                        postingProgressItem.CurrentStage++;
-                    }
-                }
+                //  Добавляю бренды в базу. Флаг регулирует в каком режиме находится метод,
+                // true = полная работа, false = только получение брендов из прайсов
+                if (!_isModeRunAllWork)
+                    AddBrandsAtDb(prices);
             }
-
-            // Этап 10: Архивирование объявлений
-            AdsArchiver adsArchiver = new();
-            adsArchiver.CompareAndArchiveAds();
-
-            // Этап 11: Публикация объявлений
-            postingProgressItem.CurrentStage = 3; // Этап 11: Публикация объявлений
-            await ProcessPublishingAdsAtDrom();
-
-            // Этап 12: Экспорт прайса
-            string pricePath = ExportPrice();
-            if (!string.IsNullOrEmpty(pricePath))
-            {
-                postingProgressItem.CurrentStage = 4; // Этап 12: Экспорт прайса
-                postingProgressItem.PriceExportPath = pricePath;
-            }
-
-            // Этап 13: Убираем в архив неактуальные объявления
-            RemoveAtArchive();
-
-            // Этап 14: Удаление всех публикаций не за сегодняшнюю дату
-            DeleteOutdatedAdsAtDb();
         }
+
+        // Метод построения объектов для публикации на основе каждого прайса
+        private async Task BuildingAdsAsync(PriceList prices, string path)
+        {
+            // Получаем к этому прайсу выбранные каналы
+            PriceChannelMapping? priceChannels = GetChannelsForPrice(path);
+
+            if (priceChannels == null)
+            {
+                MessageBox.Show("Что-то пошло не так, попробуйте выбрать прайс и каналы для него", "Внимание",
+                   MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                return;
+            }
+
+            foreach (var price in prices)
+            {
+                List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
+                foreach (var priceChannelMapping in priceChannels.SelectedChannels)
+                {
+                    // Получаю канал
+                    var brandChannelMappingsForChannel = _db.BrandChannelMappings
+                        .Where(mapping => mapping.ChannelId == priceChannelMapping.Id)
+                        .ToList();
+                    // Получаю бренды, связанные с каналом
+                    var channelBrands = brandChannelMappingsForChannel
+                        .Select(mapping => mapping.Brand)
+                        .ToList();
+
+                    // Проверяю бренд из прайса с выбранным для канала и прайса
+                    if (!channelBrands.Any(b => b.Name == price.Brand))
+                    {
+                        break; // Если не нашли совпадение, выходим из цикла
+                    }
+
+                    // Конструктор строителя объекта для публикации
+                    var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
+                    // Строю объект для публикации
+                    var adInfo = await builder.Build();
+                    if (adInfo == null) break;
+
+                    // Фильтр цен перед сохранением объекта публикации в базе
+                    PriceFilter priceFilter = new();
+                    priceFilter.FilterAndSaveByPrice(adInfo);
+                }
+            }
+        }
+        /*---------------------------------------------------------------------------------------------*/
+
 
 
         // Метод для формирования прайса
@@ -657,13 +673,29 @@ namespace DromAutoTrader.ViewModels
         private void AddBrandsAtDb(PriceList prices)
         {
             BrandImporter brandImporter = new();
-            brandImporter.ImportBrandsFromPrices(prices);
-            // Возвращаемся в основной поток для обновления элементов интерфейса
-            Application.Current.Dispatcher.Invoke(() =>
+            var newBrands =   brandImporter.ImportBrandsFromPrices(prices);
+            int countNewBrands = newBrands.Item1;
+            List<string> newBrandsNames = newBrands.Item2;
+                       
+
+            if (countNewBrands != 0)
             {
-                Brands.Clear();
-            });
-            Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); // Обновляю свойство
+                // Возвращаемся в основной поток для обновления элементов интерфейса
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    Brands.Clear();
+                });
+                Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); // Обновляю свойство
+
+                string brandNamesList = string.Join(", ", newBrandsNames);
+                MessageBox.Show($"Добавлено {countNewBrands} брендов. Список: {brandNamesList}");                
+            }
+            else
+            {
+                MessageBox.Show("Новых брендов не найдено");
+            }
+
+            _isModeRunAllWork = true; // Возвращаю в режим поной работы
         }
 
 
@@ -683,15 +715,14 @@ namespace DromAutoTrader.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    // Вывести сообщение об ошибке с указанием причины
+                    // Сообщение об ошибке с указанием причины
                     MessageBox.Show($"Ошибка при обработке прайса: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
 
-                    // Перебросить исключение для обработки в вызывающем коде, если это необходимо
-                    throw;
+                    return null;
                 }
             });
 
-            var timeoutTask = Task.Delay(TimeSpan.FromSeconds(15)); // Время ожидания задачи
+            var timeoutTask = Task.Delay(TimeSpan.FromSeconds(60)); // Время ожидания задачи
 
             if (await Task.WhenAny(processTask, timeoutTask) == processTask)
             {
@@ -765,12 +796,8 @@ namespace DromAutoTrader.ViewModels
         #endregion
 
         #region Каналы
-        // Устанавливаю ставки за просмотры для канала
-        public async void SetRates(List<string> parts, string rate, string selectedChannel)
-        {
-            WorkOnAds workOnAds = new();
-            await workOnAds.SetRatesForWatchingAsync(parts, rate, selectedChannel);
-        }
+
+        // Вызываю из главного окна и передаю парамтеры
         public void OnSelectChannel(Price price, List<Channel> selectedChannels)
         {
             SelectedPrice = price;
@@ -856,6 +883,16 @@ namespace DromAutoTrader.ViewModels
             }
 
             return brandWithSelectedImageServices;
+        }
+
+        #endregion
+
+        #region Ставки
+        // Устанавливаю ставки за просмотры для канала
+        public async void SetRates(List<string> parts, string rate, string selectedChannel)
+        {
+            WorkOnAds workOnAds = new();
+            await workOnAds.SetRatesForWatchingAsync(parts, rate, selectedChannel);
         }
 
         #endregion

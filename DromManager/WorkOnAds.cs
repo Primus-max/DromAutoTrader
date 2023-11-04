@@ -1,7 +1,9 @@
 ﻿using DromAutoTrader.AdsPowerManager;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using System.Collections.Specialized;
 using System.Threading;
+using System.Web;
 
 namespace DromAutoTrader.DromManager
 {
@@ -82,7 +84,7 @@ namespace DromAutoTrader.DromManager
                 string serachString = BuildSearchString(ads.Artikul);
 
                 // Перехожу на поисковую страницу по артикулу
-                GoSearchByArticul(serachString);
+                GoSearchByParamString(serachString);
 
                 // Размер окна
                 SetWindowSize();
@@ -99,33 +101,98 @@ namespace DromAutoTrader.DromManager
 
         }
 
+        /// <summary>
+        /// Метод приклеивания ставок для показов объявлений
+        /// </summary>
+        /// <param name="parts"></param>
+        /// <param name="rate"></param>
+        /// <param name="selectedChannel"></param>
+        /// <returns></returns>
         public async Task SetRatesForWatchingAsync(List<string> parts, string rate, string selectedChannel)
         {
             await InitializeDriver(selectedChannel);
-            _wait = new(_driver, TimeSpan.FromSeconds(30));
 
+            int waitingTime = 15;
+            _wait = new(_driver, TimeSpan.FromSeconds(waitingTime));
+            bool isPaginationExists = false; // Есть или нет пагинация на странице
+            string lastPageUrl = string.Empty; // Запоминаю страницу перед переходом для подтверждения ставок           
 
             foreach (var part in parts)
             {
                 string searchUrl = BuildSearchString(part);
-
-                GoSearchByArticul(searchUrl);
-
+                GoSearchByParamString(searchUrl);
                 SetWindowSize();
+                CloseAllTabsExceptCurrent();
 
-                // Получаю чекбокс [выбрать все]
-                GetInputSelectAll();
+                do
+                {
+                    isPaginationExists = HasNextPage();
 
-                // Открываю окно с указанием ставки для показов
-                OpenRatePageButton();
+                    // Запоминаю последнюю страницу перед переходом в карточку ставок
+                    lastPageUrl = _driver.Url;
+                    // Получаю чекбокс [выбрать все]
+                    GetInputSelectAll();
 
-                // Устанавливаю ставки для выбранных категорий
-                SetRates(rate);
+                    // Открываю окно с указанием ставки для показов
+                    OpenRatePageButton();
 
-                // Подтеверждаю ставки
-                SubmitBtn();
+                    // Устанавливаю ставки для выбранных категорий
+                    SetRates(rate);
+
+                    // Подтеверждаю ставки
+                    SubmitBtn();
+
+                    if (isPaginationExists == true)
+                        NextPage(lastPageUrl); // Пагинация
+
+                } while (isPaginationExists);
             }
         }
+
+        // Переход на следующую страницу
+        private void NextPage(string lastUrl)
+        {
+            string currentUrl = lastUrl;
+
+            try
+            {
+                Uri uri = new Uri(currentUrl);
+
+                string queryPage = "page";
+                string nextPageUrl = "";
+
+                if (uri.Query.Contains(queryPage))
+                {
+                    NameValueCollection queryParameters = HttpUtility.ParseQueryString(uri.Query);
+                    int currentPage = Convert.ToInt32(queryParameters[queryPage]);
+
+                    NameValueCollection newQueryParameters = new NameValueCollection(queryParameters);
+                    newQueryParameters[queryPage] = (currentPage + 1).ToString();
+
+                    UriBuilder uriBuilder = new UriBuilder(uri);
+                    uriBuilder.Query = newQueryParameters.ToString();
+                    nextPageUrl = uriBuilder.Uri.ToString();
+                }
+                else
+                {
+                    UriBuilder uriBuilder = new UriBuilder(uri);
+                    NameValueCollection queryParameters = HttpUtility.ParseQueryString(uriBuilder.Query);
+                    queryParameters[queryPage] = "2";
+                    uriBuilder.Query = queryParameters.ToString();
+                    nextPageUrl = uriBuilder.Uri.ToString();
+                }
+
+                // Переходим на следующую страницу
+                _driver.Navigate().GoToUrl(nextPageUrl);
+            }
+            catch (Exception ex)
+            {
+                // Обработка ошибок, если не удается перейти на следующую страницу
+                Console.WriteLine($"Ошибка при переходе на следующую страницу: {ex.Message}");
+                throw;
+            }
+        }
+
 
 
         // Метод открытия актуальных объявлений
@@ -143,7 +210,7 @@ namespace DromAutoTrader.DromManager
         }
 
         // Открываю страница с актуальными объявлениями
-        public void GoSearchByArticul(string url)
+        public void GoSearchByParamString(string url)
         {
             try
             {
@@ -241,7 +308,6 @@ namespace DromAutoTrader.DromManager
                 catch (Exception) { }
             }
         }
-              
 
         // Метод подтверждения удаления
         private void SubmitBtn()
@@ -272,7 +338,40 @@ namespace DromAutoTrader.DromManager
             }
         }
 
+        // Проверяю наличие пагинации на странице
+        private bool HasNextPage()
+        {
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(5)); // Отдельное ожидание от общего
 
+            try
+            {
+                IWebElement pagination = wait.Until(e => e.FindElement(By.ClassName("nextnumber")));
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        // Закрываю все кладки кроме текущей
+        private void CloseAllTabsExceptCurrent()
+        {
+            string currentWindowHandle = _driver.CurrentWindowHandle;
+
+            foreach (string windowHandle in _driver.WindowHandles)
+            {
+                if (windowHandle != currentWindowHandle)
+                {
+                    _driver.SwitchTo().Window(windowHandle);
+                    _driver.Close();
+                }
+                Thread.Sleep(200);
+            }
+
+            // Вернуться на исходную вкладку
+            _driver.SwitchTo().Window(currentWindowHandle);
+        }
 
         // Инициализация драйвера
         private async Task InitializeDriver(string channelName)
