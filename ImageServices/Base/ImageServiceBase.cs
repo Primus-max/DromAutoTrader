@@ -81,12 +81,7 @@ namespace DromAutoTrader.ImageServices.Base
                 BrandImages = null;
             }
 
-            CloseDriver();
-            //try
-            //{
-            //    _driver.Quit();
-            //}
-            //catch (Exception) { }
+            CloseDriver();           
         }
 
         /// <summary>
@@ -128,11 +123,17 @@ namespace DromAutoTrader.ImageServices.Base
         /// </summary>
         protected void WaitReadyStatePage()
         {
-            IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
-            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(30));
+            try
+            {
+                IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
+                WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(30));
 
-            // Ожидаем, пока загрузится страница
-            wait.Until(driver => (bool)js.ExecuteScript("return document.readyState == 'complete'"));
+                // Ожидаем, пока загрузится страница
+                wait.Until(driver => (bool)js.ExecuteScript("return document.readyState == 'complete'"));
+            }
+            catch (Exception)
+            {
+            }
         }
 
 

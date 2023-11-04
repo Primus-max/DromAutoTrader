@@ -166,7 +166,14 @@ namespace DromAutoTrader.ImageServices
         protected override void SpecificRunAsync(string brandName, string articul) { }
         protected override void CloseDriver()
         {
-            _driver.Close();
+            try
+            {
+                _driver.Close();
+            }
+            catch (Exception)
+            {
+
+            }
         }
 
         #endregion
