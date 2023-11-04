@@ -1,11 +1,9 @@
-﻿using DromAutoTrader.AdsPowerManager;
-using DromAutoTrader.Data;
+﻿using DromAutoTrader.Data;
 using DromAutoTrader.Prices;
 using DromAutoTrader.ViewModels;
 using DromAutoTrader.Views;
 using DromAutoTrader.Views.Pages;
 using OfficeOpenXml;
-using OpenQA.Selenium;
 using System.Windows.Data;
 using System.Windows.Media;
 
@@ -45,12 +43,13 @@ namespace DromAutoTrader
             Loaded += MainWindow_Loaded;
             #endregion
 
-            //InitializeDatabase();
-            //// Тесты
-            //List<BrandChannelMapping> channelMappings = _db.BrandChannelMappings.ToList();
+            // Включаю модификацию базы данных для работы в многопоточном режиме
+            using var context = new AppContext();
+            // Выполним SQL-команду для настройки режима WAL
+            context.Database.ExecuteSqlRaw("PRAGMA journal_mode = WAL;");           
         }
 
-        
+
         #region Cкрытые метод для разработчика
         // Скрытый метод для добавления сервисов для поиска картинок
         private void AddImageService()

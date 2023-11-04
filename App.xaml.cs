@@ -13,5 +13,6 @@ namespace DromAutoTrader
     /// </summary>
     public partial class App : Application
     {
+
     }
 }

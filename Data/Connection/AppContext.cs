@@ -1,4 +1,5 @@
 ﻿using DromAutoTrader.Prices;
+using SQLite;
 
 namespace DromAutoTrader.Data.Connection
 {
@@ -13,13 +14,15 @@ namespace DromAutoTrader.Data.Connection
         public DbSet<BrandImageServiceMapping> BrandImageServiceMappings { get; set; } = null!;
         public DbSet<BrandChannelMapping> BrandChannelMappings { get; set; } = null!;
         public DbSet<AdPublishingInfo> AdPublishingInfo { get; set; } = null!;
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data Source=main.db");
+            optionsBuilder.UseSqlite("Data Source=main.db");           
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            
             //// Определение таблицы для AdPublishingInfo
             //modelBuilder.Entity<AdPublishingInfo>()
             //    .ToTable("AdPublishingInfo"); // Указываем явное имя таблицы
