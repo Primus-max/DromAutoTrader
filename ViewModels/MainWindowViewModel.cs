@@ -589,21 +589,7 @@ namespace DromAutoTrader.ViewModels
                 }
             }
         }
-        /*---------------------------------------------------------------------------------------------*/
-
-
-
-        // Метод для формирования прайса
-        private string ExportPrice()
-        {
-            if (_db == null) return string.Empty;
-
-            List<AdPublishingInfo> prices = _db.AdPublishingInfo.ToList();
-            ExcelPriceExporter priceExporter = new ExcelPriceExporter();
-            string pricePath = priceExporter.ExportPricesToExcel(prices);
-
-            return pricePath;
-        }
+       
 
         // Асинхронный метод публикации объявления        
         public async Task ProcessPublishingAdsAtDrom()
@@ -654,6 +640,19 @@ namespace DromAutoTrader.ViewModels
                 }
             }
         }
+
+        // Метод для формирования прайса
+        private string ExportPrice()
+        {
+            if (_db == null) return string.Empty;
+
+            List<AdPublishingInfo> prices = _db.AdPublishingInfo.ToList();
+            ExcelPriceExporter priceExporter = new ExcelPriceExporter();
+            string pricePath = priceExporter.ExportPricesToExcel(prices);
+
+            return pricePath;
+        }
+        
 
         // Метод для перещения публикаций в архив
         private async void RemoveAtArchive()
