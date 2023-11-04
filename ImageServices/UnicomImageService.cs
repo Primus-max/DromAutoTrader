@@ -208,9 +208,9 @@ namespace DromAutoTrader.ImageServices
             {
                 _driver.Close();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                MessageBox.Show($"Не удалось закрыть барузер в сервисе UnicomImageService {ex.ToString}");
             }
         }
         #endregion

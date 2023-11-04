@@ -443,18 +443,18 @@ namespace DromAutoTrader.ViewModels
         {
             PostingProgressItem postingProgressItem = new();
 
-            // Возвращаемся в основной поток для обновления элементов интерфейса
-            Application.Current.Dispatcher.Invoke(() =>
+            var progress = new Progress<PostingProgressReport>(report =>
             {
-                PostingProgressItems.Add(postingProgressItem);
+                // Обновите интерфейс с учетом прогресса
+                foreach (var item in report.Items)
+                {
+                    PostingProgressItems.Add(item);
+                }
             });
 
-            postingProgressItem.CurrentStage = 1;
-
-            /*----------------------------Метод получения прайсов--------------------------*/
 
             // Получаю, обрабатываю, записываю в базу прайсы
-            await ParsingPricesAsync(postingProgressItem);
+            await ParsingPricesAsync(postingProgressItem, progress);
 
             AdsArchiver adsArchiver = new();
             adsArchiver.CompareAndArchiveAds();
@@ -464,8 +464,7 @@ namespace DromAutoTrader.ViewModels
             string pricePath = ExportPrice();
             if (!string.IsNullOrEmpty(pricePath))
             {
-                postingProgressItem.CurrentStage = 4;
-                postingProgressItem.PriceExportPath = pricePath;
+                // Здесь передаём путь к файлу для скачивания(локально)
             }
 
             RemoveAtArchive(); // Убираю в архив
@@ -473,20 +472,28 @@ namespace DromAutoTrader.ViewModels
             DeleteOutdatedAdsAtDb(); // Убираю старые объявления
         }
 
-        /*---------------------------------------------------------------------------------------------*/
         // Метод получения и парсинга прайсов
-        private async Task ParsingPricesAsync(PostingProgressItem postingProgressItem = null!)
+        private async Task ParsingPricesAsync(PostingProgressItem postingProgressItem = null!, IProgress<PostingProgressReport> progress = null!)
         {
             var tasks = new List<Task>();
 
             foreach (var path in PathsFilePrices)
             {
                 string priceName = Path.GetFileName(path);
-                postingProgressItem.ProcessName = "Начал обработку прайса";
+                postingProgressItem.ProcessName = "Начал обработку прайса " + priceName; // Обновление имени процесса
+
+                if (progress != null)
+                {
+                    // Создайте экземпляр PostingProgressReport для сбора элементов
+                    var report = new PostingProgressReport();
+                    report.Items.Add(postingProgressItem);
+
+                    // Обновление процесса с использованием IProgress
+                    progress.Report(report);
+                }
+
                 postingProgressItem.MaxValue = PathsFilePrices.Count;
-
                 postingProgressItem.PriceName = priceName;
-
 
                 if (string.IsNullOrEmpty(path))
                 {
@@ -503,12 +510,7 @@ namespace DromAutoTrader.ViewModels
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         PostingProgressItems.Clear();
-                        postingProgressItem.ProcessName = "Распарсил прайс";
-                        postingProgressItem.MaxValue = prices.Count;
-                        postingProgressItem.TotalStages = prices.Count;
-                        PostingProgressItems.Add(postingProgressItem);
                     });
-
 
                     if (prices == null)
                     {
@@ -589,7 +591,7 @@ namespace DromAutoTrader.ViewModels
                 }
             }
         }
-       
+
 
         // Асинхронный метод публикации объявления        
         public async Task ProcessPublishingAdsAtDrom()
@@ -652,7 +654,7 @@ namespace DromAutoTrader.ViewModels
 
             return pricePath;
         }
-        
+
 
         // Метод для перещения публикаций в архив
         private async void RemoveAtArchive()

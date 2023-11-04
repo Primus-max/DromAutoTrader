@@ -135,6 +135,7 @@ namespace DromAutoTrader.ImageServices.Base
             wait.Until(driver => (bool)js.ExecuteScript("return document.readyState == 'complete'"));
         }
 
+
         #endregion
 
         #region Абстратные метод
