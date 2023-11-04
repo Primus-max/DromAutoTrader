@@ -482,6 +482,8 @@ namespace DromAutoTrader.ViewModels
         // Метод получения и парсинга прайсов
         private async Task ParsingPricesAsync()
         {
+            var tasks = new List<Task>();
+
             foreach (var path in PathsFilePrices)
             {
                 if (string.IsNullOrEmpty(path))
@@ -493,24 +495,32 @@ namespace DromAutoTrader.ViewModels
                 // Получаю имя прайса
                 string priceName = System.IO.Path.GetFileName(path);
 
-                // Парсинг прайсов и обработка данных
-                PriceList prices = await ProcessPriceAsync(path);
-
-                if (prices == null)
+                Task task = Task.Run(async () =>
                 {
-                    return;
-                }                               
+                    // Парсинг прайсов и обработка данных
+                    PriceList prices = await ProcessPriceAsync(path);
 
-                // Передаю полученный прайс для записи в БД, 
-                if (_isModeRunAllWork)
-                    await BuildingAdsAsync(prices, path);
+                    if (prices == null)
+                    {
+                        return;
+                    }
 
-                //  Добавляю бренды в базу. Флаг регулирует в каком режиме находится метод,
-                // true = полная работа, false = только получение брендов из прайсов
-                if (!_isModeRunAllWork)
-                    AddBrandsAtDb(prices);
+                    // Передаю полученный прайс для записи в БД, 
+                    if (_isModeRunAllWork)
+                        await BuildingAdsAsync(prices, path);
+
+                    //  Добавляю бренды в базу. Флаг регулирует в каком режиме находится метод,
+                    // true = полная работа, false = только получение брендов из прайсов
+                    if (!_isModeRunAllWork)
+                        AddBrandsAtDb(prices);
+                });
+
+                tasks.Add(task);
             }
+
+            await Task.WhenAll(tasks);
         }
+
 
         // Метод построения объектов для публикации на основе каждого прайса
         private async Task BuildingAdsAsync(PriceList prices, string path)
@@ -673,10 +683,10 @@ namespace DromAutoTrader.ViewModels
         private void AddBrandsAtDb(PriceList prices)
         {
             BrandImporter brandImporter = new();
-            var newBrands =   brandImporter.ImportBrandsFromPrices(prices);
+            var newBrands = brandImporter.ImportBrandsFromPrices(prices);
             int countNewBrands = newBrands.Item1;
             List<string> newBrandsNames = newBrands.Item2;
-                       
+
 
             if (countNewBrands != 0)
             {
@@ -688,7 +698,7 @@ namespace DromAutoTrader.ViewModels
                 Brands = new ObservableCollection<Brand>(_db.Brands.ToList()); // Обновляю свойство
 
                 string brandNamesList = string.Join(", ", newBrandsNames);
-                MessageBox.Show($"Добавлено {countNewBrands} брендов. Список: {brandNamesList}");                
+                MessageBox.Show($"Добавлено {countNewBrands} брендов. Список: {brandNamesList}");
             }
             else
             {
