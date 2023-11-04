@@ -2,10 +2,8 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Web;
-using System.Windows.Controls;
 
 namespace DromAutoTrader.DromManager
 {
@@ -113,11 +111,11 @@ namespace DromAutoTrader.DromManager
         public async Task SetRatesForWatchingAsync(List<string> parts, string rate, string selectedChannel)
         {
             await InitializeDriver(selectedChannel);
+
             int waitingTime = 15;
             _wait = new(_driver, TimeSpan.FromSeconds(waitingTime));
-            bool isPaginationExists = false;
-            string lastPageUrl = string.Empty;
-            int firstPage = 0; // Считаю страницы, если нет пагинации, одну страницу надо пройти
+            bool isPaginationExists = false; // Есть или нет пагинация на странице
+            string lastPageUrl = string.Empty; // Запоминаю страницу перед переходом для подтверждения ставок           
 
             foreach (var part in parts)
             {
@@ -128,10 +126,7 @@ namespace DromAutoTrader.DromManager
 
                 do
                 {
-                    firstPage++;
-
                     isPaginationExists = HasNextPage();
-                  
 
                     // Запоминаю последнюю страницу перед переходом в карточку ставок
                     lastPageUrl = _driver.Url;
@@ -148,7 +143,7 @@ namespace DromAutoTrader.DromManager
                     SubmitBtn();
 
                     if (isPaginationExists == true)
-                        NextPage(lastPageUrl);
+                        NextPage(lastPageUrl); // Пагинация
 
                 } while (isPaginationExists);
             }
@@ -312,7 +307,7 @@ namespace DromAutoTrader.DromManager
                 }
                 catch (Exception) { }
             }
-        }              
+        }
 
         // Метод подтверждения удаления
         private void SubmitBtn()
