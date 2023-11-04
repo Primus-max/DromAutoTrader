@@ -448,10 +448,12 @@ namespace DromAutoTrader.ViewModels
                 // Обновите интерфейс с учетом прогресса
                 foreach (var item in report.Items)
                 {
-                    PostingProgressItems.Add(item);
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        PostingProgressItems.Add(item);
+                    });
                 }
             });
-
 
             // Получаю, обрабатываю, записываю в базу прайсы
             await ParsingPricesAsync(postingProgressItem, progress);
