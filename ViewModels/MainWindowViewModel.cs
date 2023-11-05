@@ -442,22 +442,8 @@ namespace DromAutoTrader.ViewModels
         // Метод запускающий всю работу
         public async Task RunAllWork()
         {
-            PostingProgressItem postingProgressItem = new();
-
-            var progress = new Progress<PostingProgressReport>(report =>
-            {
-                // Обновите интерфейс с учетом прогресса
-                foreach (var item in report.Items)
-                {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        PostingProgressItems.Add(item);
-                    });
-                }
-            });
-
             // Получаю, обрабатываю, записываю в базу прайсы
-            await ParsingPricesAsync(postingProgressItem, progress);
+            await ParsingPricesAsync();
 
             AdsArchiver adsArchiver = new();
             adsArchiver.CompareAndArchiveAds();
@@ -476,64 +462,50 @@ namespace DromAutoTrader.ViewModels
         }
 
         // Метод получения и парсинга прайсов
-        private async Task ParsingPricesAsync(PostingProgressItem postingProgressItem = null!, IProgress<PostingProgressReport> progress = null!)
+        private async Task ParsingPricesAsync()
         {
             var tasks = new List<Task>();
 
             foreach (var path in PathsFilePrices)
             {
                 string priceName = Path.GetFileName(path);
-                postingProgressItem.ProcessName = "Начал обработку прайса " + priceName; // Обновление имени процесса
-
-                if (progress != null)
+                var postingProgressItem = new PostingProgressItem
                 {
-                    // Создайте экземпляр PostingProgressReport для сбора элементов
-                    var report = new PostingProgressReport();
-                    report.Items.Add(postingProgressItem);
-
-                    // Обновление процесса с использованием IProgress
-                    progress.Report(report);
-                }
-
-                postingProgressItem.MaxValue = PathsFilePrices.Count;
-                postingProgressItem.PriceName = priceName;
-
-                if (string.IsNullOrEmpty(path))
-                {
-                    MessageBox.Show("Для начала работы необходимо выбрать прайс");
-                    return;
-                }
+                    ProcessName = $"Начал обработку прайса {priceName}",
+                    MaxValue = PathsFilePrices.Count,
+                    PriceName = priceName
+                };
 
                 Task task = Task.Run(async () =>
                 {
-                   // Парсинг прайсов и обработка данных
-                   PriceList prices = await ProcessPriceAsync(path);
+                    // Парсинг прайсов и обработка данных
+                    PriceList prices = await ProcessPriceAsync(path);
 
-                   // Возвращаемся в основной поток для обновления элементов интерфейса
-                   Application.Current.Dispatcher.Invoke(() =>
-                   {
-                       PostingProgressItems.Clear();
-                   });
+                    // Возвращаемся в основной поток для обновления элементов интерфейса
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        PostingProgressItems.Clear();
+                    });
 
-                   if (prices == null)
-                   {
-                       return;
-                   }
+                    if (prices == null)
+                    {
+                        return;
+                    }
 
-                   // Передаю полученный прайс для записи в БД, 
-                   if (_isModeRunAllWork)
-                       await BuildingAdsAsync(prices, path, postingProgressItem);
+                    // Передаю полученный прайс для записи в БД, 
+                    if (_isModeRunAllWork)
+                        await BuildingAdsAsync(prices, path, postingProgressItem);
 
-                   //  Добавляю бренды в базу. Флаг регулирует в каком режиме находится метод,
-                   // true = полная работа, false = только получение брендов из прайсов
-                   if (!_isModeRunAllWork)
-                       AddBrandsAtDb(prices);
+                    //  Добавляю бренды в базу. Флаг регулирует в каком режиме находится метод,
+                    // true = полная работа, false = только получение брендов из прайсов
+                    if (!_isModeRunAllWork)
+                        AddBrandsAtDb(prices);
                 });
 
                 tasks.Add(task);
             }
 
-            await Task.WhenAll(tasks);
+                await Task.WhenAll(tasks);
         }
 
 
@@ -764,7 +736,7 @@ namespace DromAutoTrader.ViewModels
                 }
             });
 
-            var timeoutTask = Task.Delay(TimeSpan.FromSeconds(60)); // Время ожидания задачи
+            var timeoutTask = Task.Delay(TimeSpan.FromSeconds(120)); // Время ожидания задачи
 
             if (await Task.WhenAny(processTask, timeoutTask) == processTask)
             {

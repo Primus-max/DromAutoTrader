@@ -1,4 +1,5 @@
 ﻿using OfficeOpenXml;
+using System.Globalization;
 using System.IO;
 
 namespace DromAutoTrader.Prices
@@ -107,7 +108,7 @@ namespace DromAutoTrader.Prices
                     priceItem.Description = value;
                     break;
                 case PriceField.PriceBuy:
-                    if (decimal.TryParse(value, out decimal priceBuyValue))
+                    if (decimal.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out decimal priceBuyValue))
                     {
                         priceItem.PriceBuy = priceBuyValue;
                     }

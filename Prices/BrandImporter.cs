@@ -29,7 +29,7 @@ public class BrandImporter
             if (!string.IsNullOrEmpty(priceItem.Brand))
             {
                 // Проверка на дубликаты в базе данных
-                bool isDuplicate = _db.Brands.Any(b => b.Name == priceItem.Brand);
+                bool isDuplicate = _db.Brands.Any(b => b.Name.ToLower() == priceItem.Brand.ToLower());
 
                 if (!isDuplicate)
                 {
