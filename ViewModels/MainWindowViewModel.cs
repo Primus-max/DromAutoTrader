@@ -802,9 +802,8 @@ namespace DromAutoTrader.ViewModels
                     .Include(mapping => mapping.Channel)
                     .Load();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
+            catch (Exception)
+            {                
                 // TODO сделать запись логов
                 //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
             }
@@ -859,7 +858,7 @@ namespace DromAutoTrader.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Не удалось сохранить изображение по умолчанию {ex.Message}", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    //MessageBox.Show($"Не удалось сохранить изображение по умолчанию {ex.Message}", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
         }
