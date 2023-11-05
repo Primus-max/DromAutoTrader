@@ -1,6 +1,7 @@
 ﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using System.Threading;
 
 namespace DromAutoTrader.ImageServices
@@ -20,8 +21,7 @@ namespace DromAutoTrader.ImageServices
         #endregion
 
         //#region Приватные поля       
-        //protected string? _imagesLocalPath = string.Empty;
-        //protected IWebDriver _driver = null!;
+        private readonly WebDriverWait _waiter = null!;
         //#endregion
 
 
@@ -129,7 +129,7 @@ namespace DromAutoTrader.ImageServices
         {
             try
             {
-                Thread.Sleep(300);
+                Thread.Sleep(100);
                 // Получаем элемент-родитель если арткул найден
                 IWebElement divElement = _driver.FindElement(By.XPath("//h1[contains(text(),'Искомый товар')]/ancestor::div[not(@class)]"));
                 // Получаем в элементе-родителе этот элемент
@@ -204,6 +204,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override void CloseDriver()
         {
+            Thread.Sleep(200);
             try
             {
                 _driver.Close();

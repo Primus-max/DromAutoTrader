@@ -145,7 +145,7 @@ namespace DromAutoTrader.ImageServices
                 {
                     tryCount++;
 
-                    if (tryCount == 20)
+                    if (tryCount == 7)
                     {
                         break;
                     }
