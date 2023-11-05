@@ -588,7 +588,7 @@ namespace DromAutoTrader.ViewModels
             }
         }
 
-        // метод получения брендов для канала
+        // метод получения брендов для канала с отдельным контекстом, чтобы EF не залупался
         public List<Brand?> GetBrandsForChannel(int channelId)
         {
             using (var context = new AppContext())

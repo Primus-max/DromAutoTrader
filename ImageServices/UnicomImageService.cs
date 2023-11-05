@@ -1,7 +1,9 @@
 ﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using System.Threading;
+using System.Web;
 
 namespace DromAutoTrader.ImageServices
 {
@@ -10,7 +12,7 @@ namespace DromAutoTrader.ImageServices
         #region Перезапись абстрактных свойст
         protected override string LoginPageUrl => "https://uniqom.ru/#login";
 
-        protected override string SearchPageUrl => "https://uniqom.ru";
+        protected override string SearchPageUrl => "https://uniqom.ru/search?term=";
 
         protected override string UserName => "autobest038@gmail.com";
 
@@ -20,14 +22,15 @@ namespace DromAutoTrader.ImageServices
         #endregion
 
         //#region Приватные поля       
-        //protected string? _imagesLocalPath = string.Empty;
-        //protected IWebDriver _driver = null!;
+        private readonly WebDriverWait _waiter = null!;
         //#endregion
 
 
         public UnicomImageService()
         {
             InitializeDriver();
+
+            _waiter = new(_driver, TimeSpan.FromSeconds(10));
         }
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
@@ -52,8 +55,8 @@ namespace DromAutoTrader.ImageServices
             try
             {
                 // Поле для ввода логина
-                IWebElement usernameElement = _driver.FindElement(By.Name("username"));
-                Thread.Sleep(200);
+                IWebElement usernameElement = _waiter.Until(e => e.FindElement(By.Name("username")));
+               
                 // Ввести логин
                 usernameElement.SendKeys(UserName);
             }
@@ -62,8 +65,8 @@ namespace DromAutoTrader.ImageServices
             try
             {
                 // Поле для ввода пароля
-                IWebElement passwordElement = _driver.FindElement(By.Name("password"));
-                Thread.Sleep(200);
+                IWebElement passwordElement = _waiter.Until(e => e.FindElement(By.Name("password")));
+                
                 // Ввести пароль
                 passwordElement.SendKeys(Password);
             }
@@ -72,7 +75,7 @@ namespace DromAutoTrader.ImageServices
             try
             {
                 // Кнопка для входа и нажать на нее
-                IWebElement loginButton = _driver.FindElement(By.CssSelector(".login__button"));
+                IWebElement loginButton = _waiter.Until(e => e.FindElement(By.CssSelector(".login__button")));
                 loginButton.Click();
             }
             catch (Exception) { }
@@ -85,19 +88,9 @@ namespace DromAutoTrader.ImageServices
                 // Ожидание загурзки страницы
                 WaitReadyStatePage();
 
-                Thread.Sleep(1000);
-                // Находим поле для ввода
-                IWebElement searchField = _driver.FindElement(By.Id("m-header-search-l"));
+                string searchUrl = BuildUrl();
 
-                // Используем JavaScript, чтобы очистить поле
-                ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].value = '';", searchField);
-
-                // Вводим новый текст
-                searchField.SendKeys(Articul);
-
-                // Нажимаем Enter
-                searchField.SendKeys(Keys.Enter);
-
+                _driver.Navigate().GoToUrl(searchUrl);             
             }
             catch (Exception) { }
         }
@@ -105,11 +98,10 @@ namespace DromAutoTrader.ImageServices
         // Метод проверяет если ничего не найдено
         protected override bool IsNotMatchingArticul()
         {
-            Thread.Sleep(1000);
-            bool isNotMatchingArticul = false;
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(7));
             try
             {
-                IWebElement attentionMessage = _driver.FindElement(By.ClassName("not-found__title"));
+                IWebElement attentionMessage = wait.Until(e => e.FindElement(By.CssSelector("h4.not-found__title")));
 
                 // Если получили этот элемент значит по запросу ничего не найдено
                 return true;
@@ -117,7 +109,7 @@ namespace DromAutoTrader.ImageServices
             }
             catch (Exception)
             {
-                return isNotMatchingArticul;
+                return false;
             }
         }
 
@@ -129,9 +121,8 @@ namespace DromAutoTrader.ImageServices
         {
             try
             {
-                Thread.Sleep(300);
                 // Получаем элемент-родитель если арткул найден
-                IWebElement divElement = _driver.FindElement(By.XPath("//h1[contains(text(),'Искомый товар')]/ancestor::div[not(@class)]"));
+                var divElement = _waiter.Until(e => e.FindElements(By.CssSelector("div.product__card")))[0];
                 // Получаем в элементе-родителе этот элемент
                 IWebElement pictureNotFounfDiv = divElement.FindElement(By.ClassName("picture_not-found"));
 
@@ -156,16 +147,12 @@ namespace DromAutoTrader.ImageServices
 
             try
             {
-                Thread.Sleep(200);
                 // Получаем изображение
-                // Найти элемент h1 с текстом "Искомый товар"
-                var h1Element = _driver.FindElement(By.XPath("//h1[contains(text(),'Искомый товар')]"));
-
-                // Затем получить родительский элемент (div)
-                var parentDiv = h1Element.FindElement(By.XPath("./parent::div"));
+                // Получаем элемент-родитель если арткул найден
+                var divElement = _waiter.Until(e => e.FindElements(By.CssSelector("div.product__card")))[0];
 
                 // Теперь, используя родительский элемент, получить ссылку на изображение
-                var imageUrlElement = parentDiv.FindElement(By.ClassName("feip-productsList-photoCell-image"));
+                var imageUrlElement = divElement.FindElement(By.ClassName("feip-productsList-photoCell-image"));
 
                 string imgUrl = imageUrlElement.GetAttribute("href");
 
@@ -173,7 +160,10 @@ namespace DromAutoTrader.ImageServices
                     images.Add(imgUrl);
 
             }
-            catch (Exception) { }
+            catch (Exception) 
+            {
+                CloseDriver();
+            }
 
             if (images.Count != 0)
                 downloadedImages = await ImagesProcessAsync(images);
@@ -202,17 +192,26 @@ namespace DromAutoTrader.ImageServices
             return downloadedImages;
         }
 
+        // Строю ссылку
+        public string BuildUrl()
+        {
+            var uri = new Uri(SearchPageUrl);           
+
+            // Построение нового URL с обновленными параметрами
+            string newUrl = uri + Articul;
+
+            return newUrl;
+        }
+
         protected override void CloseDriver()
         {
             try
             {
-                _driver.Close();
-                _driver.Quit(); // Закрыть и высвободить ресурсы
-                _driver.Dispose(); // Дополнительная очистка
+                _driver.Close();               
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Не удалось закрыть браузер в сервисе UnicomImageService {ex.ToString}");
+                
             }
         }
 
