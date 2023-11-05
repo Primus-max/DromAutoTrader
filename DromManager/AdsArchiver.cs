@@ -70,14 +70,14 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Экземпляр базы данных
-                _db = AppContextFactory.GetInstance();
+                _db = new AppContext();
 
                 // Загружаю таблицу
                 _db.AdPublishingInfo.Load();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                //MessageBox.Show(ex.ToString());
                 // TODO сделать запись логов
                 //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
             }
