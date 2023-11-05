@@ -5,6 +5,10 @@ namespace DromAutoTrader.Data.Connection
 {
     public class AppContext : DbContext
     {
+        //public AppContext(DbContextOptions<AppContext> options) : base(options)
+        //{
+        //}
+
         public DbSet<Supplier> Suppliers { get; set; } = null!;
         public DbSet<Brand> Brands { get; set; } = null!;
         public DbSet<Channel> Channels { get; set; } = null!;

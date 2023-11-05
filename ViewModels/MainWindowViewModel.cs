@@ -1,7 +1,5 @@
-﻿using DromAutoTrader.Data;
-using DromAutoTrader.DromManager;
+﻿using DromAutoTrader.DromManager;
 using DromAutoTrader.Infrastacture.Commands;
-using DromAutoTrader.Models;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
 using System.IO;
@@ -25,6 +23,7 @@ namespace DromAutoTrader.ViewModels
         private ObservableCollection<AdPublishingInfo> _adPublishingInfos = null!;
         private ObservableCollection<PostingProgressItem> _postingProgressItems = null!;
         private bool _isModeRunAllWork = true;
+        private static IServiceProvider _serviceProvider = null!;
         #endregion
 
         #region Поставщики
@@ -360,7 +359,6 @@ namespace DromAutoTrader.ViewModels
 
         public MainWindowViewModel()
         {
-
             // Инициализация базы данных
             InitializeDatabase();
 
@@ -445,19 +443,21 @@ namespace DromAutoTrader.ViewModels
         public async Task RunAllWork()
         {
             PostingProgressItem postingProgressItem = new();
-                       
-            // Возвращаемся в основной поток для обновления элементов интерфейса
-            Application.Current.Dispatcher.Invoke(() =>
+
+            var progress = new Progress<PostingProgressReport>(report =>
             {
-                PostingProgressItems.Add(postingProgressItem);
+                // Обновите интерфейс с учетом прогресса
+                foreach (var item in report.Items)
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        PostingProgressItems.Add(item);
+                    });
+                }
             });
 
-            postingProgressItem.CurrentStage = 1;
-
-            /*----------------------------Метод получения прайсов--------------------------*/
-
             // Получаю, обрабатываю, записываю в базу прайсы
-            await ParsingPricesAsync(postingProgressItem);
+            await ParsingPricesAsync(postingProgressItem, progress);
 
             AdsArchiver adsArchiver = new();
             adsArchiver.CompareAndArchiveAds();
@@ -467,8 +467,7 @@ namespace DromAutoTrader.ViewModels
             string pricePath = ExportPrice();
             if (!string.IsNullOrEmpty(pricePath))
             {
-                postingProgressItem.CurrentStage = 4;
-                postingProgressItem.PriceExportPath = pricePath;
+                // Здесь передаём путь к файлу для скачивания(локально)
             }
 
             RemoveAtArchive(); // Убираю в архив
@@ -476,20 +475,28 @@ namespace DromAutoTrader.ViewModels
             DeleteOutdatedAdsAtDb(); // Убираю старые объявления
         }
 
-        /*---------------------------------------------------------------------------------------------*/
         // Метод получения и парсинга прайсов
-        private async Task ParsingPricesAsync(PostingProgressItem postingProgressItem = null!)
+        private async Task ParsingPricesAsync(PostingProgressItem postingProgressItem = null!, IProgress<PostingProgressReport> progress = null!)
         {
             var tasks = new List<Task>();
 
             foreach (var path in PathsFilePrices)
-            {                
+            {
                 string priceName = Path.GetFileName(path);
-                postingProgressItem.ProcessName = "Начал обработку прайса";
-                postingProgressItem.MaxValue = PathsFilePrices.Count;
+                postingProgressItem.ProcessName = "Начал обработку прайса " + priceName; // Обновление имени процесса
 
+                if (progress != null)
+                {
+                    // Создайте экземпляр PostingProgressReport для сбора элементов
+                    var report = new PostingProgressReport();
+                    report.Items.Add(postingProgressItem);
+
+                    // Обновление процесса с использованием IProgress
+                    progress.Report(report);
+                }
+
+                postingProgressItem.MaxValue = PathsFilePrices.Count;
                 postingProgressItem.PriceName = priceName;
-               
 
                 if (string.IsNullOrEmpty(path))
                 {
@@ -499,33 +506,28 @@ namespace DromAutoTrader.ViewModels
 
                 Task task = Task.Run(async () =>
                 {
-                    // Парсинг прайсов и обработка данных
-                    PriceList prices = await ProcessPriceAsync(path);
+                   // Парсинг прайсов и обработка данных
+                   PriceList prices = await ProcessPriceAsync(path);
 
-                    // Возвращаемся в основной поток для обновления элементов интерфейса
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        PostingProgressItems.Clear();
-                        postingProgressItem.ProcessName = "Распарсил прайс";
-                        postingProgressItem.MaxValue = prices.Count;
-                        postingProgressItem.TotalStages = prices.Count;
-                        PostingProgressItems.Add(postingProgressItem);
-                    });
-                    
+                   // Возвращаемся в основной поток для обновления элементов интерфейса
+                   Application.Current.Dispatcher.Invoke(() =>
+                   {
+                       PostingProgressItems.Clear();
+                   });
 
-                    if (prices == null)
-                    {
-                        return;
-                    }
+                   if (prices == null)
+                   {
+                       return;
+                   }
 
-                    // Передаю полученный прайс для записи в БД, 
-                    if (_isModeRunAllWork)
-                        await BuildingAdsAsync(prices, path, postingProgressItem);
+                   // Передаю полученный прайс для записи в БД, 
+                   if (_isModeRunAllWork)
+                       await BuildingAdsAsync(prices, path, postingProgressItem);
 
-                    //  Добавляю бренды в базу. Флаг регулирует в каком режиме находится метод,
-                    // true = полная работа, false = только получение брендов из прайсов
-                    if (!_isModeRunAllWork)
-                        AddBrandsAtDb(prices);
+                   //  Добавляю бренды в базу. Флаг регулирует в каком режиме находится метод,
+                   // true = полная работа, false = только получение брендов из прайсов
+                   if (!_isModeRunAllWork)
+                       AddBrandsAtDb(prices);
                 });
 
                 tasks.Add(task);
@@ -560,19 +562,12 @@ namespace DromAutoTrader.ViewModels
             }
 
             foreach (var price in prices)
-            {              
+            {
 
                 List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
                 foreach (var priceChannelMapping in priceChannels.SelectedChannels)
                 {
-                    // Получаю канал
-                    var brandChannelMappingsForChannel = _db.BrandChannelMappings
-                        .Where(mapping => mapping.ChannelId == priceChannelMapping.Id)
-                        .ToList();
-                    // Получаю бренды, связанные с каналом
-                    var channelBrands = brandChannelMappingsForChannel
-                        .Select(mapping => mapping.Brand)
-                        .ToList();
+                    var channelBrands = GetBrandsForChannel(priceChannelMapping.Id);
 
                     // Проверяю бренд из прайса с выбранным для канала и прайса
                     if (!channelBrands.Any(b => b.Name == price.Brand))
@@ -592,21 +587,21 @@ namespace DromAutoTrader.ViewModels
                 }
             }
         }
-        /*---------------------------------------------------------------------------------------------*/
 
-
-
-        // Метод для формирования прайса
-        private string ExportPrice()
+        // метод получения брендов для канала
+        public List<Brand?> GetBrandsForChannel(int channelId)
         {
-            if (_db == null) return string.Empty;
-
-            List<AdPublishingInfo> prices = _db.AdPublishingInfo.ToList();
-            ExcelPriceExporter priceExporter = new ExcelPriceExporter();
-            string pricePath = priceExporter.ExportPricesToExcel(prices);
-
-            return pricePath;
+            using (var context = new AppContext())
+            {
+                return context.BrandChannelMappings
+                    .Where(mapping => mapping.ChannelId == channelId)
+                    .Include(mapping => mapping.Brand.ImageServices)
+                    .Select(mapping => mapping.Brand)
+                    .ToList();
+            }
         }
+
+
 
         // Асинхронный метод публикации объявления        
         public async Task ProcessPublishingAdsAtDrom()
@@ -657,6 +652,19 @@ namespace DromAutoTrader.ViewModels
                 }
             }
         }
+
+        // Метод для формирования прайса
+        private string ExportPrice()
+        {
+            if (_db == null) return string.Empty;
+
+            List<AdPublishingInfo> prices = _db.AdPublishingInfo.ToList();
+            ExcelPriceExporter priceExporter = new ExcelPriceExporter();
+            string pricePath = priceExporter.ExportPricesToExcel(prices);
+
+            return pricePath;
+        }
+
 
         // Метод для перещения публикаций в архив
         private async void RemoveAtArchive()
@@ -805,10 +813,13 @@ namespace DromAutoTrader.ViewModels
             try
             {
                 // Экземпляр базы данных
-                _db = AppContextFactory.GetInstance();
+                _db = new AppContext();
                 // загружаем данные о поставщиках из БД и включаем связанные данные (PriceIncreases и Brands)
                 _db.Channels
+                    .Include(channel => channel.Brands)
+                    .Include(channel => channel.PriceIncreases)
                     .Load();
+
                 _db.Brands
                     .Include(b => b.ImageServices)
                     .Load();

@@ -36,7 +36,7 @@ namespace DromAutoTrader.ImageServices
         #region Перезаписанные методы базового класса
         protected override void SpecificRunAsync(string brandName, string articul)
         {
-            
+
         }
 
         // Метод перехода по ссылке
@@ -207,12 +207,15 @@ namespace DromAutoTrader.ImageServices
             try
             {
                 _driver.Close();
+                _driver.Quit(); // Закрыть и высвободить ресурсы
+                _driver.Dispose(); // Дополнительная очистка
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                MessageBox.Show($"Не удалось закрыть браузер в сервисе UnicomImageService {ex.ToString}");
             }
         }
+
         #endregion
 
         #region Специфичные методы класса   
