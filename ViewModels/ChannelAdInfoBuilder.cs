@@ -31,6 +31,7 @@ namespace DromAutoTrader.ViewModels
             if (_price.PriceBuy < minTo) return null;
             List<string> imagesPaths = new List<string>();
             string? namePrice = Path.GetFileName(_pricePath);
+            //var adPublishingInfoCollection = GetAdPublishingInfoCollection();
 
             _adPublishingInfo.PriceName = namePrice;
             _adPublishingInfo.Brand = _price?.Brand; // Имя брэнда
@@ -64,6 +65,15 @@ namespace DromAutoTrader.ViewModels
             // Заменяем найденные символы пустой строкой
             string result = Regex.Replace(input, pattern, "");
             return result;
+        }
+
+        // Отдельный метод для получения коллекции AdPublishingInfo
+        public List<AdPublishingInfo> GetAdPublishingInfoCollection()
+        {
+            using (var context = new AppContext())
+            {
+                return context.AdPublishingInfo.ToList();
+            }
         }
     }
 }

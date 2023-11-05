@@ -514,7 +514,7 @@ namespace DromAutoTrader.ViewModels
         {
             // Получаем к этому прайсу выбранные каналы
             PriceChannelMapping? priceChannels = GetChannelsForPrice(path);
-
+            int elCount = 0;
             // Возвращаемся в основной поток для обновления элементов интерфейса
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -556,8 +556,11 @@ namespace DromAutoTrader.ViewModels
                     // Фильтр цен перед сохранением объекта публикации в базе
                     PriceFilter priceFilter = new();
                     priceFilter.FilterAndSaveByPrice(adInfo);
+                    elCount++;
                 }
             }
+
+            MessageBox.Show($"Закончил обработку прайсов, всего элементов {elCount}");
         }
 
         // метод получения брендов для канала с отдельным контекстом, чтобы EF не залупался
