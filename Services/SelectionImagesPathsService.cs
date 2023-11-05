@@ -74,13 +74,16 @@ namespace DromAutoTrader.Services
         {
             try
             {
-                // Пытаемся получить Brand по имени
-                var brand = _db.Brands.FirstOrDefault(b => b.Name == brandName);
-
-                if (brand != null)
+                using (var context = new AppContext())
                 {
-                    // Если Brand найден, возвращаем значение DefaultImage
-                    return brand.DefaultImage;
+                    // Пытаемся получить Brand по имени
+                    var brand = context.Brands.FirstOrDefault(b => b.Name == brandName);
+
+                    if (brand != null)
+                    {
+                        // Если Brand найден, возвращаем значение DefaultImage
+                        return brand.DefaultImage;
+                    }
                 }
             }
             catch (Exception ex)
@@ -92,6 +95,7 @@ namespace DromAutoTrader.Services
             // Если не удалось получить DefaultImage, возвращаем пустую строку или другое значение по умолчанию
             return string.Empty;
         }
+
 
         // Метод получения адресов картинок из локального хранилища
         private List<string> SelectLocalPaths(string Brand, string Articul)
@@ -120,21 +124,24 @@ namespace DromAutoTrader.Services
             List<int> imageServiceIds = new List<int>();
             try
             {
-                // 1. Получаем BrandId по имени бренда
-                var brandId = _db.Brands
-                    .Where(b => b.Name == brandName)
-                    .Select(b => b.Id)
-                    .FirstOrDefault();
-
-                if (brandId != null)
+                using (var context = new AppContext())
                 {
-                    // 2. Получаем ImageServiceId, принадлежащие бренду
-                    imageServiceIds = _db.BrandImageServiceMappings
-                        .Where(mapping => mapping.BrandId == brandId)
-                        .Select(mapping => mapping.ImageServiceId ?? 0) // Преобразуем Nullable<int> в int
-                        .ToList();
+                    // 1. Получаем BrandId по имени бренда
+                    var brandId = context.Brands
+                        .Where(b => b.Name == brandName)
+                        .Select(b => b.Id)
+                        .FirstOrDefault();
 
-                    return imageServiceIds;
+                    if (brandId != 0)
+                    {
+                        // 2. Получаем ImageServiceId, принадлежащие бренду
+                        imageServiceIds = context.BrandImageServiceMappings
+                            .Where(mapping => mapping.BrandId == brandId)
+                            .Select(mapping => mapping.ImageServiceId ?? 0) // Преобразуем Nullable<int> в int
+                            .ToList();
+
+                        return imageServiceIds;
+                    }
                 }
             }
             catch (Exception ex)
@@ -145,6 +152,7 @@ namespace DromAutoTrader.Services
             }
             return imageServiceIds;
         }
+
 
         // Скачивам картинки с сайтов
         private async Task<List<string>> RunImageServiceAsync(string brand, string articul, int imageServiceUrl)
@@ -174,7 +182,7 @@ namespace DromAutoTrader.Services
         {
             try
             {
-                _db = AppContextFactory.GetInstance();
+                _db = new AppContext();
                 _db.Channels
                     .Include(c => c.PriceIncreases)
                     .Include(c => c.Brands)
