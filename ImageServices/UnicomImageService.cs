@@ -3,7 +3,6 @@ using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System.Threading;
-using System.Web;
 
 namespace DromAutoTrader.ImageServices
 {
@@ -29,68 +28,83 @@ namespace DromAutoTrader.ImageServices
         public UnicomImageService()
         {
             InitializeDriver();
-
             _waiter = new(_driver, TimeSpan.FromSeconds(10));
         }
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
 
 
-        #region Перезаписанные методы базового класса
-        protected override void SpecificRunAsync(string brandName, string articul)
-        {
-
-        }
+        #region Перезаписанные методы базового класса       
 
         // Метод перехода по ссылке
         protected override void GoTo()
         {
-            _driver.Manage().Window.Maximize();
-            _driver.Navigate().GoToUrl(LoginPageUrl);
+            try
+            {
+                _driver.Manage().Window.Maximize();
+                _driver.Navigate().GoToUrl(LoginPageUrl);
+            }
+            catch (Exception) { }
         }
 
         protected override async void Authorization()
         {
+            bool isAuth = true;
+            WebDriverWait wait = new(_driver, TimeSpan.FromMilliseconds(5));
 
-            try
+            while (isAuth)
             {
-                // Поле для ввода логина
-                IWebElement usernameElement = _waiter.Until(e => e.FindElement(By.Name("username")));
+                try
+                {
+                    // Поле для ввода логина
+                    IWebElement usernameElement = _waiter.Until(e => e.FindElement(By.Name("username")));
 
-                // Используем JavaScript для вставки значения в поле
-                //((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].value = arguments[1];", usernameElement, UserName);
-                usernameElement.Click();
-               // Ввести логин
-                usernameElement.SendKeys(UserName);
+
+                    // Используем JavaScript для вставки значения в поле
+                    //((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].value = arguments[1];", usernameElement, UserName);
+                    usernameElement.Click();
+                    usernameElement.Clear();
+                    // Ввести логин
+                    usernameElement.SendKeys(UserName);
+                }
+                catch (Exception) { }
+
+                try
+                {
+                    // Поле для ввода пароля
+                    IWebElement passwordElement = _waiter.Until(e => e.FindElement(By.Name("password")));
+
+                    // Используем JavaScript для вставки значения в поле
+                    //((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].value = arguments[1];", passwordElement, Password);
+
+                    passwordElement.Click();
+                    passwordElement.Clear();
+                    //// Ввести пароль
+                    passwordElement.SendKeys(Password);
+                }
+                catch (Exception) { }
+
+                try
+                {
+                    // Кнопка для входа и нажать на нее
+                    IWebElement loginButton = _waiter.Until(e => e.FindElement(By.CssSelector(".login__button")));
+                    // Используем JavaScript для выполнения клика
+                    // ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", loginButton);
+
+                    await Task.Delay(200);
+                    loginButton.Click();
+                }
+                catch (Exception) { }
+
+                try
+                {
+                    IWebElement modalWin = wait.Until(e => e.FindElement(By.CssSelector("div.f-modal__container")));
+                }
+                catch (Exception)
+                {
+                    isAuth = false;
+                }
             }
-            catch (Exception) { }
-
-            try
-            {
-                // Поле для ввода пароля
-                IWebElement passwordElement = _waiter.Until(e => e.FindElement(By.Name("password")));
-
-                // Используем JavaScript для вставки значения в поле
-                //((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].value = arguments[1];", passwordElement, Password);
-
-                passwordElement.Click();
-
-                //// Ввести пароль
-                passwordElement.SendKeys(Password);
-            }
-            catch (Exception) { }
-
-            try
-            {
-                // Кнопка для входа и нажать на нее
-                IWebElement loginButton = _waiter.Until(e => e.FindElement(By.CssSelector(".login__button")));
-                // Используем JavaScript для выполнения клика
-                // ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", loginButton);
-
-               await Task.Delay(200);
-                loginButton.Click();
-            }
-            catch (Exception) { }
         }
 
         protected override void SetArticulInSearchInput()
@@ -102,7 +116,7 @@ namespace DromAutoTrader.ImageServices
 
                 string searchUrl = BuildUrl();
 
-                _driver.Navigate().GoToUrl(searchUrl);             
+                _driver.Navigate().GoToUrl(searchUrl);
             }
             catch (Exception) { }
         }
@@ -172,7 +186,7 @@ namespace DromAutoTrader.ImageServices
                     images.Add(imgUrl);
 
             }
-            catch (Exception) 
+            catch (Exception)
             {
                 CloseDriver();
             }
@@ -207,7 +221,7 @@ namespace DromAutoTrader.ImageServices
         // Строю ссылку
         public string BuildUrl()
         {
-            var uri = new Uri(SearchPageUrl);           
+            var uri = new Uri(SearchPageUrl);
 
             // Построение нового URL с обновленными параметрами
             string newUrl = uri + Articul;
@@ -219,17 +233,36 @@ namespace DromAutoTrader.ImageServices
         {
             try
             {
-                _driver.Close();               
+                _driver.Close();
             }
             catch (Exception ex)
             {
-                
+
             }
         }
 
         #endregion
 
         #region Специфичные методы класса   
+        protected bool WaitReadyStatePage()
+        {
+            bool isModalWinOpen = true;
+            while (isModalWinOpen)
+            {
+                // f-modal__container
+                try
+                {
+                    IWebElement modalWin = _driver.FindElement(By.CssSelector("div.f-modal__container"));
+
+                    return isModalWinOpen;
+                }
+                catch (Exception)
+                {
+                    isModalWinOpen = false;
+                }
+            }
+            return isModalWinOpen;
+        }
 
 
         void SelectProduct()

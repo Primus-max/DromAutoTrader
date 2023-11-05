@@ -122,27 +122,7 @@ namespace DromAutoTrader.ImageServices.Base
             }
             Thread.Sleep(random.Next(300, 700));
         }
-
-        /// <summary>
-        /// Метод ожидания полной загрузки страницы, по умолчанию время ожидания 30 секунд. 
-        /// </summary>
-        protected void WaitReadyStatePage()
-        {
-            bool isModalWinOpen = true;
-            while (isModalWinOpen)
-            {
-                // f-modal__container
-                try
-                {
-                    IWebElement modalWin = _driver.FindElement(By.CssSelector("div.f-modal__container"));                    
-                }
-                catch (Exception)
-                {
-                    isModalWinOpen = false;
-                }
-            }           
-        }
-
+                
 
         #endregion
 
@@ -156,8 +136,6 @@ namespace DromAutoTrader.ImageServices.Base
         protected abstract Task<List<string>> GetImagesAsync();
 
         protected abstract void CloseDriver();
-
-        protected abstract void SpecificRunAsync(string brandName, string articul);
         #endregion
     }
 

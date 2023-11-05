@@ -117,12 +117,6 @@ namespace DromAutoTrader.ImageServices
             return downloadedImages;
         }
 
-
-        protected override void SpecificRunAsync(string brandName, string articul)
-        {
-            // TODO если метод не пригодился, убрать
-        }
-
         protected override void CloseDriver()
         {
             

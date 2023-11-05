@@ -39,9 +39,7 @@ namespace DromAutoTrader.ImageServices
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
 
 
-        #region Перезаписанные методы базового класса
-        // TODO удалить из базового класса если не пригодится
-        protected override void SpecificRunAsync(string brandName, string articul) { }
+        #region Перезаписанные методы базового класса  
 
         // Метод перехода по ссылке
         protected override void GoTo()
