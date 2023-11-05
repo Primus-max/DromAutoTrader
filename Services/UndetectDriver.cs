@@ -1,5 +1,6 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Chromium;
 using SeleniumUndetectedChromeDriver;
 
 namespace DromAutoTrader.Services
@@ -20,6 +21,8 @@ namespace DromAutoTrader.Services
             ChromeOptions options = new();
             options.AddArgument("--silent");
             options.AddArgument("--disable-notifications");
+            options.AddArgument("--headless=new");
+
 
             //var chromeService = ChromeDriverService.CreateDefaultService();
             //chromeService.HideCommandPromptWindow = true;
