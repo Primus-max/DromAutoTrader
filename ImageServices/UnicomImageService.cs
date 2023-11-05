@@ -49,15 +49,18 @@ namespace DromAutoTrader.ImageServices
             _driver.Navigate().GoToUrl(LoginPageUrl);
         }
 
-        protected override void Authorization()
+        protected override async void Authorization()
         {
 
             try
             {
                 // Поле для ввода логина
                 IWebElement usernameElement = _waiter.Until(e => e.FindElement(By.Name("username")));
-               
-                // Ввести логин
+
+                // Используем JavaScript для вставки значения в поле
+                //((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].value = arguments[1];", usernameElement, UserName);
+                usernameElement.Click();
+               // Ввести логин
                 usernameElement.SendKeys(UserName);
             }
             catch (Exception) { }
@@ -66,8 +69,13 @@ namespace DromAutoTrader.ImageServices
             {
                 // Поле для ввода пароля
                 IWebElement passwordElement = _waiter.Until(e => e.FindElement(By.Name("password")));
-                
-                // Ввести пароль
+
+                // Используем JavaScript для вставки значения в поле
+                //((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].value = arguments[1];", passwordElement, Password);
+
+                passwordElement.Click();
+
+                //// Ввести пароль
                 passwordElement.SendKeys(Password);
             }
             catch (Exception) { }
@@ -76,6 +84,10 @@ namespace DromAutoTrader.ImageServices
             {
                 // Кнопка для входа и нажать на нее
                 IWebElement loginButton = _waiter.Until(e => e.FindElement(By.CssSelector(".login__button")));
+                // Используем JavaScript для выполнения клика
+                // ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", loginButton);
+
+               await Task.Delay(200);
                 loginButton.Click();
             }
             catch (Exception) { }

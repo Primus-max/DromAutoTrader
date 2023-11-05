@@ -1,6 +1,7 @@
 ﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -44,7 +45,7 @@ namespace DromAutoTrader.ImageServices
 
             while (true)
             {
-                Thread.Sleep(2000);
+                Thread.Sleep(500);
                 try
                 {
 
@@ -125,14 +126,16 @@ namespace DromAutoTrader.ImageServices
             // Временное хранилище изображений
             List<string> images = new List<string>();
 
+            // Устанавливаю ожидание
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(7));
+            wait.IgnoreExceptionTypes();
+            
             // Получаю все картинки thumbs
             try
-            {
-                Thread.Sleep(500);
+            {               
                 // Находим все img элементы 
-                IWebElement imagesThumb = _driver.FindElement(By.ClassName("src-features-product-card-components-info-___index__image___KeiQL"));
-
-                Thread.Sleep(200);
+                IWebElement imagesThumb = wait.Until(e => e.FindElement(By.ClassName("src-features-product-card-components-info-___index__image___KeiQL")));
+                              
                 string imagePath = imagesThumb.GetAttribute("style");
 
                 // Находим позиции, где начинается URL и заканчивается
@@ -146,13 +149,8 @@ namespace DromAutoTrader.ImageServices
                     if (!string.IsNullOrEmpty(imageUrl))
                         images.Add(imageUrl);
                 }
-
-                
-
-
-
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 string asdf = ex.Message;
             }
@@ -190,7 +188,7 @@ namespace DromAutoTrader.ImageServices
             FolderManager folderManager = new();
             bool folderContainsFiles = folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
 
-            Thread.Sleep(1000);
+            await Task.Delay(1000);
 
             if (!folderContainsFiles)
             {
@@ -233,9 +231,8 @@ namespace DromAutoTrader.ImageServices
                     element.SendKeys(letter.ToString());
                 }
 
-                Thread.Sleep(random.Next(50, 150));  // Добавляем небольшую паузу между вводом каждого символа
-            }
-            Thread.Sleep(random.Next(300, 700));
+                Thread.Sleep(random.Next(10, 50));  // Добавляем небольшую паузу между вводом каждого символа
+            }           
         }
         #endregion
 
