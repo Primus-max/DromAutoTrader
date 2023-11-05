@@ -68,7 +68,11 @@ namespace DromAutoTrader.ImageServices.Base
             SetArticulInSearchInput();
 
             if (IsNotMatchingArticul())
-                return;
+            {
+                CloseDriver();
+                return;               
+            }
+               
 
             OpenSearchedCard();
 
@@ -81,7 +85,8 @@ namespace DromAutoTrader.ImageServices.Base
                 BrandImages = null;
             }
 
-            CloseDriver();           
+            CloseDriver();
+
         }
 
         /// <summary>
@@ -123,17 +128,19 @@ namespace DromAutoTrader.ImageServices.Base
         /// </summary>
         protected void WaitReadyStatePage()
         {
-            try
+            bool isModalWinOpen = true;
+            while (isModalWinOpen)
             {
-                IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
-                WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(30));
-
-                // Ожидаем, пока загрузится страница
-                wait.Until(driver => (bool)js.ExecuteScript("return document.readyState == 'complete'"));
-            }
-            catch (Exception)
-            {
-            }
+                // f-modal__container
+                try
+                {
+                    IWebElement modalWin = _driver.FindElement(By.CssSelector("div.f-modal__container"));                    
+                }
+                catch (Exception)
+                {
+                    isModalWinOpen = false;
+                }
+            }           
         }
 
 
