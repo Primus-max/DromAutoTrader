@@ -23,6 +23,7 @@ namespace DromAutoTrader.ViewModels
         private ObservableCollection<AdPublishingInfo> _adPublishingInfos = null!;
         private ObservableCollection<PostingProgressItem> _postingProgressItems = null!;
         private bool _isModeRunAllWork = true;
+        private static IServiceProvider _serviceProvider = null!;
         #endregion
 
         #region Поставщики
@@ -358,7 +359,6 @@ namespace DromAutoTrader.ViewModels
 
         public MainWindowViewModel()
         {
-
             // Инициализация базы данных
             InitializeDatabase();
 
@@ -505,28 +505,28 @@ namespace DromAutoTrader.ViewModels
 
                 Task task = Task.Run(async () =>
                 {
-                    // Парсинг прайсов и обработка данных
-                    PriceList prices = await ProcessPriceAsync(path);
+                   // Парсинг прайсов и обработка данных
+                   PriceList prices = await ProcessPriceAsync(path);
 
-                    // Возвращаемся в основной поток для обновления элементов интерфейса
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        PostingProgressItems.Clear();
-                    });
+                   // Возвращаемся в основной поток для обновления элементов интерфейса
+                   Application.Current.Dispatcher.Invoke(() =>
+                   {
+                       PostingProgressItems.Clear();
+                   });
 
-                    if (prices == null)
-                    {
-                        return;
-                    }
+                   if (prices == null)
+                   {
+                       return;
+                   }
 
-                    // Передаю полученный прайс для записи в БД, 
-                    if (_isModeRunAllWork)
-                        await BuildingAdsAsync(prices, path, postingProgressItem);
+                   // Передаю полученный прайс для записи в БД, 
+                   if (_isModeRunAllWork)
+                       await BuildingAdsAsync(prices, path, postingProgressItem);
 
-                    //  Добавляю бренды в базу. Флаг регулирует в каком режиме находится метод,
-                    // true = полная работа, false = только получение брендов из прайсов
-                    if (!_isModeRunAllWork)
-                        AddBrandsAtDb(prices);
+                   //  Добавляю бренды в базу. Флаг регулирует в каком режиме находится метод,
+                   // true = полная работа, false = только получение брендов из прайсов
+                   if (!_isModeRunAllWork)
+                       AddBrandsAtDb(prices);
                 });
 
                 tasks.Add(task);
@@ -566,14 +566,7 @@ namespace DromAutoTrader.ViewModels
                 List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
                 foreach (var priceChannelMapping in priceChannels.SelectedChannels)
                 {
-                    // Получаю канал
-                    var brandChannelMappingsForChannel = _db.BrandChannelMappings
-                        .Where(mapping => mapping.ChannelId == priceChannelMapping.Id)
-                        .ToList();
-                    // Получаю бренды, связанные с каналом
-                    var channelBrands = brandChannelMappingsForChannel
-                        .Select(mapping => mapping.Brand)
-                        .ToList();
+                    var channelBrands = GetBrandsForChannel(priceChannelMapping.Id);
 
                     // Проверяю бренд из прайса с выбранным для канала и прайса
                     if (!channelBrands.Any(b => b.Name == price.Brand))
@@ -593,6 +586,20 @@ namespace DromAutoTrader.ViewModels
                 }
             }
         }
+
+        // метод получения брендов для канала
+        public List<Brand?> GetBrandsForChannel(int channelId)
+        {
+            using (var context = new AppContext())
+            {
+                return context.BrandChannelMappings
+                    .Where(mapping => mapping.ChannelId == channelId)
+                    .Include(mapping => mapping.Brand.ImageServices)
+                    .Select(mapping => mapping.Brand)
+                    .ToList();
+            }
+        }
+
 
 
         // Асинхронный метод публикации объявления        
