@@ -1,13 +1,11 @@
-﻿using DromAutoTrader.Data;
-
-namespace DromAutoTrader.DromManager
+﻿namespace DromAutoTrader.DromManager
 {
     public class PriceFilter
     {
         private AppContext _db = null!;
         public PriceFilter()
         {
-            
+
         }
 
         public void FilterAndSaveByPrice(AdPublishingInfo adInfo)
@@ -19,7 +17,7 @@ namespace DromAutoTrader.DromManager
                     // Проверка на существующие объявления
                     var existingAds = context.AdPublishingInfo
                         .Where(a =>
-                            a.Brand == adInfo.Brand &&
+                            a.Brand.ToLower() == adInfo.Brand.ToLower() &&
                             a.Artikul == adInfo.Artikul &&
                             a.KatalogName == adInfo.KatalogName)
                         .ToList();
@@ -58,14 +56,16 @@ namespace DromAutoTrader.DromManager
                     {
                         context.SaveChanges();
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
-
+                        string message = $"ОШибка в FilterAndSaveByPrice {ex.Message}" ;
+                        MessageBox.Show(message);
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    // Обработка ошибки сохранения
+                    string message = $"ОШибка в FilterAndSaveByPrice {ex.Message}";
+                    MessageBox.Show(message);
                 }
             }
         }

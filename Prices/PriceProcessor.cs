@@ -108,13 +108,10 @@ namespace DromAutoTrader.Prices
                     priceItem.Description = value;
                     break;
                 case PriceField.PriceBuy:
+                    value = value.Replace(",", ".");
                     if (decimal.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out decimal priceBuyValue))
                     {
                         priceItem.PriceBuy = priceBuyValue;
-                    }
-                    else
-                    {
-                        // Обработка ошибки при парсинге цены.
                     }
                     break;
                 case PriceField.Count:
