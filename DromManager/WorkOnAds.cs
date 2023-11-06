@@ -1,4 +1,5 @@
 ﻿using DromAutoTrader.AdsPowerManager;
+using MaterialDesignThemes.Wpf;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System.Collections.Specialized;
@@ -45,6 +46,7 @@ namespace DromAutoTrader.DromManager
 
             bool isPaginationExists = false; // Есть или нет пагинация на странице
             string lastPageUrl = string.Empty; // Запоминаю страницу перед переходом для подтверждения ставок
+            int countRemoved = 0;
 
             do
             {
@@ -74,9 +76,12 @@ namespace DromAutoTrader.DromManager
                 if (isPaginationExists == true)
                     NextPage(lastPageUrl); // Пагинация  
 
+                countRemoved++;
             } while (isPaginationExists);
 
-            MessageBox.Show("Все объявления успешно перемещены в архив", "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            CloseDriver();
+            MessageBox.Show($"Все объявления успешно перемещены в архив, всего {countRemoved}", "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         /// <summary>
@@ -127,6 +132,8 @@ namespace DromAutoTrader.DromManager
         {
             await InitializeDriver(selectedChannel);
 
+            Dictionary<string, int> countSetRates = new();
+            int countRates = 0;
             int waitingTime = 15;
             _wait = new(_driver, TimeSpan.FromSeconds(waitingTime));
             bool isPaginationExists = false; // Есть или нет пагинация на странице
@@ -152,7 +159,7 @@ namespace DromAutoTrader.DromManager
                     OpenRatePageButton();
 
                     // Устанавливаю ставки для выбранных категорий
-                    SetRates(rate);
+                    countRates = SetRates(rate);
 
                     // Подтеверждаю ставки
                     SubmitBtn();
@@ -161,7 +168,31 @@ namespace DromAutoTrader.DromManager
                         NextPage(lastPageUrl); // Пагинация
 
                 } while (isPaginationExists);
+
+                countSetRates[part] = countRates;
             }
+
+            CloseDriver();
+
+            // Готовлю информацию для информировании о завршении
+            string resultMessage = "Ставки приклеены:\n";
+            foreach (var entry in countSetRates)
+            {
+                resultMessage += $"{entry.Key}: {entry.Value} ставок\n";
+            }
+
+            // Отображаем MessageBox с информацией
+            MessageBox.Show(resultMessage, "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        // Закрываю драейвер
+        private void CloseDriver()
+        {
+            try
+            {
+                _driver.Close();
+            }
+            catch (Exception) { }
         }
 
         // Переход на следующую страницу
@@ -225,7 +256,7 @@ namespace DromAutoTrader.DromManager
         }
 
         // Открываю страница с актуальными объявлениями
-        public void GoSearchByParamString(string url)
+        private void GoSearchByParamString(string url)
         {
             try
             {
@@ -239,7 +270,7 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод установки размера экрана
-        public void SetWindowSize()
+        private void SetWindowSize()
         {
             try
             {
@@ -297,20 +328,35 @@ namespace DromAutoTrader.DromManager
         // Открываю окно для выбора ставок для показов
         private void OpenRatePageButton()
         {
-            try
-            {
-                IWebElement removeBtn = _wait.Until(e => e.FindElement(By.Name("applier[ppcBulletin]")));
-                removeBtn.Click();
-            }
-            catch (Exception)
-            {
+            bool isNotRetesOpened = true;
+            int tryCount = 0;
 
+            while (isNotRetesOpened)
+            {
+                tryCount++;
+                if (tryCount == 20) break;
+
+                Thread.Sleep(200);
+                try
+                {
+                    IWebElement removeBtn = _wait.Until(e => e.FindElement(By.Name("applier[ppcBulletin]")));
+                    removeBtn.Click();
+
+                    isNotRetesOpened = false;
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
             }
         }
 
         // Устанавливаю ставки во все поля
-        private void SetRates(string rate)
+        private int SetRates(string rate)
         {
+            Thread.Sleep(1000);
+            int countRates = 0;
+
             IList<IWebElement> rateInputs = null!;
             try
             {
@@ -320,6 +366,7 @@ namespace DromAutoTrader.DromManager
 
             foreach (var input in rateInputs)
             {
+                countRates++;
                 try
                 {
                     input.Clear();
@@ -329,6 +376,8 @@ namespace DromAutoTrader.DromManager
                 }
                 catch (Exception) { }
             }
+
+            return countRates;
         }
 
         // Метод подтверждения удаления
