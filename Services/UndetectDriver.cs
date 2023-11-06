@@ -21,7 +21,7 @@ namespace DromAutoTrader.Services
             ChromeOptions options = new();
             options.AddArgument("--silent");
             options.AddArgument("--disable-notifications");
-            //options.AddArgument("--headless=new");
+            options.AddArgument("--headless=new");
 
 
             //var chromeService = ChromeDriverService.CreateDefaultService();

@@ -3,6 +3,7 @@ using DromAutoTrader.Infrastacture.Commands;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
 using System.IO;
+using System.Text;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -569,10 +570,14 @@ namespace DromAutoTrader.ViewModels
                     var channelBrands = GetBrandsForChannel(priceChannelMapping.Id);
 
                     // Проверяю бренд из прайса с выбранным для канала и прайса
-                    if (!channelBrands.Any(b => b.Name == price.Brand))
+                    if (!channelBrands.Any(b => string.Equals(
+                        b.Name.Normalize(NormalizationForm.FormD).Replace(" ", "").ToUpper(),
+                        price.Brand.Normalize(NormalizationForm.FormD).Replace(" ", "").ToUpper(),
+                        StringComparison.OrdinalIgnoreCase)))
                     {
                         break; // Если не нашли совпадение, выходим из цикла
                     }
+
 
                     // Конструктор строителя объекта для публикации
                     var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);

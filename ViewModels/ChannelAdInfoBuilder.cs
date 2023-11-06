@@ -23,10 +23,9 @@ namespace DromAutoTrader.ViewModels
 
         public async Task<AdPublishingInfo> Build()
         {
-            if (_channel == null)
-            {
+            if (_channel == null)           
                 return new AdPublishingInfo();
-            }
+          
 
             // Проверяем, что цена в прайсе не меньше чем в таблице накрутки цен
             decimal minTo = (decimal)(_channel?.PriceIncreases.Min(inc => (decimal)inc.To));
@@ -37,6 +36,7 @@ namespace DromAutoTrader.ViewModels
             string? namePrice = Path.GetFileName(_pricePath);
             //var adPublishingInfoCollection = GetAdPublishingInfoCollection();
 
+            
 
             _adPublishingInfo.PriceName = namePrice;
             _adPublishingInfo.Brand = _price?.Brand; // Имя брэнда
