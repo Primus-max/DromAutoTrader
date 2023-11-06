@@ -76,21 +76,7 @@ namespace DromAutoTrader.DromManager
 
             } while (isPaginationExists);
 
-            //while (isBulletinExistsOnPage)
-            //{
-            //    tryCount++;
-            //    if (tryCount == 30) break;
-            //    // Выбираю все элементы
-            //    GetInputSelectAll();
-
-
-
-            //    // Подтеверждаю, что убираю в архив
-            //    SubmitBtn();
-
-            //    isBulletinExistsOnPage = ExistsElementChecker();
-            //}
-
+            MessageBox.Show("Все объявления успешно перемещены в архив", "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         /// <summary>
