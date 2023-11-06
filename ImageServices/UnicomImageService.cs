@@ -20,11 +20,11 @@ namespace DromAutoTrader.ImageServices
         public override string ServiceName => "https://uniqom.ru";
         #endregion
 
-        //#region Приватные поля       
+        #region Приватные поля       
         private readonly WebDriverWait _waiter = null!;
-        //#endregion
+        #endregion
 
-
+    
         public UnicomImageService()
         {
             InitializeDriver();
@@ -50,8 +50,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override async void Authorization()
         {
-            bool isAuth = true;
-            WebDriverWait wait = new(_driver, TimeSpan.FromMilliseconds(5));
+            bool isAuth = true;            
 
             while (isAuth)
             {
@@ -60,13 +59,13 @@ namespace DromAutoTrader.ImageServices
                     // Поле для ввода логина
                     IWebElement usernameElement = _waiter.Until(e => e.FindElement(By.Name("username")));
 
-
                     // Используем JavaScript для вставки значения в поле
                     //((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].value = arguments[1];", usernameElement, UserName);
-                    usernameElement.Click();
-                    usernameElement.Clear();
+
+                    //usernameElement.Clear();
+                    ClearAndEnterText(usernameElement ,UserName);
                     // Ввести логин
-                    usernameElement.SendKeys(UserName);
+                   // usernameElement.SendKeys(UserName);                 
                 }
                 catch (Exception) { }
 
@@ -78,10 +77,12 @@ namespace DromAutoTrader.ImageServices
                     // Используем JavaScript для вставки значения в поле
                     //((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].value = arguments[1];", passwordElement, Password);
 
-                    passwordElement.Click();
-                    passwordElement.Clear();
+                    //passwordElement.Clear();
+                    ClearAndEnterText(passwordElement, Password);
+
                     //// Ввести пароль
-                    passwordElement.SendKeys(Password);
+                    //passwordElement.SendKeys(Password);
+                   
                 }
                 catch (Exception) { }
 
@@ -92,19 +93,28 @@ namespace DromAutoTrader.ImageServices
                     // Используем JavaScript для выполнения клика
                     // ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", loginButton);
 
-                    await Task.Delay(200);
+                    
                     loginButton.Click();
                 }
                 catch (Exception) { }
 
-                try
-                {
-                    IWebElement modalWin = wait.Until(e => e.FindElement(By.CssSelector("div.f-modal__container")));
-                }
-                catch (Exception)
-                {
-                    isAuth = false;
-                }
+                isAuth = !IsAuth();
+            }
+        }
+
+        // Проверка авторизации
+        public bool IsAuth()
+        {
+            WebDriverWait wait = new(_driver, TimeSpan.FromMilliseconds(10));
+            try
+            {
+                IWebElement userIcon = wait.Until(e => e.FindElement(By.CssSelector("a.feip-header-userButton")));
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 
@@ -113,7 +123,8 @@ namespace DromAutoTrader.ImageServices
             try
             {
                 // Ожидание загурзки страницы
-                WaitReadyStatePage();
+                //WaitReadyStatePage();
+
 
                 string searchUrl = BuildUrl();
 
@@ -134,7 +145,7 @@ namespace DromAutoTrader.ImageServices
                 return true;
 
             }
-            catch (NoSuchElementException)
+            catch (Exception)
             {
                 return false;
             }
@@ -265,6 +276,34 @@ namespace DromAutoTrader.ImageServices
             return isModalWinOpen;
         }
 
+
+        public void ClearAndEnterText(IWebElement element, string text)
+        {
+            Random random = new Random();
+            // Используем JavaScriptExecutor для выполнения JavaScript-кода
+            IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)((IWrapsDriver)element).WrappedDriver;
+
+            // Очищаем поле ввода с помощью JavaScript
+            jsExecutor.ExecuteScript("arguments[0].value = '';", element);
+            // Установить стиль display элемента в block
+            jsExecutor.ExecuteScript("arguments[0].style.display = 'block';", element);
+            // Вставляем текст по одному символу без изменений
+            foreach (char letter in text)
+            {
+                if (letter == '\b')
+                {
+                    // Если символ является символом backspace, удаляем последний введенный символ
+                    element.SendKeys(Keys.Backspace);
+                }
+                else
+                {
+                    // Вводим символ
+                    element.SendKeys(letter.ToString());
+                }
+
+                Thread.Sleep(random.Next(50, 100));  // Добавляем небольшую паузу между вводом каждого символа
+            }
+        }
 
         void SelectProduct()
         {
