@@ -48,7 +48,7 @@ namespace DromAutoTrader.ImageServices
             catch (Exception) { }
         }
 
-        protected override async void Authorization()
+        protected override  void Authorization()
         {
             bool isAuth = true;            
 
