@@ -39,28 +39,57 @@ namespace DromAutoTrader.DromManager
             bool isBulletinExistsOnPage = true;
 
             // Открываю страницу  с объявлениями
-            OpenAllBulletinsPage(actualUrl);
+            OpenAllBulletinsPage(actualUrl); // Открываю странциу
+            CloseAllTabsExceptCurrent(); // Закрываю все вкладки кроме текущей            
+            SetWindowSize(); // Размер окна
 
-            // Размер окна
-            SetWindowSize();
+            bool isPaginationExists = false; // Есть или нет пагинация на странице
+            string lastPageUrl = string.Empty; // Запоминаю страницу перед переходом для подтверждения ставок
 
-            int tryCount = 0;
-
-            while (isBulletinExistsOnPage)
+            do
             {
-                tryCount++;
-                if (tryCount == 30) break;
-                // Выбираю все элементы
+                isPaginationExists = HasNextPage();
+
+                string currentUrl = _driver.Url;
+                if (currentUrl.Contains("https://baza.drom.ru/personal/actual/bulletins?System.Collections.Specialized.NameValueCollection"))
+                {
+                    try
+                    {
+                        OpenAllBulletinsPage(actualUrl);
+                    }
+                    catch (Exception) { }
+                }
+
+                // Запоминаю последнюю страницу перед переходом в карточку ставок
+                lastPageUrl = _driver.Url;
+                // Получаю чекбокс [выбрать все]
                 GetInputSelectAll();
 
-                // Убираю в архив
+                //// Убираю в архив
                 RemoveToArchive();
 
-                // Подтеверждаю, что убираю в архив
+                // Подтеверждаю ставки
                 SubmitBtn();
 
-                isBulletinExistsOnPage = ExistsElementChecker();
-            }
+                if (isPaginationExists == true)
+                    NextPage(lastPageUrl); // Пагинация  
+
+            } while (isPaginationExists);
+
+            //while (isBulletinExistsOnPage)
+            //{
+            //    tryCount++;
+            //    if (tryCount == 30) break;
+            //    // Выбираю все элементы
+            //    GetInputSelectAll();
+
+
+
+            //    // Подтеверждаю, что убираю в архив
+            //    SubmitBtn();
+
+            //    isBulletinExistsOnPage = ExistsElementChecker();
+            //}
 
         }
 
@@ -261,14 +290,21 @@ namespace DromAutoTrader.DromManager
         // Метод переноса в архив
         private void RemoveToArchive()
         {
-            try
+            bool isClickedRemoveBtn = true;
+            while (isClickedRemoveBtn)
             {
-                IWebElement removeBtn = _wait.Until(e => e.FindElement(By.Name("applier[deleteBulletin]")));
-                removeBtn.Click();
-            }
-            catch (Exception)
-            {
+                Thread.Sleep(500);
+                try
+                {
+                    IWebElement removeBtn = _wait.Until(e => e.FindElement(By.Name("applier[deleteBulletin]")));
+                    removeBtn.Click();
 
+                    isClickedRemoveBtn = false;
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
             }
         }
 
@@ -311,7 +347,8 @@ namespace DromAutoTrader.DromManager
 
         // Метод подтверждения удаления
         private void SubmitBtn()
-        { //serviceSubmit
+        {
+            Thread.Sleep(200);
             try
             {
                 IWebElement submitRemoveBtn = _wait.Until(e => e.FindElement(By.Id("serviceSubmit")));

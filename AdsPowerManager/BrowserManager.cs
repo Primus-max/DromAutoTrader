@@ -69,13 +69,14 @@ namespace DromAutoTrader.AdsPowerManager
             options.AddArguments(
                 "start-maximized",
                 "enable-automation",
-                "--headless",
+                
                 "--no-sandbox",
                 "--disable-infobars",
                 "--disable-dev-shm-usage",
                 "--disable-browser-side-navigation",
                 "--disable-gpu",
                 "--ignore-certificate-errors");
+            
 
             options.DebuggerAddress = remoteAddressWithSelenium;
             var service = ChromeDriverService.CreateDefaultService();
