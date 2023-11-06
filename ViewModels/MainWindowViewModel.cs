@@ -440,14 +440,12 @@ namespace DromAutoTrader.ViewModels
             // Метод отслеживающий прогресс
             _progressReporter = new Progress<PostingProgressItem>(reportItem =>
             {
-                // 3. Обновление элементов интерфейса
-                // Провверяю, есть ли уже объект с таким же PriceName в коллекции
-                var existingItem = PostingProgressItems.FirstOrDefault(item => item.PriceName == reportItem.PriceName);
-
-                if (existingItem != null)
+                Application.Current?.Dispatcher.Invoke(() =>
                 {
-                    
-                        // Если объект уже существует, обновите его свойства
+                    var existingItem = PostingProgressItems.FirstOrDefault(item => item.PriceName == reportItem.PriceName);
+                    if (existingItem != null)
+                    {
+                        // Обновить существующий объект в коллекции
                         existingItem.ProcessName = reportItem.ProcessName;
                         existingItem.CurrentStage = reportItem.CurrentStage;
                         existingItem.TotalStages = reportItem.TotalStages;
@@ -455,18 +453,16 @@ namespace DromAutoTrader.ViewModels
                         existingItem.DatePublished = reportItem.DatePublished;
                         existingItem.GetFileButton = reportItem.GetFileButton;
                         existingItem.PriceExportPath = reportItem.PriceExportPath;
-
-                    int index = PostingProgressItems.IndexOf(reportItem);
-                    PostingProgressItems[index] = existingItem;
-                }
-                else
-                {
-                    // Если объект не существует, добавляю его в коллекцию
-                    Application.Current?.Dispatcher.Invoke(() => { PostingProgressItems.Add(reportItem); });
-                }
+                    }
+                    else
+                    {
+                        // Если объект не существует, добавьте его в коллекцию
+                        PostingProgressItems.Add(reportItem);
+                    }
+                });
             });
-        }
 
+        }
 
         #region МЕТОДЫ
 
@@ -474,7 +470,7 @@ namespace DromAutoTrader.ViewModels
         public async Task RunAllWork()
         {
             // Получаю, обрабатываю, записываю в базу прайсы
-           // await ParsingPricesAsync();
+            await ParsingPricesAsync();
 
             AdsArchiver adsArchiver = new();
             adsArchiver.CompareAndArchiveAds();
