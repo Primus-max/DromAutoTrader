@@ -3,6 +3,7 @@ using DromAutoTrader.Infrastacture.Commands;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
 using System.IO;
+using System.Text;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -96,6 +97,8 @@ namespace DromAutoTrader.ViewModels
             get => _postingProgressItems;
             set => Set(ref _postingProgressItems, value);
         }
+
+        IProgress<PostingProgressItem> _progressReporter = null!;
         #endregion
 
         #region Поставщики
@@ -433,7 +436,36 @@ namespace DromAutoTrader.ViewModels
             #region Прайсы
             PriceChannelMappings = new List<PriceChannelMapping>();
             #endregion
-            #endregion            
+            #endregion
+
+            // Метод отслеживающий прогресс
+            _progressReporter = new Progress<PostingProgressItem>(reportItem =>
+            {
+                // 3. Обновление элементов интерфейса
+                // Провверяю, есть ли уже объект с таким же PriceName в коллекции
+                var existingItem = PostingProgressItems.FirstOrDefault(item => item.PriceName == reportItem.PriceName);
+
+                if (existingItem != null)
+                {
+                    
+                        // Если объект уже существует, обновите его свойства
+                        existingItem.ProcessName = reportItem.ProcessName;
+                        existingItem.CurrentStage = reportItem.CurrentStage;
+                        existingItem.TotalStages = reportItem.TotalStages;
+                        existingItem.MaxValue = reportItem.MaxValue;
+                        existingItem.DatePublished = reportItem.DatePublished;
+                        existingItem.GetFileButton = reportItem.GetFileButton;
+                        existingItem.PriceExportPath = reportItem.PriceExportPath;
+
+                    int index = PostingProgressItems.IndexOf(reportItem);
+                    PostingProgressItems[index] = existingItem;
+                }
+                else
+                {
+                    // Если объект не существует, добавляю его в коллекцию
+                    Application.Current?.Dispatcher.Invoke(() => { PostingProgressItems.Add(reportItem); });
+                }
+            });
         }
 
 
@@ -471,21 +503,25 @@ namespace DromAutoTrader.ViewModels
                 string priceName = Path.GetFileName(path);
                 var postingProgressItem = new PostingProgressItem
                 {
-                    ProcessName = $"Начал обработку прайса {priceName}",
+                    ProcessName = $"Начал обработку прайса",
                     MaxValue = PathsFilePrices.Count,
                     PriceName = priceName
                 };
+
+                _progressReporter.Report(postingProgressItem);
 
                 Task task = Task.Run(async () =>
                 {
                     // Парсинг прайсов и обработка данных
                     PriceList prices = await ProcessPriceAsync(path);
 
-                    // Возвращаемся в основной поток для обновления элементов интерфейса
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        PostingProgressItems.Clear();
-                    });
+                    postingProgressItem.ProcessName = "Получил прайс";
+                    postingProgressItem.TotalStages = prices.Count;
+
+                    // Обновление прогресса
+                    postingProgressItem.CurrentStage++;
+                    // Отправьте обновленный элемент прогресса в IProgress.Report
+                    _progressReporter.Report(postingProgressItem);
 
                     if (prices == null)
                     {
@@ -496,6 +532,8 @@ namespace DromAutoTrader.ViewModels
                     if (_isModeRunAllWork)
                         await BuildingAdsAsync(prices, path, postingProgressItem);
 
+
+
                     //  Добавляю бренды в базу. Флаг регулирует в каком режиме находится метод,
                     // true = полная работа, false = только получение брендов из прайсов
                     if (!_isModeRunAllWork)
@@ -505,7 +543,7 @@ namespace DromAutoTrader.ViewModels
                 tasks.Add(task);
             }
 
-                await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks);
         }
 
 
@@ -515,15 +553,6 @@ namespace DromAutoTrader.ViewModels
             // Получаем к этому прайсу выбранные каналы
             PriceChannelMapping? priceChannels = GetChannelsForPrice(path);
             int elCount = 0;
-            // Возвращаемся в основной поток для обновления элементов интерфейса
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                PostingProgressItems.Clear();
-                postingProgressItem.ProcessName = "Создаю объекты для публикации";
-                postingProgressItem.MaxValue = prices.Count;
-                postingProgressItem.TotalStages = prices.Count;
-                PostingProgressItems.Add(postingProgressItem);
-            });
 
             if (priceChannels == null)
             {
@@ -542,10 +571,14 @@ namespace DromAutoTrader.ViewModels
                     var channelBrands = GetBrandsForChannel(priceChannelMapping.Id);
 
                     // Проверяю бренд из прайса с выбранным для канала и прайса
-                    if (!channelBrands.Any(b => b.Name == price.Brand))
+                    if (!channelBrands.Any(b => string.Equals(
+                        b.Name.Normalize(NormalizationForm.FormD).Replace(" ", "").ToUpper(),
+                        price.Brand.Normalize(NormalizationForm.FormD).Replace(" ", "").ToUpper(),
+                        StringComparison.OrdinalIgnoreCase)))
                     {
                         break; // Если не нашли совпадение, выходим из цикла
                     }
+
 
                     // Конструктор строителя объекта для публикации
                     var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
@@ -575,8 +608,6 @@ namespace DromAutoTrader.ViewModels
                     .ToList();
             }
         }
-
-
 
         // Асинхронный метод публикации объявления        
         public async Task ProcessPublishingAdsAtDrom()
@@ -807,7 +838,7 @@ namespace DromAutoTrader.ViewModels
                     .Load();
             }
             catch (Exception)
-            {                
+            {
                 // TODO сделать запись логов
                 //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
             }

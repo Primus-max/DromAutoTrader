@@ -23,15 +23,20 @@ namespace DromAutoTrader.ViewModels
 
         public async Task<AdPublishingInfo> Build()
         {
-            if (_channel == null) return new AdPublishingInfo();
+            if (_channel == null)           
+                return new AdPublishingInfo();
+          
 
             // Проверяем, что цена в прайсе не меньше чем в таблице накрутки цен
             decimal minTo = (decimal)(_channel?.PriceIncreases.Min(inc => (decimal)inc.To));
 
-            if (_price.PriceBuy < minTo) return null;
+            if (_price.PriceBuy < minTo) 
+                return null;
             List<string> imagesPaths = new List<string>();
             string? namePrice = Path.GetFileName(_pricePath);
             //var adPublishingInfoCollection = GetAdPublishingInfoCollection();
+
+            
 
             _adPublishingInfo.PriceName = namePrice;
             _adPublishingInfo.Brand = _price?.Brand; // Имя брэнда
@@ -54,7 +59,6 @@ namespace DromAutoTrader.ViewModels
             _adPublishingInfo.ImagesPath = string.Join(";", imagesPaths); // Формирую пути в одну строку с разделителем для хранения в базе
 
             return _adPublishingInfo;
-
         }
 
         // Убираю лишние символы из арткула

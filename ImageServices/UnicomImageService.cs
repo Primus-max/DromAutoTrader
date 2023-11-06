@@ -29,6 +29,7 @@ namespace DromAutoTrader.ImageServices
         {
             InitializeDriver();
             _waiter = new(_driver, TimeSpan.FromSeconds(10));
+            _waiter.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
         }
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
@@ -133,7 +134,7 @@ namespace DromAutoTrader.ImageServices
                 return true;
 
             }
-            catch (Exception)
+            catch (NoSuchElementException)
             {
                 return false;
             }
