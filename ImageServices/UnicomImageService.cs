@@ -95,6 +95,8 @@ namespace DromAutoTrader.ImageServices
 
                     
                     loginButton.Click();
+
+                    Thread.Sleep(500);
                 }
                 catch (Exception) { }
 
@@ -108,6 +110,7 @@ namespace DromAutoTrader.ImageServices
             WebDriverWait wait = new(_driver, TimeSpan.FromMilliseconds(10));
             try
             {
+                Thread.Sleep(1000);
                 IWebElement userIcon = wait.Until(e => e.FindElement(By.CssSelector("a.feip-header-userButton")));
 
                 return true;
