@@ -541,7 +541,6 @@ namespace DromAutoTrader.ViewModels
             await Task.WhenAll(tasks);
         }
 
-
         // Метод построения объектов для публикации на основе каждого прайса
         private async Task BuildingAdsAsync(PriceList prices, string path, PostingProgressItem postingProgressItem = null!)
         {
