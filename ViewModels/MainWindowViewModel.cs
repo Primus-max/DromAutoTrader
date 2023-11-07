@@ -542,7 +542,6 @@ namespace DromAutoTrader.ViewModels
             await Task.WhenAll(tasks);
         }
 
-
         // Метод построения объектов для публикации на основе каждого прайса
         private async Task BuildingAdsAsync(PriceList prices, string path, PostingProgressItem postingProgressItem = null!)
         {
@@ -611,8 +610,8 @@ namespace DromAutoTrader.ViewModels
             using var context = new AppContext();
             var adInfos = context.AdPublishingInfo.ToList(); // Загрузка всех объявлений
 
-            // Отсортируем объявления по названию канала (AdDescription)
-            var sortedAdInfos = adInfos.OrderBy(a => a.AdDescription).ToList();
+            // Группируем объявления по каналам (AdDescription)
+            var groupedAdInfos = adInfos.GroupBy(a => a.AdDescription);
 
             PostingProgressItem postingProgressItem = new();
 
@@ -624,22 +623,21 @@ namespace DromAutoTrader.ViewModels
 
             DromAdPublisher dromAdPublisher = new();
 
-            var tasks = new List<Task>();
-
-            foreach (var adInfo in sortedAdInfos)
+            var tasks = groupedAdInfos.Select(async group =>
             {
-                if (adInfo.IsArchived == true) continue; // Если объявление в архиве
-                if (adInfo.PriceBuy == 1) continue; // Если уже публиковал
-                if (adInfo.Artikul == null || adInfo.Brand == null) continue; // Если бренд или артикул пустые
+                var sortedAdInfos = group.OrderBy(a => a.AdDescription).ToList();
 
-                postingProgressItem.TotalStages = sortedAdInfos.Count;
-                postingProgressItem.ProcessName = "Публикация объявлений на Drom.ru";
-
-                string? channelName = adInfo.AdDescription;
-
-                // Создайте и добавьте задачу в список
-                Task task = Task.Run(async () =>
+                foreach (var adInfo in sortedAdInfos)
                 {
+                    if (adInfo.IsArchived == true) continue; // Если объявление в архиве
+                    if (adInfo.PriceBuy == 1) continue; // Если уже публиковал
+                    if (adInfo.Artikul == null || adInfo.Brand == null) continue; // Если бренд или артикул пустые
+
+                    postingProgressItem.TotalStages = sortedAdInfos.Count;
+                    postingProgressItem.ProcessName = "Публикация объявлений на Drom.ru";
+
+                    string? channelName = adInfo.AdDescription;
+
                     bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, channelName);
 
                     if (isPublished)
@@ -648,21 +646,19 @@ namespace DromAutoTrader.ViewModels
 
                         try
                         {
-                            _db.AdPublishingInfo.Add(adInfo);
+                            context.AdPublishingInfo.Add(adInfo);
                         }
                         catch (Exception)
                         {
                             // Обработка ошибок при добавлении в базу данных
                         }
                     }
-                });
-
-                tasks.Add(task);
-            }
-
-            // Дождитесь выполнения всех задач
+                }
+            }).ToArray();
+            
             await Task.WhenAll(tasks);
         }
+
 
         // Метод для формирования прайса
         private string ExportPrice()
