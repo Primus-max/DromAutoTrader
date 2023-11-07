@@ -187,7 +187,7 @@ namespace DromAutoTrader.ViewModels
 
         #region КОМАНДЫ
 
-
+        
 
         #region Поставщики
         public ICommand AddSupplierCommand { get; } = null!;
@@ -366,6 +366,7 @@ namespace DromAutoTrader.ViewModels
             InitializeDatabase();
 
             #region Инициализация команд
+            
 
 
             #region Команда для получения нескольких параметров
@@ -654,7 +655,7 @@ namespace DromAutoTrader.ViewModels
                     }
                 }
             }).ToArray();
-
+            
             await Task.WhenAll(tasks);
         }
 
