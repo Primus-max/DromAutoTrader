@@ -24,7 +24,7 @@ namespace DromAutoTrader.ImageServices
         private readonly WebDriverWait _waiter = null!;
         #endregion
 
-    
+
         public UnicomImageService()
         {
             InitializeDriver();
@@ -48,12 +48,20 @@ namespace DromAutoTrader.ImageServices
             catch (Exception) { }
         }
 
-        protected override  void Authorization()
+        protected override void Authorization()
         {
-            bool isAuth = true;            
+            bool isAuth = true;
+            int tryCount = 0;
 
             while (isAuth)
             {
+                tryCount++;
+                if (tryCount == 20)
+                {
+                    CloseDriver();
+                    return;
+                }
+
                 try
                 {
                     // Поле для ввода логина
@@ -63,9 +71,9 @@ namespace DromAutoTrader.ImageServices
                     //((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].value = arguments[1];", usernameElement, UserName);
 
                     //usernameElement.Clear();
-                    ClearAndEnterText(usernameElement ,UserName);
+                    ClearAndEnterText(usernameElement, UserName);
                     // Ввести логин
-                   // usernameElement.SendKeys(UserName);                 
+                    // usernameElement.SendKeys(UserName);                 
                 }
                 catch (Exception) { }
 
@@ -82,7 +90,7 @@ namespace DromAutoTrader.ImageServices
 
                     //// Ввести пароль
                     //passwordElement.SendKeys(Password);
-                   
+
                 }
                 catch (Exception) { }
 
@@ -93,7 +101,7 @@ namespace DromAutoTrader.ImageServices
                     // Используем JavaScript для выполнения клика
                     // ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", loginButton);
 
-                    
+
                     loginButton.Click();
 
                     Thread.Sleep(500);
