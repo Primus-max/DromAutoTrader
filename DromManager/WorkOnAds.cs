@@ -198,6 +198,37 @@ namespace DromAutoTrader.DromManager
             return true;
         }
 
+        // Метод проверки наличия объявлений для удаления
+        private bool HasAdsForRemove()
+        {
+            try
+            {
+                IWebElement notAnyMatchingEl = _driver.FindElement(By.CssSelector("div.emptyPersonal.emptyActual"));
+
+                try
+                {
+                    IWebElement totalCountActuatlBull = _driver.FindElement(By.XPath("//div[@class='personal-box__item personal-box__item_selected']//small"));
+
+                    string countActualElementText = totalCountActuatlBull.Text;
+
+                    if (countActualElementText != "0")
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+            return false;
+        }
+
         // Закрываю драейвер
         private void CloseDriver()
         {
