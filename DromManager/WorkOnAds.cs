@@ -5,21 +5,17 @@ using System.Collections.Specialized;
 using System.Threading;
 using System.Web;
 using System;
+using System.Net.Http;
+using System.Net;
 
 namespace DromAutoTrader.DromManager
 {
     public class WorkOnAds
     {
-        private string gooodsUrl = new("https://baza.drom.ru/adding?type=goods");
-        private string archivedUrl = new("https://baza.drom.ru/personal/archived/bulletins");
         private string actualUrl = new("https://baza.drom.ru/personal/actual/bulletins");
-        private string allUrl = new("https://baza.drom.ru/personal/all/bulletins");
         private string searchUrl = new("https://baza.drom.ru/personal/actual/bulletins?find=");
 
-        private string partSearchLink = new("https://baza.drom.ru/personal/actual/bulletins?find=");
-
         private IWebDriver _driver = null!;
-        private BrowserManager adsPower = null!;
         private WebDriverWait _wait = null!;
 
         public WorkOnAds()
@@ -37,64 +33,114 @@ namespace DromAutoTrader.DromManager
             await InitializeDriver(channelName);
             _wait = new(_driver, TimeSpan.FromSeconds(30));
 
-            bool isBulletinExistsOnPage = true;
 
             // Открываю страницу  с объявлениями
             OpenAllBulletinsPage(actualUrl); // Открываю странциу
             CloseAllTabsExceptCurrent(); // Закрываю все вкладки кроме текущей            
             SetWindowSize(); // Размер окна
 
-            bool isPaginationExists = false; // Есть или нет пагинация на странице
-            bool isExistsAdsForRemove = false; // Проверка есть ли еще элементы для удаления
+            bool isPaginationExists = false; // Есть или нет пагинация на странице           
             string lastPageUrl = string.Empty; // Запоминаю страницу перед переходом для подтверждения ставок
-            int countRemoved = 0;
+
+            List<string> allElenetsForRemove = new List<string>();
+
 
             do
             {
-                isExistsAdsForRemove = HasAdsForRemove();
-                if (isExistsAdsForRemove)
-                {
-                    Uri newlastPageUri = new Uri(lastPageUrl);
-
-                    string queryPage = "page";
-                    if (newlastPageUri.Query.Contains(queryPage))
-                    {
-                        NameValueCollection queryParameters = HttpUtility.ParseQueryString(newlastPageUri.Query);
-                        string currentPageValue = queryParameters[queryPage];
-
-                        if (int.TryParse(currentPageValue, out int currentPage))
-                        {
-                            int newPage = currentPage - 1;
-                            queryParameters[queryPage] = newPage.ToString();
-                            lastPageUrl = newlastPageUri.GetLeftPart(UriPartial.Path) + "?" + queryParameters.ToString();
-                        }
-                    }
-
-                    NextPage(newlastPageUri.ToString());
-                }
-
                 isPaginationExists = HasNextPage();
 
                 // Запоминаю последнюю страницу перед переходом в карточку ставок
                 lastPageUrl = _driver.Url;
-                // Получаю чекбокс [выбрать все]
-                GetInputSelectAll();
 
-                //// Убираю в архив
-                RemoveToArchive();
-
-                // Подтеверждаю ставки
-                SubmitBtn();
+                // Получаю элементы и сохраняю (ID объявлений)
+                allElenetsForRemove.AddRange(GetIdsFromElements());
 
                 if (isPaginationExists == true)
                     NextPage(lastPageUrl, true); // Пагинация  
 
-                countRemoved++;
             } while (isPaginationExists);
 
+            //Удаляю объявления
+            RemoveAds(allElenetsForRemove);
 
             CloseDriver();
-            MessageBox.Show($"Все объявления успешно перемещены в архив, всего {countRemoved}", "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            MessageBox.Show($"Все объявления успешно перемещены в архив", "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        // Метод удаления объявлений
+        private void RemoveAds(List<string> adsIds)
+        {
+            int batchSize = 50;
+
+            for (int index = 0; index < adsIds.Count; index += batchSize)
+            {
+                List<string> batch = adsIds.Skip(index).Take(batchSize).ToList();
+                string deleteUrl = BuildDeleteUrl(batch);
+
+                try
+                {
+                    _driver.Navigate().GoToUrl(deleteUrl);
+                }
+                catch (Exception)
+                {
+                    // Обработка ошибок при навигации
+                }
+
+                SubmitBtn(); // Ваш метод для удаления на текущей странице
+            }
+        }
+
+
+        // Строю строку запроса для удаления
+        public static string BuildDeleteUrl(List<string> bulletinIds)
+        {
+            string baseUrl = "https://baza.drom.ru/bulletin/service-configure";
+
+            var queryParams = new List<string>();
+
+            foreach (var id in bulletinIds)
+            {
+                queryParams.Add($"bulletin%5B{id}%5D=on");
+            }
+
+            // Добавляем остальные параметры, которые не зависят от ID
+            queryParams.Add("applier%5BdeleteBulletin%5D=deleteBulletin");
+            queryParams.Add("return_to=%2Fpersonal%2Factual%2Fbulletins");
+            queryParams.Add("from=personal.actual");
+
+            string queryString = string.Join("&", queryParams);
+
+            return $"{baseUrl}?{queryString}";
+        }
+
+        // Собираю элементы для удаления
+        private List<string> GetIdsFromElements()
+        {
+            List<string> bulletinIds = new List<string>();
+            WebDriverWait driverWait = new(_driver, TimeSpan.FromSeconds(7));
+            try
+            {
+                // Находим все элементы с классом "imageCell bull-item__image-cell"
+                var elements = driverWait.Until(e => e.FindElements(By.CssSelector("div.imageCell.bull-item__image-cell")));
+
+                foreach (var element in elements)
+                {
+                    // Извлекаем значение атрибута "data-bulletin-id" и добавляем его в список
+                    string bulletinId = element.GetAttribute("data-bulletin-id");
+                    if (!string.IsNullOrEmpty(bulletinId))
+                    {
+                        bulletinIds.Add(bulletinId);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+            return bulletinIds;
         }
 
         /// <summary>
@@ -263,7 +309,7 @@ namespace DromAutoTrader.DromManager
         }
 
         // Переход на следующую страницу
-        private string NextPage(string lastUrl, bool isRemoveAll = false)
+        private void NextPage(string lastUrl, bool isRemoveAll = false)
         {
             Thread.Sleep(500);
             try
@@ -296,12 +342,18 @@ namespace DromAutoTrader.DromManager
                     nextPageUrl = isRemoveAll ? lastUrl + "?page=2" : lastUrl + "&page=2";
                 }
 
-                return nextPageUrl;
+                try
+                {
+                    _driver.Navigate().GoToUrl(nextPageUrl);
+                }
+                catch (Exception)
+                {
+
+                }
             }
             catch (Exception)
             {
-                // Обработка ошибки
-                return lastUrl;
+
             }
         }
 
