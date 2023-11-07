@@ -634,25 +634,25 @@ namespace DromAutoTrader.ViewModels
 
                 string? channelName = adInfo.AdDescription;
 
-                // Используйте Task.Run для выполнения PublishAdAsync в отдельном потоке
-                await Task.Run(async () =>
-                  {
-                      bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, channelName);
 
-                      if (isPublished)
-                      {
-                          adInfo.PriceBuy = 1;
+               Task.Factory.StartNew(async () =>
+                {
+                    bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, channelName);
 
-                          try
-                          {
-                              _db.AdPublishingInfo.Add(adInfo);
-                          }
-                          catch (Exception)
-                          {
-                              // Обработка ошибок при добавлении в базу данных
-                          }
-                      }
-                  });
+                    if (isPublished)
+                    {
+                        adInfo.PriceBuy = 1;
+
+                        try
+                        {
+                            _db.AdPublishingInfo.Add(adInfo);
+                        }
+                        catch (Exception)
+                        {
+                            // Обработка ошибок при добавлении в базу данных
+                        }
+                    }
+                }, TaskCreationOptions.LongRunning);
             }
         }
 
