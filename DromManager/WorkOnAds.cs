@@ -148,7 +148,7 @@ namespace DromAutoTrader.DromManager
 
                 do
                 {
-                    if (!IsPartExists())
+                    if (!IsPartExistsForRates())
                     {
                         MessageBox.Show($"Проверьте правильность написания запчасти,  {part.ToUpper()} не найдена", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
@@ -190,7 +190,7 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод проверки того, что запчасть найдена
-        private bool IsPartExists()
+        private bool IsPartExistsForRates()
         {
             WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(5));
             try

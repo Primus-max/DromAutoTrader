@@ -937,8 +937,11 @@ namespace DromAutoTrader.ViewModels
         // Устанавливаю ставки за просмотры для канала
         public async void SetRates(List<string> parts, string rate, string selectedChannel)
         {
-            WorkOnAds workOnAds = new();
-            await workOnAds.SetRatesForWatchingAsync(parts, rate, selectedChannel);
+            await Task.Run(async () =>
+            {
+                WorkOnAds workOnAds = new();
+                await workOnAds.SetRatesForWatchingAsync(parts, rate, selectedChannel);
+            });
         }
 
         #endregion
