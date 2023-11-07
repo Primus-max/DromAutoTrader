@@ -470,7 +470,7 @@ namespace DromAutoTrader.ViewModels
         public async Task RunAllWork()
         {
             // Получаю, обрабатываю, записываю в базу прайсы
-            await ParsingPricesAsync();
+            //await ParsingPricesAsync();
 
             AdsArchiver adsArchiver = new();
             adsArchiver.CompareAndArchiveAds();
@@ -607,7 +607,8 @@ namespace DromAutoTrader.ViewModels
         // Асинхронный метод публикации объявления        
         public async Task ProcessPublishingAdsAtDrom()
         {
-            var adInfos = _db.AdPublishingInfo.ToList(); // Загрузка всех объявлений
+            using var context = new AppContext();
+            var adInfos = context.AdPublishingInfo.ToList(); // Загрузка всех объявлений
 
             // Отсортируем объявления по названию канала (AdDescription)
             var sortedAdInfos = adInfos.OrderBy(a => a.AdDescription).ToList();
@@ -620,37 +621,38 @@ namespace DromAutoTrader.ViewModels
                 PostingProgressItems.Add(postingProgressItem);
             });
 
-            DromAdPublisher dromAdPublisher = new DromAdPublisher();
+            DromAdPublisher dromAdPublisher = new();
 
             foreach (var adInfo in sortedAdInfos)
             {
                 if (adInfo.IsArchived == true) continue; // Если объявление в архиве
-
-                if (adInfo.PriceBuy == 1) continue; // Если уже публиковал (название поля не имеет общего с данной логикой. Просто было пустое поле)
-
+                if (adInfo.PriceBuy == 1) continue; // Если уже публиковал
                 if (adInfo.Artikul == null || adInfo.Brand == null) continue; // Если бренд или артикул пустые
 
                 postingProgressItem.TotalStages = sortedAdInfos.Count;
                 postingProgressItem.ProcessName = "Публикация объявлений на Drom.ru";
 
-                // Получаю имя канала, название поля просто было пустым
-                string channelName = adInfo.AdDescription;
+                string? channelName = adInfo.AdDescription;
 
-                bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, channelName);
+                // Используйте Task.Run для выполнения PublishAdAsync в отдельном потоке
+                await Task.Run(async () =>
+                  {
+                      bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, channelName);
 
-                if (isPublished)
-                {
-                    adInfo.PriceBuy = 1;
+                      if (isPublished)
+                      {
+                          adInfo.PriceBuy = 1;
 
-                    try
-                    {
-                        _db.AdPublishingInfo.Add(adInfo);
-                    }
-                    catch (Exception)
-                    {
-
-                    }
-                }
+                          try
+                          {
+                              _db.AdPublishingInfo.Add(adInfo);
+                          }
+                          catch (Exception)
+                          {
+                              // Обработка ошибок при добавлении в базу данных
+                          }
+                      }
+                  });
             }
         }
 
@@ -934,7 +936,7 @@ namespace DromAutoTrader.ViewModels
 
         #region Ставки
         // Устанавливаю ставки за просмотры для канала
-        public async void SetRates(List<string> parts, string rate, string selectedChannel)
+        public async Task SetRates(List<string> parts, string rate, string selectedChannel)
         {
             await Task.Run(async () =>
             {
