@@ -624,6 +624,8 @@ namespace DromAutoTrader.ViewModels
 
             DromAdPublisher dromAdPublisher = new();
 
+            var tasks = new List<Task>();
+
             foreach (var adInfo in sortedAdInfos)
             {
                 if (adInfo.IsArchived == true) continue; // Если объявление в архиве
@@ -635,8 +637,8 @@ namespace DromAutoTrader.ViewModels
 
                 string? channelName = adInfo.AdDescription;
 
-
-               Task.Factory.StartNew(async () =>
+                // Создайте и добавьте задачу в список
+                Task task = Task.Run(async () =>
                 {
                     bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, channelName);
 
@@ -653,8 +655,13 @@ namespace DromAutoTrader.ViewModels
                             // Обработка ошибок при добавлении в базу данных
                         }
                     }
-                }, TaskCreationOptions.LongRunning);
+                });
+
+                tasks.Add(task);
             }
+
+            // Дождитесь выполнения всех задач
+            await Task.WhenAll(tasks);
         }
 
         // Метод для формирования прайса
