@@ -471,7 +471,7 @@ namespace DromAutoTrader.ViewModels
         public async Task RunAllWork()
         {
             // Получаю, обрабатываю, записываю в базу прайсы
-            //await ParsingPricesAsync();
+            await ParsingPricesAsync();
 
             AdsArchiver adsArchiver = new();
             adsArchiver.CompareAndArchiveAds();
@@ -484,7 +484,7 @@ namespace DromAutoTrader.ViewModels
                 // Здесь передаём путь к файлу для скачивания(локально)
             }
 
-            RemoveAtArchive(); // Убираю в архив
+           await RemoveAtArchive(); // Убираю в архив
 
             DeleteOutdatedAdsAtDb(); // Убираю старые объявления
         }
@@ -674,9 +674,10 @@ namespace DromAutoTrader.ViewModels
 
 
         // Метод для перещения публикаций в архив
-        private async void RemoveAtArchive()
+        private async Task RemoveAtArchive()
         {
-            List<AdPublishingInfo> adPublishings = _db.AdPublishingInfo.ToList();
+            using var context = new AppContext();
+            List<AdPublishingInfo> adPublishings = context.AdPublishingInfo.ToList();
             WorkOnAds remover = new();
 
             await remover.RemoveByFlag(SelectedChannel?.Name, adPublishings);
