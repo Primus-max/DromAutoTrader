@@ -1,10 +1,10 @@
 ﻿using DromAutoTrader.AdsPowerManager;
-using MaterialDesignThemes.Wpf;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System.Collections.Specialized;
 using System.Threading;
 using System.Web;
+using System;
 
 namespace DromAutoTrader.DromManager
 {
@@ -52,15 +52,15 @@ namespace DromAutoTrader.DromManager
             {
                 isPaginationExists = HasNextPage();
 
-                string currentUrl = _driver.Url;
-                if (currentUrl.Contains("https://baza.drom.ru/personal/actual/bulletins?System.Collections.Specialized.NameValueCollection"))
-                {
-                    try
-                    {
-                        OpenAllBulletinsPage(actualUrl);
-                    }
-                    catch (Exception) { }
-                }
+                //string currentUrl = _driver.Url;
+                //if (currentUrl.Contains("https://baza.drom.ru/personal/actual/bulletins?System.Collections.Specialized.NameValueCollection"))
+                //{
+                //    try
+                //    {
+                //        OpenAllBulletinsPage(lastPageUrl);
+                //    }
+                //    catch (Exception) { }
+                //}
 
                 // Запоминаю последнюю страницу перед переходом в карточку ставок
                 lastPageUrl = _driver.Url;
@@ -159,7 +159,7 @@ namespace DromAutoTrader.DromManager
                     OpenRatePageButton();
 
                     // Устанавливаю ставки для выбранных категорий
-                    countRates = SetRates(rate);
+                    countRates += SetRates(rate);
 
                     // Подтеверждаю ставки
                     SubmitBtn();
@@ -198,47 +198,50 @@ namespace DromAutoTrader.DromManager
         // Переход на следующую страницу
         private void NextPage(string lastUrl)
         {
-            string currentUrl = lastUrl;
-
+            Thread.Sleep(500);
             try
             {
-                Uri uri = new Uri(currentUrl);
+                Uri uri = new Uri(lastUrl);
+                string nextPageUrl = lastUrl;
 
                 string queryPage = "page";
-                string nextPageUrl = "";
 
                 if (uri.Query.Contains(queryPage))
                 {
                     NameValueCollection queryParameters = HttpUtility.ParseQueryString(uri.Query);
-                    int currentPage = Convert.ToInt32(queryParameters[queryPage]);
+                    string[] currentPageValues = queryParameters.GetValues(queryPage);
 
-                    NameValueCollection newQueryParameters = new NameValueCollection(queryParameters);
-                    newQueryParameters[queryPage] = (currentPage + 1).ToString();
+                    if (currentPageValues != null && currentPageValues.Length > 0 && int.TryParse(currentPageValues[0], out int currentPage))
+                    {
+                        int nextPage = currentPage + 1;
+                        queryParameters[queryPage] = nextPage.ToString();
 
-                    UriBuilder uriBuilder = new UriBuilder(uri);
-                    uriBuilder.Query = newQueryParameters.ToString();
-                    nextPageUrl = uriBuilder.Uri.ToString();
+                        UriBuilder uriBuilder = new UriBuilder(uri)
+                        {
+                            Query = queryParameters.ToString()
+                        };
+
+                        nextPageUrl = uriBuilder.Uri.ToString();
+                    }
                 }
                 else
                 {
-                    UriBuilder uriBuilder = new UriBuilder(uri);
-                    NameValueCollection queryParameters = HttpUtility.ParseQueryString(uriBuilder.Query);
-                    queryParameters[queryPage] = "2";
-                    uriBuilder.Query = queryParameters.ToString();
-                    nextPageUrl = uriBuilder.Uri.ToString();
+                    // Если параметра "page" нет в URL, добавляем его со значением "2"
+                    nextPageUrl = lastUrl + "&page=2";
                 }
 
                 // Переходим на следующую страницу
-                _driver.Navigate().GoToUrl(nextPageUrl);
+                try
+                {
+                    _driver.Navigate().GoToUrl(nextPageUrl);
+                }
+                catch (Exception) { }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Обработка ошибок, если не удается перейти на следующую страницу
-                Console.WriteLine($"Ошибка при переходе на следующую страницу: {ex.Message}");
-                throw;
+                // Обработка ошибки
             }
         }
-
 
 
         // Метод открытия актуальных объявлений
