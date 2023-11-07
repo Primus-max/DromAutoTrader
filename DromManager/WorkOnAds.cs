@@ -263,7 +263,7 @@ namespace DromAutoTrader.DromManager
         }
 
         // Переход на следующую страницу
-        private string NextPage(string lastUrl, bool isRemoveAll = false)
+        private void NextPage(string lastUrl, bool isRemoveAll = false)
         {
             Thread.Sleep(500);
             try
@@ -296,12 +296,18 @@ namespace DromAutoTrader.DromManager
                     nextPageUrl = isRemoveAll ? lastUrl + "?page=2" : lastUrl + "&page=2";
                 }
 
-                return nextPageUrl;
+                try
+                {
+                    _driver.Navigate().GoToUrl(nextPageUrl);
+                }
+                catch (Exception)
+                {
+
+                }
             }
             catch (Exception)
             {
-                // Обработка ошибки
-                return lastUrl;
+
             }
         }
 
