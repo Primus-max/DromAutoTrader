@@ -148,6 +148,10 @@ namespace DromAutoTrader.DromManager
 
                 do
                 {
+                    if (!IsPartExists())
+                    {
+                        MessageBox.Show($"Проверьте правильность написания запчасти,  {part.ToUpper()} не найдена", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
                     isPaginationExists = HasNextPage();
 
                     // Запоминаю последнюю страницу перед переходом в карточку ставок
@@ -183,6 +187,25 @@ namespace DromAutoTrader.DromManager
 
             // Отображаем MessageBox с информацией
             MessageBox.Show(resultMessage, "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        // Метод проверки того, что запчасть найдена
+        private bool IsPartExists()
+        {
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(5));
+            try
+            {
+                IWebElement notFoundEl = wait.Until(e => e.FindElement(By.XPath("//form[@class='personalBullsListForm']//p")));
+
+                string notFoundElText = notFoundEl.Text;
+                if (notFoundElText.Contains("Объявления не найдены."))
+                    return false;
+            }
+            catch (Exception)
+            {
+                return true;
+            }
+            return true;
         }
 
         // Закрываю драейвер
