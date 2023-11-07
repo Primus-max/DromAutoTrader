@@ -45,11 +45,34 @@ namespace DromAutoTrader.DromManager
             SetWindowSize(); // Размер окна
 
             bool isPaginationExists = false; // Есть или нет пагинация на странице
+            bool isExistsAdsForRemove = false; // Проверка есть ли еще элементы для удаления
             string lastPageUrl = string.Empty; // Запоминаю страницу перед переходом для подтверждения ставок
             int countRemoved = 0;
 
             do
             {
+                isExistsAdsForRemove = HasAdsForRemove();
+                if (isExistsAdsForRemove)
+                {
+                    Uri newlastPageUri = new Uri(lastPageUrl);
+
+                    string queryPage = "page";
+                    if (newlastPageUri.Query.Contains(queryPage))
+                    {
+                        NameValueCollection queryParameters = HttpUtility.ParseQueryString(newlastPageUri.Query);
+                        string currentPageValue = queryParameters[queryPage];
+
+                        if (int.TryParse(currentPageValue, out int currentPage))
+                        {
+                            int newPage = currentPage - 1;
+                            queryParameters[queryPage] = newPage.ToString();
+                            lastPageUrl = newlastPageUri.GetLeftPart(UriPartial.Path) + "?" + queryParameters.ToString();
+                        }
+                    }
+
+                    NextPage(newlastPageUri.ToString());
+                }
+
                 isPaginationExists = HasNextPage();
 
                 // Запоминаю последнюю страницу перед переходом в карточку ставок
