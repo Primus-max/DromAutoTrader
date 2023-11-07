@@ -52,16 +52,6 @@ namespace DromAutoTrader.DromManager
             {
                 isPaginationExists = HasNextPage();
 
-                //string currentUrl = _driver.Url;
-                //if (currentUrl.Contains("https://baza.drom.ru/personal/actual/bulletins?System.Collections.Specialized.NameValueCollection"))
-                //{
-                //    try
-                //    {
-                //        OpenAllBulletinsPage(lastPageUrl);
-                //    }
-                //    catch (Exception) { }
-                //}
-
                 // Запоминаю последнюю страницу перед переходом в карточку ставок
                 lastPageUrl = _driver.Url;
                 // Получаю чекбокс [выбрать все]
@@ -74,7 +64,7 @@ namespace DromAutoTrader.DromManager
                 SubmitBtn();
 
                 if (isPaginationExists == true)
-                    NextPage(lastPageUrl); // Пагинация  
+                    NextPage(lastPageUrl, true); // Пагинация  
 
                 countRemoved++;
             } while (isPaginationExists);
@@ -148,7 +138,7 @@ namespace DromAutoTrader.DromManager
 
                 do
                 {
-                    if (!IsPartExists())
+                    if (!IsPartExistsForRates())
                     {
                         MessageBox.Show($"Проверьте правильность написания запчасти,  {part.ToUpper()} не найдена", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
@@ -190,7 +180,7 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод проверки того, что запчасть найдена
-        private bool IsPartExists()
+        private bool IsPartExistsForRates()
         {
             WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(5));
             try
@@ -219,7 +209,7 @@ namespace DromAutoTrader.DromManager
         }
 
         // Переход на следующую страницу
-        private void NextPage(string lastUrl)
+        private string NextPage(string lastUrl, bool isRemoveAll = false)
         {
             Thread.Sleep(500);
             try
@@ -238,7 +228,6 @@ namespace DromAutoTrader.DromManager
                     {
                         int nextPage = currentPage + 1;
                         queryParameters[queryPage] = nextPage.ToString();
-
                         UriBuilder uriBuilder = new UriBuilder(uri)
                         {
                             Query = queryParameters.ToString()
@@ -250,21 +239,18 @@ namespace DromAutoTrader.DromManager
                 else
                 {
                     // Если параметра "page" нет в URL, добавляем его со значением "2"
-                    nextPageUrl = lastUrl + "&page=2";
+                    nextPageUrl = isRemoveAll ? lastUrl + "?page=2" : lastUrl + "&page=2";
                 }
 
-                // Переходим на следующую страницу
-                try
-                {
-                    _driver.Navigate().GoToUrl(nextPageUrl);
-                }
-                catch (Exception) { }
+                return nextPageUrl;
             }
             catch (Exception)
             {
                 // Обработка ошибки
+                return lastUrl;
             }
         }
+
 
 
         // Метод открытия актуальных объявлений
