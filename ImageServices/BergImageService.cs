@@ -25,10 +25,9 @@ namespace DromAutoTrader.ImageServices
         public override string ServiceName => "https://berg.ru";
         #endregion
 
-        //#region Приватный поля        
-        //private string? _imagesLocalPath = string.Empty;
-        //private IWebDriver _driver = null!;
-        //#endregion
+        #region Приватный поля        
+        private readonly string _profilePath = @"C:\SeleniumProfiles\Berg";
+        #endregion
         private WebDriverWait _wait = null!;
 
         public BergImageService()
