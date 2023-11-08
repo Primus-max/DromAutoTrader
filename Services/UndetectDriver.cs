@@ -12,7 +12,7 @@ namespace DromAutoTrader.Services
     {
         private readonly string _profilePath = string.Empty;
 
-        public UndetectDriver() { }
+        public UndetectDriver(string profilePath) => _profilePath = profilePath;
 
         /// <summary>
         /// Метод инициализирует экземпляр драйвера и возвращает его
@@ -24,7 +24,7 @@ namespace DromAutoTrader.Services
             options.AddArgument("--silent");
             options.AddArgument("--disable-notifications");
             options.AddArgument("--headless=new");
-
+            options.AddArgument($"--user-data-dir={_profilePath}");
 
             //var chromeService = ChromeDriverService.CreateDefaultService();
             //chromeService.HideCommandPromptWindow = true;
