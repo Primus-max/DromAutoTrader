@@ -2,6 +2,7 @@
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
+using System.IO;
 using System.Threading;
 
 namespace DromAutoTrader.ImageServices
@@ -20,14 +21,20 @@ namespace DromAutoTrader.ImageServices
         public override string ServiceName => "https://new.mxgroup.ru";
         #endregion
 
-        #region Приватные
-        
+        #region Приватные        
         private readonly string _profilePath = @"C:\SeleniumProfiles\Mxgroup";
+        private string _tempProfilePath = string.Empty;
         #endregion
 
         public MxgroupImageService()
         {
+
+            // Создаю временную копию профиля (на эту сессию)
+            ProfilePathService profilePathService = new(_profilePath);
+            _tempProfilePath = profilePathService.CreateTempProfile();
+
             InitializeDriver();
+
         }
 
 
@@ -207,6 +214,9 @@ namespace DromAutoTrader.ImageServices
             try
             {
                 _driver.Close();
+
+                // Удаляю временную директорию профиля после закрытия браузера
+                Directory.Delete(_tempProfilePath, true);
             }
             catch (Exception)
             {
@@ -283,7 +293,7 @@ namespace DromAutoTrader.ImageServices
         // Инициализация драйвера
         private void InitializeDriver()
         {
-            UndetectDriver webDriver = new(_profilePath);
+            UndetectDriver webDriver = new(_tempProfilePath);
             _driver = webDriver.GetDriver();
         }
 

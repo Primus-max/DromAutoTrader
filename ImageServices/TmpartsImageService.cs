@@ -1,7 +1,7 @@
 ﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Interactions;
+using System.IO;
 using System.Threading;
 
 namespace DromAutoTrader.ImageServices
@@ -23,10 +23,16 @@ namespace DromAutoTrader.ImageServices
 
         #region Приватные
         private readonly string _profilePath = @"C:\SeleniumProfiles\Tmparts";
+        private string _tempProfilePath = string.Empty;
         #endregion
 
         public TmpartsImageService()
         {
+
+            // Создаю временную копию профиля (на эту сессию)
+            ProfilePathService profilePathService = new(_profilePath);
+            _tempProfilePath = profilePathService.CreateTempProfile();
+
             InitializeDriver();
         }
 
@@ -37,10 +43,10 @@ namespace DromAutoTrader.ImageServices
 
         #region Перезаписанные методы базового класса
         protected override void GoTo()
-        {           
+        {
             try
             {
-                _driver.Manage().Window.Maximize();                
+                _driver.Manage().Window.Maximize();
             }
             catch (Exception)
             {
@@ -50,7 +56,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override void Authorization()
         {
-         
+
         }
 
         protected override void SetArticulInSearchInput()
@@ -160,6 +166,9 @@ namespace DromAutoTrader.ImageServices
         protected override void CloseDriver()
         {
             _driver.Close();
+
+            // Удаляю временную директорию профиля после закрытия браузера
+            Directory.Delete(_tempProfilePath, true);
         }
         #endregion
 
@@ -175,7 +184,7 @@ namespace DromAutoTrader.ImageServices
         // Инициализация драйвера
         private void InitializeDriver()
         {
-            UndetectDriver webDriver = new(_profilePath);
+            UndetectDriver webDriver = new(_tempProfilePath);
             _driver = webDriver.GetDriver();
         }
         #endregion

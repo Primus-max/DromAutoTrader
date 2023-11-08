@@ -863,7 +863,7 @@ namespace DromAutoTrader.ViewModels
                 PriceChannelMappings.Add(mapping);
             }
 
-            // Обновите список выбранных каналов для данного прайса
+            // Обновляю  список выбранных каналов для данного прайса
             mapping.SelectedChannels = selectedChannels;
 
             if (!PriceChannelMappings.Contains(mapping))

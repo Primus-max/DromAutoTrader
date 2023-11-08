@@ -3,7 +3,6 @@ using DromAutoTrader.Prices;
 using DromAutoTrader.ViewModels;
 using DromAutoTrader.Views;
 using DromAutoTrader.Views.Pages;
-using Microsoft.Extensions.DependencyInjection;
 using OfficeOpenXml;
 using System.Windows.Data;
 using System.Windows.Media;
@@ -32,7 +31,7 @@ namespace DromAutoTrader
 
             // Объявляю какакую версию EPPlus использую
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            
+
             var viewModel = new MainWindowViewModel();
             _mainViewModel = viewModel;
             DataContext = _mainViewModel;
@@ -47,7 +46,7 @@ namespace DromAutoTrader
             // Включаю модификацию базы данных для работы в многопоточном режиме
             using var context = new AppContext();
             // Выполним SQL-команду для настройки режима WAL
-            context.Database.ExecuteSqlRaw("PRAGMA journal_mode = WAL;");           
+            context.Database.ExecuteSqlRaw("PRAGMA journal_mode = WAL;");
         }
 
 

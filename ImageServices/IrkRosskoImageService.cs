@@ -2,6 +2,7 @@
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -23,9 +24,18 @@ namespace DromAutoTrader.ImageServices
 
         #region Приватные поля
         private readonly string _profilePath = @"C:\SeleniumProfiles\IrkRossko";
+        private string _tempProfilePath = string.Empty;
         #endregion
 
-        public IrkRosskoImageService() { InitializeDriver(); }
+        public IrkRosskoImageService() 
+        {
+
+            // Создаю временную копию профиля (на эту сессию)
+            ProfilePathService profilePathService = new(_profilePath);
+            _tempProfilePath = profilePathService.CreateTempProfile();
+
+            InitializeDriver();
+        }
 
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
@@ -166,6 +176,9 @@ namespace DromAutoTrader.ImageServices
             try
             {
                 _driver.Close();
+
+                // Удаляю временную директорию профиля после закрытия браузера
+                Directory.Delete(_tempProfilePath, true);
             }
             catch (Exception)
             {
@@ -202,7 +215,7 @@ namespace DromAutoTrader.ImageServices
         // Инициализация драйвера
         private void InitializeDriver()
         {
-            UndetectDriver webDriver = new(_profilePath);
+            UndetectDriver webDriver = new(_tempProfilePath);
             _driver = webDriver.GetDriver();
         }
 
