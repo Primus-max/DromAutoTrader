@@ -1,8 +1,6 @@
 ﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Interactions;
-using System.IO;
 using System.Threading;
 
 namespace DromAutoTrader.ImageServices
@@ -30,8 +28,8 @@ namespace DromAutoTrader.ImageServices
         {
 
             // Создаю временную копию профиля (на эту сессию)
-            ProfilePathService profilePathService = new(_profilePath);
-            _tempProfilePath = profilePathService.CreateTempProfile();
+            ProfilePathService profilePathService = new();
+            _tempProfilePath = profilePathService.CreateTempProfile(_profilePath);
 
             InitializeDriver();
 
@@ -50,11 +48,11 @@ namespace DromAutoTrader.ImageServices
             }
             catch (Exception)
             {
-            }        
+            }
         }
 
         protected override void Authorization()
-        {            
+        {
         }
 
         protected override void SetArticulInSearchInput()
@@ -208,19 +206,20 @@ namespace DromAutoTrader.ImageServices
 
             return downloadedImages;
         }
-        
-        protected override void CloseDriver()
+
+        protected override async Task CloseDriverAsync()
         {
             try
             {
                 _driver.Close();
 
                 // Удаляю временную директорию профиля после закрытия браузера
-                Directory.Delete(_tempProfilePath, true);
+                ProfilePathService profilePathService = new();
+                await profilePathService.DeleteDirectoryAsync(_tempProfilePath);
             }
             catch (Exception)
             {
-                            }
+            }
         }
         #endregion
 
@@ -266,7 +265,7 @@ namespace DromAutoTrader.ImageServices
                     {
 
                     }
-                   
+
                     string imagePath = imgPopup.GetAttribute("src");
                     images.Add(imagePath);
                 }
@@ -315,25 +314,6 @@ namespace DromAutoTrader.ImageServices
             }
 
             return downloadedImages;
-        }
-
-        public void WaitingReadyStatePage()
-        {
-            while (true)
-            {
-                try
-                {
-
-                    IWebElement spinner = _driver.FindElement(By.CssSelector("div.alert.success"));
-
-                    continue;
-
-                }
-                catch (Exception)
-                {
-                    break;
-                }
-            }
         }
         #endregion
 

@@ -2,7 +2,6 @@
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using System.IO;
 using System.Threading;
 
 namespace DromAutoTrader.ImageServices
@@ -32,10 +31,10 @@ namespace DromAutoTrader.ImageServices
         public BergImageService()
         {
             // Создаю временную копию профиля (на эту сессию)
-            ProfilePathService profilePathService = new(_profilePath);
-            _tempProfilePath = profilePathService.CreateTempProfile();
+            ProfilePathService profilePathService = new();
+            _tempProfilePath = profilePathService.CreateTempProfile(_profilePath);
 
-            InitializeDriver();            
+            InitializeDriver();
         }
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
@@ -208,15 +207,15 @@ namespace DromAutoTrader.ImageServices
             return downloadedImages;
         }
 
-        protected override void CloseDriver()
+        protected override async Task CloseDriverAsync()
         {
             try
             {
                 _driver.Close();
 
                 // Удаляю временную директорию профиля после закрытия браузера
-                Directory.Delete(_tempProfilePath, true);
-
+                ProfilePathService profilePathService = new();
+                await profilePathService.DeleteDirectoryAsync(_tempProfilePath);
             }
             catch (Exception)
             {

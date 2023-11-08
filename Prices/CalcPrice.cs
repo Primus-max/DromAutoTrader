@@ -1,9 +1,9 @@
 ﻿namespace DromAutoTrader.Prices
 {
-    public static class CalcPrice
+    public  class CalcPrice
     {
 
-        public static decimal Calculate(decimal inputPrice, List<TablePriceOfIncrease> priceOfIncreases)
+        public  decimal Calculate(decimal inputPrice, List<TablePriceOfIncrease> priceOfIncreases)
         {
             decimal outputPrice = 0;
 

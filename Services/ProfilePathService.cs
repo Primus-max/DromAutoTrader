@@ -2,23 +2,30 @@
 
 namespace DromAutoTrader.Services
 {
+    //private readonly string _originalProfilePath;
+    /// <summary>
+    /// Класс по работе с директориями профилей для Selenium
+    /// </summary>
     public class ProfilePathService
-    {
-        private readonly string _originalProfilePath;
-
-        public ProfilePathService(string originalProfilePath)
+    {      
+        public ProfilePathService()
         {
-            _originalProfilePath = originalProfilePath;
+            //_originalProfilePath = originalProfilePath;
         }
 
-        public string CreateTempProfile()
+        /// <summary>
+        /// Метод создания копии профиля на сессию
+        /// </summary>
+        /// <param name="originalProfilePath"></param>
+        /// <returns></returns>
+        public string CreateTempProfile(string originalProfilePath)
         {
             string uniqueIdentifier = Guid.NewGuid().ToString("N"); // Генерируем уникальный идентификатор
-            string tempBasePath = Path.Combine(_originalProfilePath, ".."); // Указываем базовую директорию для временных профилей
+            string tempBasePath = Path.Combine(originalProfilePath, ".."); // Указываем базовую директорию для временных профилей
             string tempPath = Path.Combine(tempBasePath, uniqueIdentifier); // Создаем уникальную директорию
 
             // Копируем основной профиль во временную директорию
-            CopyProfile(_originalProfilePath, tempPath);
+            CopyProfile(originalProfilePath, tempPath);
 
             return tempPath;
         }
@@ -46,6 +53,34 @@ namespace DromAutoTrader.Services
             {
                 // Обработка ошибок копирования
                 Console.WriteLine($"Ошибка при копировании профиля: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Асинхронный метод удаления директории профиля после его использования
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public async Task DeleteDirectoryAsync(string path)
+        {
+            try
+            {
+                foreach (string directory in Directory.GetDirectories(path))
+                {
+                    await DeleteDirectoryAsync(directory); // Рекурсивно удаляем поддиректории асинхронно
+                }
+
+                foreach (string file in Directory.GetFiles(path))
+                {
+                    File.Delete(file); // Удаляем файлы
+                }
+
+                Directory.Delete(path, true); // Удаляем саму директорию
+            }
+            catch (Exception ex)
+            {
+                // Обработка ошибок удаления
+                Console.WriteLine($"Ошибка при удалении директории: {ex.Message}");
             }
         }
     }
