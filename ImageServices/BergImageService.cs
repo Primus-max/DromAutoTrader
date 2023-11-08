@@ -55,50 +55,7 @@ namespace DromAutoTrader.ImageServices
         // Метод авторизации
         protected override void Authorization()
         {
-            //try
-            //{
-            //    try
-            //    {
-
-            //        IWebElement logInput = _driver.FindElement(By.Id("username"));
-            //        Actions builder = new Actions(_driver);
-
-            //        builder.MoveToElement(logInput)
-            //               .Click()
-            //               .SendKeys(UserName)
-            //               .Build()
-            //               .Perform();
-
-            //        Thread.Sleep(500);
-            //    }
-            //    catch (Exception) { }
-
-            //    try
-            //    {
-            //        IWebElement passInput = _driver.FindElement(By.Id("password"));
-
-            //        Thread.Sleep(200);
-
-            //        passInput.SendKeys(Password);
-            //    }
-            //    catch (Exception) { }
-
-            //    try
-            //    {
-            //        IWebElement sumbitBtn = _driver.FindElement(By.Id("_submit"));
-
-            //        sumbitBtn.Click();
-
-            //        Thread.Sleep(200);
-            //    }
-            //    catch (Exception) { }
-            //}
-            //catch (Exception ex)
-            //{
-            //    // TODO сделать логирование
-            //    string message = $"Произошла ошибка в методе Authorization: {ex.Message}";
-            //    Console.WriteLine(message);
-            //}
+           
         }
 
         // Метод отправки поискового запроса
@@ -159,50 +116,17 @@ namespace DromAutoTrader.ImageServices
         // Метод проверки, появились картинки или нет
         protected override bool IsImagesVisible()
         {
-            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(7));
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(3));
 
             try
             {
-                // Получаю все карточки на странице
-                IList<IWebElement> searchedCards = wait.Until(e => e.FindElements(By.CssSelector("div.search_result__row")));
-
-                foreach (var card in searchedCards)
-                {
-                    // Получаю бренд и артикул из карточек
-                    string brand = card.FindElement(By.ClassName("brand_name")).Text.ToLower().Replace(" ", "");
-                    string articul = card.FindElement(By.XPath("//div[@class='article']/a[1]")).Text;
-                    string? globalNameBrand = Brand.ToLower().Replace(" ", "");
-
-                    // Если совпадает смотрю содержится ли картинка
-                    if (globalNameBrand == brand && Articul == articul)
-                    {
-                        string xpath = "//a[@class='card_photo__img part_description__link ']/img";
-                        IWebElement imgElement = card.FindElement(By.XPath(xpath));
-                        string imageUrl = imgElement.GetAttribute("src");
-
-                        // Если в src есть такой текст, значит картинки нет и тут делать нечего
-                        string notImageTest = "cart_noimg.png";
-
-                        if (!imageUrl.Contains(notImageTest))
-                        {
-                            _imagePath = imageUrl;
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                         
-                    }
-                }
-
+                IWebElement mainImageParentDiv = wait.Until(e => e.FindElement(By.ClassName("photo_gallery")));
+                return true;
             }
             catch (Exception)
             {
                 return false;
-            }
-
-            return false;
+            }           
         }
 
         // Метод проверки результатов поиска детали

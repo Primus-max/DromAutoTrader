@@ -1,6 +1,5 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Chromium;
 using SeleniumUndetectedChromeDriver;
 
 namespace DromAutoTrader.Services
@@ -18,12 +17,12 @@ namespace DromAutoTrader.Services
         /// Метод инициализирует экземпляр драйвера и возвращает его
         /// </summary>
         /// <returns>IWebDriver</returns>
-        public  IWebDriver GetDriver()
+        public IWebDriver GetDriver()
         {
             ChromeOptions options = new();
             options.AddArgument("--silent");
             options.AddArgument("--disable-notifications");
-           // options.AddArgument("--headless=new");
+            options.AddArgument("--headless=new");
             options.AddArgument($"--user-data-dir={_profilePath}");
 
             //var chromeService = ChromeDriverService.CreateDefaultService();
@@ -33,7 +32,7 @@ namespace DromAutoTrader.Services
 
             try
             {
-                driver = UndetectedChromeDriver.Create(options: options, hideCommandPromptWindow: true ,driverExecutablePath: "chromedriver.exe");
+                driver = UndetectedChromeDriver.Create(options: options, hideCommandPromptWindow: true, driverExecutablePath: "chromedriver.exe");
             }
             catch (Exception ex)
             {
