@@ -10,6 +10,8 @@ namespace DromAutoTrader.Services
     /// </summary>
     class UndetectDriver
     {
+        private readonly string _profilePath = string.Empty;
+
         public UndetectDriver() { }
 
         /// <summary>
