@@ -623,7 +623,9 @@ namespace DromAutoTrader.ViewModels
 
             DromAdPublisher dromAdPublisher = new();
 
-            var tasks = groupedAdInfos.Select(async group =>
+            var tasks = new List<Task>();
+
+            foreach (var group in groupedAdInfos)
             {
                 var sortedAdInfos = group.OrderBy(a => a.AdDescription).ToList();
 
@@ -638,26 +640,33 @@ namespace DromAutoTrader.ViewModels
 
                     string? channelName = adInfo.AdDescription;
 
-                    bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, channelName);
-
-                    if (isPublished)
-                    {
-                        adInfo.PriceBuy = 1;
-
-                        try
-                        {
-                            context.AdPublishingInfo.Add(adInfo);
-                        }
-                        catch (Exception)
-                        {
-                            // Обработка ошибок при добавлении в базу данных
-                        }
-                    }
+                    tasks.Add(ProcessAdPublishingAsync(dromAdPublisher, adInfo, channelName));
                 }
-            }).ToArray();
-            
+            }
+
             await Task.WhenAll(tasks);
         }
+
+        private async Task ProcessAdPublishingAsync(DromAdPublisher dromAdPublisher, AdPublishingInfo adInfo, string channelName)
+        {
+            bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, channelName);
+
+            if (isPublished)
+            {
+                adInfo.PriceBuy = 1;
+
+                try
+                {
+                    using var context = new AppContext();
+                    context.AdPublishingInfo.Add(adInfo);
+                }
+                catch (Exception)
+                {
+                    // Обработка ошибок при добавлении в базу данных
+                }
+            }
+        }
+
 
 
         // Метод для формирования прайса
