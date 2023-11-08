@@ -26,6 +26,7 @@ namespace DromAutoTrader.ImageServices
 
         #region Приватный поля        
         private readonly string _profilePath = @"C:\SeleniumProfiles\Berg";
+        private string _imagePath = string.Empty;
         #endregion
         private WebDriverWait _wait = null!;
 
@@ -118,52 +119,69 @@ namespace DromAutoTrader.ImageServices
         // Метод открытия каротчки с полученным запросом
         protected override void OpenSearchedCard()
         {
-            try
-            {
-                IWebElement searchedCard = _driver.FindElement(By.CssSelector(".search_result__row.first_row"));
-                IWebElement searchCardLink = searchedCard.FindElement(By.CssSelector(".pseudo_link.part_description__link"));
+            //try
+            //{
+            //    IWebElement searchedCard = _driver.FindElement(By.CssSelector("div.search_result__row"));
+            //    IWebElement searchCardLink = searchedCard.FindElement(By.CssSelector(".pseudo_link.part_description__link"));
 
-                IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
-                js.ExecuteScript("arguments[0].click();", searchCardLink);
-            }
-            catch (Exception ex)
-            {
-                string message = $"Произошла ошибка в методе GetSearchedCard: {ex.Message}";
-                Console.WriteLine(message);
-            }
+            //    IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
+            //    js.ExecuteScript("arguments[0].click();", searchCardLink);
+            //}
+            //catch (Exception ex)
+            //{
+            //    string message = $"Произошла ошибка в методе GetSearchedCard: {ex.Message}";
+            //    Console.WriteLine(message);
+            //}
         }
 
         // Метод проверки, появились картинки или нет
         protected override bool IsImagesVisible()
         {
-            bool isVisible = false;
-            int tryCount = 0;
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(7));
 
-            while (!false)
+
+            try
             {
-                try
+                // Получаю все карточки на странице
+                IList<IWebElement> searchedCards = wait.Until(e => e.FindElements(By.CssSelector("div.search_result__row")));
+
+                foreach (var card in searchedCards)
                 {
-                    IWebElement imagePreview = _driver.FindElement(By.ClassName("preview_img__container"));
+                    // Получаю бренд и артикул из карточек
+                    string brand = card.FindElement(By.ClassName("brand_name")).Text.ToLower().Replace(" ", "");
+                    string articul = card.FindElement(By.XPath("//div[@class='article']/a[1]")).Text;
+                    string? globalNameBrand = Brand.ToLower().Replace(" ", "");
 
-                    isVisible = imagePreview != null;
-
-                    return isVisible;
-                }
-                catch (Exception)
-                {
-                    tryCount++;
-
-                    if (tryCount == 7)
+                    // Если совпадает смотрю содержится ли картинка
+                    if (globalNameBrand == brand && Articul == articul)
                     {
-                        break;
+                        string xpath = "//a[@class='card_photo__img part_description__link ']/img";
+                        IWebElement imgElement = card.FindElement(By.XPath(xpath));
+                        string imageUrl = imgElement.GetAttribute("src");
+
+                        // Если в src есть такой текст, значит картинки нет и тут делать нечего
+                        string notImageTest = "cart_noimg.png";
+
+                        if (!imageUrl.Contains(notImageTest))
+                        {
+                            _imagePath = imageUrl;
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                         
                     }
-
-                    Thread.Sleep(500);
-
-                    continue;
                 }
+
             }
-            return isVisible;
+            catch (Exception)
+            {
+                return false;
+            }
+
+            return false;
         }
 
         // Метод проверки результатов поиска детали
