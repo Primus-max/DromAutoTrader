@@ -657,12 +657,14 @@ namespace DromAutoTrader.ViewModels
                     {
                         using var context = new AppContext();
                         context.AdPublishingInfo.Add(adInfo);
+                        context.SaveChanges(); // Сохраняем изменения в базе данных
                     }
                     catch (Exception)
                     {
                         // Обработка ошибок при добавлении в базу данных
                     }
                 }
+
             }
         }
 
