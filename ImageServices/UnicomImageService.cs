@@ -22,6 +22,7 @@ namespace DromAutoTrader.ImageServices
 
         #region Приватные поля       
         private readonly WebDriverWait _waiter = null!;
+        private readonly string _profilePath = @"C:\SeleniumProfiles\Unicom";
         #endregion
 
 
@@ -329,11 +330,11 @@ namespace DromAutoTrader.ImageServices
             IWebElement imageElement = _driver.FindElement(By.CssSelector(".uk-lightbox-toolbar-icon line:nth-child(2)"));
             imageElement.Click();
         }
-
+        
         // Инициализация драйвера
         private void InitializeDriver()
         {
-            UndetectDriver webDriver = new();
+            UndetectDriver webDriver = new(_profilePath);
             _driver = webDriver.GetDriver();
         }
         #endregion

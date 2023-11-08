@@ -60,7 +60,7 @@ namespace DromAutoTrader.ViewModels
                 string fileName = Path.GetFileNameWithoutExtension(path);
 
                 //BergImageService bergImageService = new();
-                UnicomImageService unicomImageService = new();
+               // UnicomImageService unicomImageService = new();
                 //LynxautoImageService lynxautoImageService = new LynxautoImageService();
                 //LuzarImageService LuzarimageService = new LuzarImageService();
                 //StarvoltImageService starvoltImageService = new StarvoltImageService();
@@ -82,10 +82,11 @@ namespace DromAutoTrader.ViewModels
                     // TODO здесь запускаю парсинг по разным сервисам
 
 
-                   // await bergImageService.RunAsync(brand, articul);
-                    await unicomImageService.RunAsync(brand, articul);
+                    BergImageService bergImageService = new();
+                    // await bergImageService.RunAsync(brand, articul);
+                    await bergImageService.RunAsync(brand, articul);
 
-                    var testImages = unicomImageService.BrandImages;
+                    var testImages = bergImageService.BrandImages;
                 }
             }
         }

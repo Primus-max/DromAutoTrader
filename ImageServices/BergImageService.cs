@@ -1,7 +1,6 @@
 ﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using System.Threading;
 using System.Web;
@@ -16,7 +15,7 @@ namespace DromAutoTrader.ImageServices
         #region Перезапись абстрактных свойст
         protected override string LoginPageUrl => "https://berg.ru/login";
 
-        protected override string SearchPageUrl => "https://berg.ru/search/step2?search=AG19166&brand=TRIALLI&withRedirect=1";
+        protected override string SearchPageUrl => "https://berg.ru/search?search=";
 
         protected override string UserName => "autobest038";
 
@@ -25,10 +24,10 @@ namespace DromAutoTrader.ImageServices
         public override string ServiceName => "https://berg.ru";
         #endregion
 
-        //#region Приватный поля        
-        //private string? _imagesLocalPath = string.Empty;
-        //private IWebDriver _driver = null!;
-        //#endregion
+        #region Приватный поля        
+        private readonly string _profilePath = @"C:\SeleniumProfiles\Berg";
+        private string _imagePath = string.Empty;
+        #endregion
         private WebDriverWait _wait = null!;
 
         public BergImageService()
@@ -44,57 +43,19 @@ namespace DromAutoTrader.ImageServices
         // Метод перехода по ссылке
         protected override void GoTo()
         {
-            _driver.Manage().Window.Maximize();
-            _driver.Navigate().GoToUrl(LoginPageUrl);
+            try
+            {
+                _driver.Manage().Window.Maximize();
+            }
+            catch (Exception)
+            {
+            }
         }
 
         // Метод авторизации
         protected override void Authorization()
         {
-            try
-            {
-                try
-                {
-                    
-                    IWebElement logInput = _driver.FindElement(By.Id("username"));
-                    Actions builder = new Actions(_driver);
-
-                    builder.MoveToElement(logInput)
-                           .Click()
-                           .SendKeys(UserName)
-                           .Build()
-                           .Perform();
-
-                    Thread.Sleep(500);
-                }
-                catch (Exception) { }
-
-                try
-                {
-                    IWebElement passInput = _driver.FindElement(By.Id("password"));
-
-                    Thread.Sleep(200);
-                   
-                    passInput.SendKeys(Password);
-                }
-                catch (Exception) { }
-
-                try
-                {
-                    IWebElement sumbitBtn = _driver.FindElement(By.Id("_submit"));
-
-                    sumbitBtn.Click();
-
-                    Thread.Sleep(200);
-                }
-                catch (Exception) { }
-            }
-            catch (Exception ex)
-            {
-                // TODO сделать логирование
-                string message = $"Произошла ошибка в методе Authorization: {ex.Message}";
-                Console.WriteLine(message);
-            }
+           
         }
 
         // Метод отправки поискового запроса
@@ -102,58 +63,70 @@ namespace DromAutoTrader.ImageServices
         {
             string? searchUrl = BuildUrl();
 
-            _driver.Navigate().GoToUrl(searchUrl);
+            try
+            {
+                _driver.Navigate().GoToUrl(searchUrl);
+            }
+            catch (Exception)
+            {
+
+            }
         }
 
         // Метод открытия каротчки с полученным запросом
         protected override void OpenSearchedCard()
         {
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(7));
             try
             {
-                IWebElement searchedCard = _driver.FindElement(By.CssSelector(".search_result__row.first_row"));
-                IWebElement searchCardLink = searchedCard.FindElement(By.CssSelector(".pseudo_link.part_description__link"));
+                // Получаю все карточки на странице
+                IList<IWebElement> searchedCards = wait.Until(e => e.FindElements(By.CssSelector("div.search_result__row")));
 
-                IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
-                js.ExecuteScript("arguments[0].click();", searchCardLink);
+                foreach (var card in searchedCards)
+                {
+                    // Получаю бренд и артикул из карточек
+                    string brand = card.FindElement(By.ClassName("brand_name")).Text.ToLower().Replace(" ", "");
+                    string articul = card.FindElement(By.XPath("//div[@class='article']/a[1]")).Text;
+                    string? globalNameBrand = Brand.ToLower().Replace(" ", "");
+
+                    // Если совпадает открываю Popup
+                    if (globalNameBrand == brand && Articul == articul)
+                    {
+                        IWebElement popUp = card.FindElement(By.CssSelector("a.pseudo_link.part_description__link"));
+                        // Получаю ссылку на Popup
+                        string popupUrl = popUp.GetAttribute("href");
+                        string popUpLink = $"{ServiceName}{popupUrl}";
+
+                        try
+                        {
+                            _driver.Navigate().GoToUrl(popupUrl);
+                        }
+                        catch (Exception) { }
+
+                    }
+                }
+
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                string message = $"Произошла ошибка в методе GetSearchedCard: {ex.Message}";
-                Console.WriteLine(message);
+
             }
         }
 
         // Метод проверки, появились картинки или нет
         protected override bool IsImagesVisible()
         {
-            bool isVisible = false;
-            int tryCount = 0;
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(3));
 
-            while (!false)
+            try
             {
-                try
-                {
-                    IWebElement imagePreview = _driver.FindElement(By.ClassName("preview_img__container"));
-
-                    isVisible = imagePreview != null;
-
-                    return isVisible;
-                }
-                catch (Exception)
-                {
-                    tryCount++;
-
-                    if (tryCount == 7)
-                    {
-                        break;
-                    }
-
-                    Thread.Sleep(500);
-
-                    continue;
-                }
+                IWebElement mainImageParentDiv = wait.Until(e => e.FindElement(By.ClassName("photo_gallery")));
+                return true;
             }
-            return isVisible;
+            catch (Exception)
+            {
+                return false;
+            }           
         }
 
         // Метод проверки результатов поиска детали
@@ -250,13 +223,8 @@ namespace DromAutoTrader.ImageServices
         // Метод для формирования Url поискового запроса
         public string BuildUrl()
         {
-            var uri = new Uri(SearchPageUrl);
-            var query = HttpUtility.ParseQueryString(uri.Query);
-            query["search"] = Articul;
-            query["brand"] = Brand;
-
             // Построение нового URL с обновленными параметрами
-            string newUrl = uri.GetLeftPart(UriPartial.Path) + "?" + query.ToString();
+            string newUrl = SearchPageUrl + Articul;
 
             return newUrl;
         }
@@ -264,10 +232,10 @@ namespace DromAutoTrader.ImageServices
         // Инициализация драйвера
         private void InitializeDriver()
         {
-            UndetectDriver webDriver = new();
+            UndetectDriver webDriver = new(_profilePath);
             _driver = webDriver.GetDriver();
         }
-        
+
         #endregion
     }
 }
