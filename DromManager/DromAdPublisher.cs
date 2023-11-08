@@ -34,7 +34,7 @@ namespace DromAutoTrader.DromManager
             if (adPublishingInfo == null) return isPublited;
             // Инициализация драйвера Chrome
             await InitializeDriver(channelName);
-            _wait = new(_driver, TimeSpan.FromSeconds(30));
+            _wait = new(_driver, TimeSpan.FromSeconds(20));
 
 
             OpenGoodsPage();

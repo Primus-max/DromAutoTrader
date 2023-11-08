@@ -1,5 +1,4 @@
-﻿using ControlzEx.Standard;
-using DromAutoTrader.Prices;
+﻿using DromAutoTrader.Prices;
 using DromAutoTrader.Services;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -23,14 +22,14 @@ namespace DromAutoTrader.ViewModels
 
         public async Task<AdPublishingInfo> Build()
         {
-            if (_channel == null)           
+            if (_channel == null)
                 return new AdPublishingInfo();
-          
+
 
             // Проверяем, что цена в прайсе не меньше чем в таблице накрутки цен
             decimal minTo = (decimal)(_channel?.PriceIncreases.Min(inc => (decimal)inc.To));
 
-            if (_price.PriceBuy < minTo) 
+            if (_price.PriceBuy < minTo)
                 return null;
             List<string> imagesPaths = new List<string>();
             string? namePrice = Path.GetFileName(_pricePath);
@@ -42,14 +41,14 @@ namespace DromAutoTrader.ViewModels
 
             _adPublishingInfo.PriceName = namePrice;
             _adPublishingInfo.Brand = _price?.Brand; // Имя брэнда
-            _adPublishingInfo.Artikul = RemoveNonAlphanumeric(_price?.Artikul) ; // Артикул
+            _adPublishingInfo.Artikul = RemoveNonAlphanumeric(_price?.Artikul); // Артикул
             _adPublishingInfo.Description = _channel.Description; // Описание товара (из прайса) Пока нигде не потребовалось
             _adPublishingInfo.KatalogName = _price?.KatalogName; // Это попадает в заголовок объявления
             _adPublishingInfo.InputPrice = _price.PriceBuy; // Прайс на деталь от поставщика
-            _adPublishingInfo.OutputPrice = decimal.Round(calculatedPrice) ;// Считаю цену исходя из цены прайса
+            _adPublishingInfo.OutputPrice = decimal.Round(calculatedPrice);// Считаю цену исходя из цены прайса
             _adPublishingInfo.AdDescription = _channel.Name; // Имя канала в котором опубликовал
             _adPublishingInfo.Count = _price.Count; // Количество запчастей у поставщика // TODO изменить при парсинге, иногда приходит 10-100 (от и до, в этом случае мы получаем 0)
-           
+
             // Создаю дату регистрации объявления
             // // TODO(Делать только посе публикации объявления) Дата формирования объявления
             _adPublishingInfo.DatePublished = DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss");
