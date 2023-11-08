@@ -610,9 +610,6 @@ namespace DromAutoTrader.ViewModels
             using var context = new AppContext();
             var adInfos = context.AdPublishingInfo.ToList(); // Загрузка всех объявлений
 
-            // Группируем объявления по каналам (AdDescription)
-            var groupedAdInfos = adInfos.GroupBy(a => a.AdDescription);
-
             PostingProgressItem postingProgressItem = new();
 
             // Возвращаемся в основной поток для обновления элементов интерфейса
@@ -623,49 +620,52 @@ namespace DromAutoTrader.ViewModels
 
             DromAdPublisher dromAdPublisher = new();
 
+            var channels = adInfos.Select(adInfo => adInfo.AdDescription).Distinct();
+
             var tasks = new List<Task>();
 
-            foreach (var group in groupedAdInfos)
+            foreach (var channelName in channels)
             {
-                var sortedAdInfos = group.OrderBy(a => a.AdDescription).ToList();
+                var channelAdInfos = adInfos.Where(adInfo => adInfo.AdDescription == channelName).ToList();
 
-                foreach (var adInfo in sortedAdInfos)
-                {
-                    if (adInfo.IsArchived == true) continue; // Если объявление в архиве
-                    if (adInfo.PriceBuy == 1) continue; // Если уже публиковал
-                    if (adInfo.Artikul == null || adInfo.Brand == null) continue; // Если бренд или артикул пустые
-
-                    postingProgressItem.TotalStages = sortedAdInfos.Count;
-                    postingProgressItem.ProcessName = "Публикация объявлений на Drom.ru";
-
-                    string? channelName = adInfo.AdDescription;
-
-                    tasks.Add(ProcessAdPublishingAsync(dromAdPublisher, adInfo, channelName));
-                }
+                tasks.Add(ProcessChannelAdsAsync(dromAdPublisher, channelAdInfos, channelName));
             }
 
             await Task.WhenAll(tasks);
         }
 
-        private async Task ProcessAdPublishingAsync(DromAdPublisher dromAdPublisher, AdPublishingInfo adInfo, string channelName)
+        private async Task ProcessChannelAdsAsync(DromAdPublisher dromAdPublisher, List<AdPublishingInfo> channelAdInfos, string channelName)
         {
-            bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, channelName);
-
-            if (isPublished)
+            foreach (var adInfo in channelAdInfos)
             {
-                adInfo.PriceBuy = 1;
+                if (adInfo.IsArchived == true) continue; // Если объявление в архиве
+                if (adInfo.PriceBuy == 1) continue; // Если уже публиковал
+                if (adInfo.Artikul == null || adInfo.Brand == null) continue; // Если бренд или артикул пустые
 
-                try
+                PostingProgressItem postingProgressItem = new();
+                postingProgressItem.TotalStages = channelAdInfos.Count;
+                postingProgressItem.ProcessName = "Публикация объявлений на Drom.ru";
+                postingProgressItem.ChannelName = channelName;
+
+                bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, channelName);
+
+                if (isPublished)
                 {
-                    using var context = new AppContext();
-                    context.AdPublishingInfo.Add(adInfo);
-                }
-                catch (Exception)
-                {
-                    // Обработка ошибок при добавлении в базу данных
+                    adInfo.PriceBuy = 1;
+
+                    try
+                    {
+                        using var context = new AppContext();
+                        context.AdPublishingInfo.Add(adInfo);
+                    }
+                    catch (Exception)
+                    {
+                        // Обработка ошибок при добавлении в базу данных
+                    }
                 }
             }
         }
+
 
 
 
