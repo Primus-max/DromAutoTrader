@@ -1,7 +1,6 @@
 ﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Interactions;
 using System.Threading;
 
 namespace DromAutoTrader.ImageServices
@@ -37,10 +36,10 @@ namespace DromAutoTrader.ImageServices
 
         #region Перезаписанные методы базового класса
         protected override void GoTo()
-        {           
+        {
             try
             {
-                _driver.Manage().Window.Maximize();                
+                _driver.Manage().Window.Maximize();
             }
             catch (Exception)
             {
@@ -50,7 +49,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override void Authorization()
         {
-         
+
         }
 
         protected override void SetArticulInSearchInput()

@@ -1,6 +1,5 @@
 ﻿using DromAutoTrader.ImageServices.Interfaces;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
 using System.Threading;
 
 namespace DromAutoTrader.ImageServices.Base
@@ -52,27 +51,23 @@ namespace DromAutoTrader.ImageServices.Base
             Brand = brandName;
             Articul = articul;
 
-            if (_isFirstRunning)
-            {
-                _isFirstRunning = false;
+            GoTo();
 
-                GoTo();
+            // Закрывает окно с предложением получения уведомлений
+            Thread.Sleep(500);
+            //ClosePermissionRequestPopup();
 
-                // Закрывает окно с предложением получения уведомлений
-                Thread.Sleep(500);
-                //ClosePermissionRequestPopup();
+            Authorization();
 
-                Authorization();
-            }
 
             SetArticulInSearchInput();
 
             if (IsNotMatchingArticul())
             {
                 CloseDriver();
-                return;               
+                return;
             }
-               
+
 
             OpenSearchedCard();
 
@@ -122,7 +117,7 @@ namespace DromAutoTrader.ImageServices.Base
             }
             Thread.Sleep(random.Next(300, 700));
         }
-                
+
 
         #endregion
 

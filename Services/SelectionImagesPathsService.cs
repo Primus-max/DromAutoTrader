@@ -163,9 +163,8 @@ namespace DromAutoTrader.Services
             if (imageServiceTypes.TryGetValue(imageServiceUrl, out Type imageServiceType))
             {
                 // Создаем экземпляр ImageService
-                var imageService = Activator.CreateInstance(imageServiceType) as IImageService;
 
-                if (imageService != null)
+                if (Activator.CreateInstance(imageServiceType) is IImageService imageService)
                 {
                     // Выполнение RunAsync для найденного сервиса
                     await imageService.RunAsync(brand, articul);
