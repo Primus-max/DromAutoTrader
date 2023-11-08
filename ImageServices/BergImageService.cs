@@ -1,7 +1,6 @@
 ﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using System.Threading;
 using System.Web;
@@ -43,57 +42,62 @@ namespace DromAutoTrader.ImageServices
         // Метод перехода по ссылке
         protected override void GoTo()
         {
-            _driver.Manage().Window.Maximize();
-            _driver.Navigate().GoToUrl(LoginPageUrl);
+            try
+            {
+                _driver.Manage().Window.Maximize();
+            }
+            catch (Exception)
+            {
+            }
         }
 
         // Метод авторизации
         protected override void Authorization()
         {
-            try
-            {
-                try
-                {
-                    
-                    IWebElement logInput = _driver.FindElement(By.Id("username"));
-                    Actions builder = new Actions(_driver);
+            //try
+            //{
+            //    try
+            //    {
 
-                    builder.MoveToElement(logInput)
-                           .Click()
-                           .SendKeys(UserName)
-                           .Build()
-                           .Perform();
+            //        IWebElement logInput = _driver.FindElement(By.Id("username"));
+            //        Actions builder = new Actions(_driver);
 
-                    Thread.Sleep(500);
-                }
-                catch (Exception) { }
+            //        builder.MoveToElement(logInput)
+            //               .Click()
+            //               .SendKeys(UserName)
+            //               .Build()
+            //               .Perform();
 
-                try
-                {
-                    IWebElement passInput = _driver.FindElement(By.Id("password"));
+            //        Thread.Sleep(500);
+            //    }
+            //    catch (Exception) { }
 
-                    Thread.Sleep(200);
-                   
-                    passInput.SendKeys(Password);
-                }
-                catch (Exception) { }
+            //    try
+            //    {
+            //        IWebElement passInput = _driver.FindElement(By.Id("password"));
 
-                try
-                {
-                    IWebElement sumbitBtn = _driver.FindElement(By.Id("_submit"));
+            //        Thread.Sleep(200);
 
-                    sumbitBtn.Click();
+            //        passInput.SendKeys(Password);
+            //    }
+            //    catch (Exception) { }
 
-                    Thread.Sleep(200);
-                }
-                catch (Exception) { }
-            }
-            catch (Exception ex)
-            {
-                // TODO сделать логирование
-                string message = $"Произошла ошибка в методе Authorization: {ex.Message}";
-                Console.WriteLine(message);
-            }
+            //    try
+            //    {
+            //        IWebElement sumbitBtn = _driver.FindElement(By.Id("_submit"));
+
+            //        sumbitBtn.Click();
+
+            //        Thread.Sleep(200);
+            //    }
+            //    catch (Exception) { }
+            //}
+            //catch (Exception ex)
+            //{
+            //    // TODO сделать логирование
+            //    string message = $"Произошла ошибка в методе Authorization: {ex.Message}";
+            //    Console.WriteLine(message);
+            //}
         }
 
         // Метод отправки поискового запроса
@@ -101,7 +105,14 @@ namespace DromAutoTrader.ImageServices
         {
             string? searchUrl = BuildUrl();
 
-            _driver.Navigate().GoToUrl(searchUrl);
+            try
+            {
+                _driver.Navigate().GoToUrl(searchUrl);
+            }
+            catch (Exception)
+            {
+
+            }
         }
 
         // Метод открытия каротчки с полученным запросом
@@ -263,10 +274,10 @@ namespace DromAutoTrader.ImageServices
         // Инициализация драйвера
         private void InitializeDriver()
         {
-            UndetectDriver webDriver = new();
+            UndetectDriver webDriver = new(_profilePath);
             _driver = webDriver.GetDriver();
         }
-        
+
         #endregion
     }
 }

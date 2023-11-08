@@ -202,7 +202,7 @@ namespace DromAutoTrader.ImageServices
         // Инициализация драйвера
         private void InitializeDriver()
         {
-            UndetectDriver webDriver = new();
+            UndetectDriver webDriver = new("");
             _driver = webDriver.GetDriver();
         }
 
