@@ -178,7 +178,7 @@ namespace DromAutoTrader.ImageServices
             return newUrl;
         }
 
-        protected override async void CloseDriverAsync()
+        protected override async Task CloseDriverAsync()
         {
             try
             {

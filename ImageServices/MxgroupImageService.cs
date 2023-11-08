@@ -1,8 +1,6 @@
 ﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Interactions;
-using System.IO;
 using System.Threading;
 
 namespace DromAutoTrader.ImageServices
@@ -50,11 +48,11 @@ namespace DromAutoTrader.ImageServices
             }
             catch (Exception)
             {
-            }        
+            }
         }
 
         protected override void Authorization()
-        {            
+        {
         }
 
         protected override void SetArticulInSearchInput()
@@ -208,8 +206,8 @@ namespace DromAutoTrader.ImageServices
 
             return downloadedImages;
         }
-        
-        protected override async void CloseDriverAsync()
+
+        protected override async Task CloseDriverAsync()
         {
             try
             {
@@ -221,7 +219,7 @@ namespace DromAutoTrader.ImageServices
             }
             catch (Exception)
             {
-                            }
+            }
         }
         #endregion
 
@@ -267,7 +265,7 @@ namespace DromAutoTrader.ImageServices
                     {
 
                     }
-                   
+
                     string imagePath = imgPopup.GetAttribute("src");
                     images.Add(imagePath);
                 }

@@ -207,7 +207,7 @@ namespace DromAutoTrader.ImageServices
             return downloadedImages;
         }
 
-        protected override async void CloseDriverAsync()
+        protected override async Task CloseDriverAsync()
         {
             try
             {

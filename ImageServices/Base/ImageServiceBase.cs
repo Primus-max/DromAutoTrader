@@ -130,7 +130,7 @@ namespace DromAutoTrader.ImageServices.Base
         protected abstract bool IsImagesVisible();
         protected abstract Task<List<string>> GetImagesAsync();
 
-        protected abstract void CloseDriverAsync();
+        protected abstract Task CloseDriverAsync();
         #endregion
     }
 
