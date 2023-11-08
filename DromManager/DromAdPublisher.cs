@@ -485,18 +485,27 @@ namespace DromAutoTrader.DromManager
 
 
         // Инициализация драйвера
+        private static SemaphoreSlim browserSemaphore = new(1, 1);
+
         private async Task InitializeDriver(string channelName)
         {
-            BrowserManager adsPower = new();
-            List<Profile> profiles = await ProfileManager.GetProfiles();
-
-            foreach (Profile profile in profiles)
+            await browserSemaphore.WaitAsync();
+            try
             {
-                if (profile.Name != channelName || profile == null) continue;
+                BrowserManager adsPower = new();
+                List<Profile> profiles = await ProfileManager.GetProfiles();
 
-                _driver = await adsPower.InitializeDriver(profile.UserId);
+                foreach (Profile profile in profiles)
+                {
+                    if (profile.Name != channelName || profile == null) continue;
+
+                    _driver = await adsPower.InitializeDriver(profile.UserId);
+                }
             }
-
+            finally
+            {
+                browserSemaphore.Release();
+            }
         }
     }
 }
