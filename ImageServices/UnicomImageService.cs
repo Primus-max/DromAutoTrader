@@ -30,11 +30,12 @@ namespace DromAutoTrader.ImageServices
 
         public UnicomImageService()
         {
-            InitializeDriver();           
 
             // Создаю временную копию профиля (на эту сессию)
             ProfilePathService profilePathService = new();
             _tempProfilePath = profilePathService.CreateTempPath(_profilePath);
+
+            InitializeDriver(); 
         }
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
@@ -243,25 +244,11 @@ namespace DromAutoTrader.ImageServices
                 Thread.Sleep(random.Next(50, 100));  // Добавляем небольшую паузу между вводом каждого символа
             }
         }
-
-        void SelectProduct()
-        {
-            // Нажать на элемент, представляющий выбранный продукт
-            IWebElement productElement = _driver.FindElement(By.CssSelector("div:nth-child(1) > div > .product__card > .card__section .svg-inline--fa"));
-            productElement.Click();
-        }
-
-        void OpenProductImage()
-        {
-            // Нажать на элемент, представляющий открытие изображения продукта
-            IWebElement imageElement = _driver.FindElement(By.CssSelector(".uk-lightbox-toolbar-icon line:nth-child(2)"));
-            imageElement.Click();
-        }
         
         // Инициализация драйвера
         private void InitializeDriver()
         {
-            UndetectDriver webDriver = new(_profilePath);
+            UndetectDriver webDriver = new(_tempProfilePath);
             _driver = webDriver.GetDriver();
         }
         #endregion
