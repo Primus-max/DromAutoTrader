@@ -2,6 +2,7 @@
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using System.IO;
 using System.Threading;
 
 namespace DromAutoTrader.ImageServices
@@ -20,17 +21,20 @@ namespace DromAutoTrader.ImageServices
         public override string ServiceName => "https://uniqom.ru";
         #endregion
 
-        #region Приватные поля       
-        private readonly WebDriverWait _waiter = null!;
+        #region Приватные поля      
+       
         private readonly string _profilePath = @"C:\SeleniumProfiles\Unicom";
+        private string _tempProfilePath = string.Empty;
         #endregion
 
 
         public UnicomImageService()
         {
-            InitializeDriver();
-            _waiter = new(_driver, TimeSpan.FromSeconds(5));
-            _waiter.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
+            InitializeDriver();           
+
+            // Создаю временную копию профиля (на эту сессию)
+            ProfilePathService profilePathService = new();
+            _tempProfilePath = profilePathService.CreateTempPath(_profilePath);
         }
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
@@ -50,24 +54,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override void Authorization()
         {           
-        }
-
-        // Проверка авторизации
-        public bool IsAuth()
-        {
-            WebDriverWait wait = new(_driver, TimeSpan.FromMilliseconds(10));
-            try
-            {
-                Thread.Sleep(1000);
-                IWebElement userIcon = wait.Until(e => e.FindElement(By.CssSelector("a.feip-header-userButton")));
-
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
+        }        
 
         protected override void SetArticulInSearchInput()
         {
@@ -104,10 +91,11 @@ namespace DromAutoTrader.ImageServices
         // Метод проверки наличия изображения для дальнейшего получения
         protected override bool IsImagesVisible()
         {
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(5));
             try
             {
                 // Получаем элемент-родитель если арткул найден
-                var divElement = _waiter.Until(e => e.FindElements(By.CssSelector("div.product__card")))[0];
+                var divElement = wait.Until(e => e.FindElements(By.CssSelector("div.product__card")))[0];
                 // Получаем в элементе-родителе этот элемент
                 IWebElement pictureNotFounfDiv = divElement.FindElement(By.ClassName("picture_not-found"));
 
@@ -124,6 +112,7 @@ namespace DromAutoTrader.ImageServices
         // Метод получения изображений
         protected override async Task<List<string>> GetImagesAsync()
         {
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(5));
             // Список изображений которые возвращаем из метода
             List<string> downloadedImages = new();
 
@@ -134,7 +123,7 @@ namespace DromAutoTrader.ImageServices
             {
                 // Получаем изображение
                 // Получаем элемент-родитель если арткул найден
-                var divElement = _waiter.Until(e => e.FindElements(By.CssSelector("div.product__card")))[0];
+                var divElement = wait.Until(e => e.FindElements(By.CssSelector("div.product__card")))[0];
 
                 // Теперь, используя родительский элемент, получить ссылку на изображение
                 var imageUrlElement = divElement.FindElement(By.ClassName("feip-productsList-photoCell-image"));
@@ -193,6 +182,9 @@ namespace DromAutoTrader.ImageServices
             try
             {
                 _driver.Close();
+
+                // Удаляю временную директорию профиля после закрытия браузера
+                Directory.Delete(_tempProfilePath, true);
             }
             catch (Exception ex)
             {
