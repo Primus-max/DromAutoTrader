@@ -28,11 +28,13 @@ namespace DromAutoTrader.ImageServices
 
         public MxgroupImageService()
         {
-            InitializeDriver();
 
             // Создаю временную копию профиля (на эту сессию)
             ProfilePathService profilePathService = new();
             _tempProfilePath = profilePathService.CreateTempPath(_profilePath);
+
+            InitializeDriver();
+
         }
 
 
@@ -291,7 +293,7 @@ namespace DromAutoTrader.ImageServices
         // Инициализация драйвера
         private void InitializeDriver()
         {
-            UndetectDriver webDriver = new(_profilePath);
+            UndetectDriver webDriver = new(_tempProfilePath);
             _driver = webDriver.GetDriver();
         }
 
