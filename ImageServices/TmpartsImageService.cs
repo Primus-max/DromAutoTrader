@@ -1,6 +1,7 @@
 ﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
+using System.IO;
 using System.Threading;
 
 namespace DromAutoTrader.ImageServices
@@ -22,11 +23,16 @@ namespace DromAutoTrader.ImageServices
 
         #region Приватные
         private readonly string _profilePath = @"C:\SeleniumProfiles\Tmparts";
+        private string _tempProfilePath = string.Empty;
         #endregion
 
         public TmpartsImageService()
         {
             InitializeDriver();
+
+            // Создаю временную копию профиля (на эту сессию)
+            ProfilePathService profilePathService = new();
+            _tempProfilePath = profilePathService.CreateTempPath(_profilePath);
         }
 
 
@@ -159,6 +165,9 @@ namespace DromAutoTrader.ImageServices
         protected override void CloseDriver()
         {
             _driver.Close();
+
+            // Удаляю временную директорию профиля после закрытия браузера
+            Directory.Delete(_tempProfilePath, true);
         }
         #endregion
 
