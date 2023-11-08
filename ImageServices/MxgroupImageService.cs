@@ -30,8 +30,8 @@ namespace DromAutoTrader.ImageServices
         {
 
             // Создаю временную копию профиля (на эту сессию)
-            ProfilePathService profilePathService = new(_profilePath);
-            _tempProfilePath = profilePathService.CreateTempProfile();
+            ProfilePathService profilePathService = new();
+            _tempProfilePath = profilePathService.CreateTempProfile(_profilePath);
 
             InitializeDriver();
 
@@ -209,14 +209,15 @@ namespace DromAutoTrader.ImageServices
             return downloadedImages;
         }
         
-        protected override void CloseDriver()
+        protected override async void CloseDriverAsync()
         {
             try
             {
                 _driver.Close();
 
                 // Удаляю временную директорию профиля после закрытия браузера
-                Directory.Delete(_tempProfilePath, true);
+                ProfilePathService profilePathService = new();
+                await profilePathService.DeleteDirectoryAsync(_tempProfilePath);
             }
             catch (Exception)
             {
@@ -315,25 +316,6 @@ namespace DromAutoTrader.ImageServices
             }
 
             return downloadedImages;
-        }
-
-        public void WaitingReadyStatePage()
-        {
-            while (true)
-            {
-                try
-                {
-
-                    IWebElement spinner = _driver.FindElement(By.CssSelector("div.alert.success"));
-
-                    continue;
-
-                }
-                catch (Exception)
-                {
-                    break;
-                }
-            }
         }
         #endregion
 

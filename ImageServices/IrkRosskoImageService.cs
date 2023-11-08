@@ -27,12 +27,12 @@ namespace DromAutoTrader.ImageServices
         private string _tempProfilePath = string.Empty;
         #endregion
 
-        public IrkRosskoImageService() 
+        public IrkRosskoImageService()
         {
 
             // Создаю временную копию профиля (на эту сессию)
-            ProfilePathService profilePathService = new(_profilePath);
-            _tempProfilePath = profilePathService.CreateTempProfile();
+            ProfilePathService profilePathService = new();
+            _tempProfilePath = profilePathService.CreateTempProfile(_profilePath);
 
             InitializeDriver();
         }
@@ -43,8 +43,12 @@ namespace DromAutoTrader.ImageServices
         #region Перезаписанные методы базового класса
         protected override void GoTo()
         {
-            _driver.Manage().Window.Maximize();
-            _driver.Navigate().GoToUrl(LoginPageUrl);
+            try
+            {
+                _driver.Manage().Window.Maximize();
+                _driver.Navigate().GoToUrl(LoginPageUrl);
+            }
+            catch (Exception) { }
         }
 
         protected override void Authorization() { }
@@ -139,13 +143,13 @@ namespace DromAutoTrader.ImageServices
             // Устанавливаю ожидание
             WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(7));
             wait.IgnoreExceptionTypes();
-            
+
             // Получаю все картинки thumbs
             try
-            {               
+            {
                 // Находим все img элементы 
                 IWebElement imagesThumb = wait.Until(e => e.FindElement(By.ClassName("src-features-product-card-components-info-___index__image___KeiQL")));
-                              
+
                 string imagePath = imagesThumb.GetAttribute("style");
 
                 // Находим позиции, где начинается URL и заканчивается
@@ -171,14 +175,15 @@ namespace DromAutoTrader.ImageServices
             return downloadedImages;
         }
 
-        protected override void CloseDriver()
+        protected override async void CloseDriverAsync()
         {
             try
             {
                 _driver.Close();
 
                 // Удаляю временную директорию профиля после закрытия браузера
-                Directory.Delete(_tempProfilePath, true);
+                ProfilePathService profilePathService = new();
+                await profilePathService.DeleteDirectoryAsync(_tempProfilePath);
             }
             catch (Exception)
             {
@@ -244,7 +249,7 @@ namespace DromAutoTrader.ImageServices
                 }
 
                 Thread.Sleep(random.Next(10, 50));  // Добавляем небольшую паузу между вводом каждого символа
-            }           
+            }
         }
         #endregion
 
