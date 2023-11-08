@@ -32,8 +32,8 @@ namespace DromAutoTrader.ImageServices
         public BergImageService()
         {
             // Создаю временную копию профиля (на эту сессию)
-            ProfilePathService profilePathService = new();
-            _tempProfilePath = profilePathService.CreateTempPath(_profilePath);
+            ProfilePathService profilePathService = new(_profilePath);
+            _tempProfilePath = profilePathService.CreateTempProfile();
 
             InitializeDriver();            
         }
