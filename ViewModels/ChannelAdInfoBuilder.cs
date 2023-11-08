@@ -45,7 +45,7 @@ namespace DromAutoTrader.ViewModels
             _adPublishingInfo.Description = _channel.Description; // Описание товара (из прайса) Пока нигде не потребовалось
             _adPublishingInfo.KatalogName = _price?.KatalogName; // Это попадает в заголовок объявления
             _adPublishingInfo.InputPrice = _price.PriceBuy; // Прайс на деталь от поставщика
-            _adPublishingInfo.OutputPrice = decimal.Round(calculatedPrice);// Считаю цену исходя из цены прайса
+            _adPublishingInfo.OutputPrice = (decimal)Math.Round(calculatedPrice, 0); // Округляю полученную цену и записываю
             _adPublishingInfo.AdDescription = _channel.Name; // Имя канала в котором опубликовал
             _adPublishingInfo.Count = _price.Count; // Количество запчастей у поставщика // TODO изменить при парсинге, иногда приходит 10-100 (от и до, в этом случае мы получаем 0)
 
