@@ -29,7 +29,7 @@ namespace DromAutoTrader.ImageServices
         public UnicomImageService()
         {
             InitializeDriver();
-            _waiter = new(_driver, TimeSpan.FromSeconds(10));
+            _waiter = new(_driver, TimeSpan.FromSeconds(5));
             _waiter.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
         }
 
@@ -43,74 +43,13 @@ namespace DromAutoTrader.ImageServices
         {
             try
             {
-                _driver.Manage().Window.Maximize();
-                _driver.Navigate().GoToUrl(LoginPageUrl);
+                _driver.Manage().Window.Maximize();               
             }
             catch (Exception) { }
         }
 
         protected override void Authorization()
-        {
-            bool isAuth = true;
-            int tryCount = 0;
-
-            while (isAuth)
-            {
-                tryCount++;
-                if (tryCount == 20)
-                {
-                    CloseDriver();
-                    return;
-                }
-
-                try
-                {
-                    // Поле для ввода логина
-                    IWebElement usernameElement = _waiter.Until(e => e.FindElement(By.Name("username")));
-
-                    // Используем JavaScript для вставки значения в поле
-                    //((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].value = arguments[1];", usernameElement, UserName);
-
-                    //usernameElement.Clear();
-                    ClearAndEnterText(usernameElement, UserName);
-                    // Ввести логин
-                    // usernameElement.SendKeys(UserName);                 
-                }
-                catch (Exception) { }
-
-                try
-                {
-                    // Поле для ввода пароля
-                    IWebElement passwordElement = _waiter.Until(e => e.FindElement(By.Name("password")));
-
-                    // Используем JavaScript для вставки значения в поле
-                    //((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].value = arguments[1];", passwordElement, Password);
-
-                    //passwordElement.Clear();
-                    ClearAndEnterText(passwordElement, Password);
-
-                    //// Ввести пароль
-                    //passwordElement.SendKeys(Password);
-
-                }
-                catch (Exception) { }
-
-                try
-                {
-                    // Кнопка для входа и нажать на нее
-                    IWebElement loginButton = _waiter.Until(e => e.FindElement(By.CssSelector(".login__button")));
-                    // Используем JavaScript для выполнения клика
-                    // ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", loginButton);
-
-
-                    loginButton.Click();
-
-                    Thread.Sleep(500);
-                }
-                catch (Exception) { }
-
-                isAuth = !IsAuth();
-            }
+        {           
         }
 
         // Проверка авторизации
@@ -134,10 +73,6 @@ namespace DromAutoTrader.ImageServices
         {
             try
             {
-                // Ожидание загурзки страницы
-                //WaitReadyStatePage();
-
-
                 string searchUrl = BuildUrl();
 
                 _driver.Navigate().GoToUrl(searchUrl);
@@ -148,7 +83,7 @@ namespace DromAutoTrader.ImageServices
         // Метод проверяет если ничего не найдено
         protected override bool IsNotMatchingArticul()
         {
-            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(7));
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(3));
             try
             {
                 IWebElement attentionMessage = wait.Until(e => e.FindElement(By.CssSelector("h4.not-found__title")));

@@ -22,7 +22,7 @@ namespace DromAutoTrader.ImageServices
         #endregion
 
         #region Приватные поля
-
+        private readonly string _profilePath = @"C:\SeleniumProfiles\IrkRossko";
         #endregion
 
         public IrkRosskoImageService() { InitializeDriver(); }
@@ -202,7 +202,7 @@ namespace DromAutoTrader.ImageServices
         // Инициализация драйвера
         private void InitializeDriver()
         {
-            UndetectDriver webDriver = new("");
+            UndetectDriver webDriver = new(_profilePath);
             _driver = webDriver.GetDriver();
         }
 

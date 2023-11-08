@@ -3,7 +3,6 @@ using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System.Threading;
-using System.Web;
 
 namespace DromAutoTrader.ImageServices
 {
@@ -55,7 +54,7 @@ namespace DromAutoTrader.ImageServices
         // Метод авторизации
         protected override void Authorization()
         {
-           
+
         }
 
         // Метод отправки поискового запроса
@@ -126,7 +125,7 @@ namespace DromAutoTrader.ImageServices
             catch (Exception)
             {
                 return false;
-            }           
+            }
         }
 
         // Метод проверки результатов поиска детали

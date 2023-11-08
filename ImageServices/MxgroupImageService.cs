@@ -20,6 +20,11 @@ namespace DromAutoTrader.ImageServices
         public override string ServiceName => "https://new.mxgroup.ru";
         #endregion
 
+        #region Приватные
+        
+        private readonly string _profilePath = @"C:\SeleniumProfiles\Mxgroup";
+        #endregion
+
         public MxgroupImageService()
         {
             InitializeDriver();
@@ -32,61 +37,17 @@ namespace DromAutoTrader.ImageServices
         #region Перезаписанные методы базового класса       
         protected override void GoTo()
         {
-            _driver.Manage().Window.Maximize();
-            _driver.Navigate().GoToUrl(LoginPageUrl);
+            try
+            {
+                _driver.Manage().Window.Maximize();
+            }
+            catch (Exception)
+            {
+            }        
         }
 
         protected override void Authorization()
-        {
-            Thread.Sleep(1000);
-
-            try
-            {
-                try
-                {
-                    IWebElement logInput = _driver.FindElement(By.Name("username"));
-                    Actions builder = new Actions(_driver);
-
-                    builder.MoveToElement(logInput)
-                           .Click()
-                           .SendKeys(UserName)
-                           .Build()
-                           .Perform();
-
-                    Thread.Sleep(1000);
-                }
-                catch (Exception) { }
-
-                try
-                {
-                    IWebElement passInput = _driver.FindElement(By.Name("password"));
-
-                    Thread.Sleep(1000);
-
-                    passInput.SendKeys(Password);
-                }
-                catch (Exception) { }
-
-                try
-                {
-                    IWebElement sumbitBtn = _driver.FindElement(By.ClassName("btn"));
-
-                    sumbitBtn.Click();
-
-                    Thread.Sleep(5000);
-                }
-                catch (Exception) { }
-
-
-                WaitingReadyStatePage();
-
-            }
-            catch (Exception ex)
-            {
-                // TODO сделать логирование
-                string message = $"Произошла ошибка в методе Authorization: {ex.Message}";
-                Console.WriteLine(message);
-            }
+        {            
         }
 
         protected override void SetArticulInSearchInput()
@@ -295,9 +256,7 @@ namespace DromAutoTrader.ImageServices
                     {
 
                     }
-                    //< h1 >< span class="mx-text_up mx-text_light mx-text_sm">Результат поиска</span>SS-3033</h1>
-                    //<div class="text">…подождите, идет поиск&nbsp;<svg class="icon spinner mx-spin"><use xlink:href="/images/sprite.svg#icon-spinner2"></use></svg></div>
-
+                   
                     string imagePath = imgPopup.GetAttribute("src");
                     images.Add(imagePath);
                 }
@@ -324,7 +283,7 @@ namespace DromAutoTrader.ImageServices
         // Инициализация драйвера
         private void InitializeDriver()
         {
-            UndetectDriver webDriver = new("");
+            UndetectDriver webDriver = new(_profilePath);
             _driver = webDriver.GetDriver();
         }
 

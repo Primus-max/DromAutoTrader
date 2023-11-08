@@ -1,17 +1,8 @@
 ﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
-using System.Drawing.Imaging;
-using System.Drawing;
-using System.Net.Http;
 using System.Threading;
-using System.Web;
-using System.IO;
-using Image = System.Drawing.Image;
-using System.Net;
-using System.Windows.Media.Imaging;
 
 namespace DromAutoTrader.ImageServices
 {
@@ -30,7 +21,9 @@ namespace DromAutoTrader.ImageServices
         public override string ServiceName => "https://tmparts.ru";
         #endregion
 
-        
+        #region Приватные
+        private readonly string _profilePath = @"C:\SeleniumProfiles\Tmparts";
+        #endregion
 
         public TmpartsImageService()
         {
@@ -44,12 +37,10 @@ namespace DromAutoTrader.ImageServices
 
         #region Перезаписанные методы базового класса
         protected override void GoTo()
-        {
-            // TODO везде обернуть эти места в try catch
+        {           
             try
             {
-                _driver.Manage().Window.Maximize();
-                _driver.Navigate().GoToUrl(LoginPageUrl);
+                _driver.Manage().Window.Maximize();                
             }
             catch (Exception)
             {
@@ -59,56 +50,14 @@ namespace DromAutoTrader.ImageServices
 
         protected override void Authorization()
         {
-            try
-            {
-                try
-                {
-                    IWebElement logInput = _driver.FindElement(By.Id("inputEmail4"));
-                    Actions builder = new Actions(_driver);
-
-                    builder.MoveToElement(logInput)
-                           .Click()
-                           .SendKeys(UserName)
-                           .Build()
-                           .Perform();
-
-                    Thread.Sleep(500);
-                }
-                catch (Exception) { }
-
-                try
-                {
-                    IWebElement passInput = _driver.FindElement(By.Id("inputPassword4"));
-
-                    Thread.Sleep(200);
-
-                    passInput.SendKeys(Password);
-                }
-                catch (Exception) { }
-
-                try
-                {
-                    IWebElement sumbitBtn = _driver.FindElement(By.CssSelector(".btn.btn-default"));
-
-                    sumbitBtn.Click();
-
-                    Thread.Sleep(200);
-                }
-                catch (Exception) { }
-            }
-            catch (Exception ex)
-            {
-                // TODO сделать логирование
-                string message = $"Произошла ошибка в методе Authorization: {ex.Message}";
-                Console.WriteLine(message);
-            }
+         
         }
 
         protected override void SetArticulInSearchInput()
         {
             // TODO везде обернуть эти места в try catch           
             try
-            {                
+            {
                 string? searchUrl = BuildUrl();
                 _driver.Navigate().GoToUrl(searchUrl);
             }
@@ -121,12 +70,12 @@ namespace DromAutoTrader.ImageServices
 
         protected override bool IsNotMatchingArticul()
         {
-            return false;           
+            return false;
         }
 
         protected override void OpenSearchedCard()
         {
-           
+
         }
 
         protected override bool IsImagesVisible()
@@ -138,7 +87,7 @@ namespace DromAutoTrader.ImageServices
                 IWebElement documentBody = _driver.FindElement(By.TagName("body"));
                 IWebElement img = documentBody.FindElement(By.TagName("img"));
                 isImagesVisible = true;
-                return isImagesVisible;               
+                return isImagesVisible;
             }
             catch (Exception)
             {
@@ -148,7 +97,7 @@ namespace DromAutoTrader.ImageServices
         }
 
         protected override async Task<List<string>> GetImagesAsync()
-        {            
+        {
             // Список изображений которые возвращаем из метода
             List<string> downloadedImages = new List<string>();
 
@@ -156,18 +105,18 @@ namespace DromAutoTrader.ImageServices
             List<string> images = new List<string>();
             IWebElement mainImageParentDiv = null!;
 
-           
+
             // Получаю контейнер с картинками
             try
             {
-                mainImageParentDiv = _driver.FindElement(By.TagName("body"));               
+                mainImageParentDiv = _driver.FindElement(By.TagName("body"));
             }
             catch (Exception) { }
 
             // Получаю все картинки thumbs
             try
             {
-                IWebElement img = mainImageParentDiv.FindElement(By.TagName("img"));                
+                IWebElement img = mainImageParentDiv.FindElement(By.TagName("img"));
 
                 if (img != null)
                 {
@@ -176,8 +125,8 @@ namespace DromAutoTrader.ImageServices
 
                     images.Add(imagePath);
                 }
-                    
-                
+
+
             }
             catch (Exception) { }
 
@@ -202,7 +151,7 @@ namespace DromAutoTrader.ImageServices
             if (!folderContainsFiles)
             {
                 // Скачиваю изображения
-                ImageDownloader? downloader = new(Articul, _imagesLocalPath, images);                
+                ImageDownloader? downloader = new(Articul, _imagesLocalPath, images);
                 downloadedImages = await downloader.DownloadImageWithCookiesAsync(_driver);
             }
             return downloadedImages;
@@ -218,7 +167,7 @@ namespace DromAutoTrader.ImageServices
         // Метод для формирования Url поискового запроса
         public string BuildUrl()
         {
-            string buildetLink = $"{SearchPageUrl}{Brand}/{Articul}.jpg";          
+            string buildetLink = $"{SearchPageUrl}{Brand}/{Articul}.jpg";
 
             return buildetLink;
         }
@@ -226,7 +175,7 @@ namespace DromAutoTrader.ImageServices
         // Инициализация драйвера
         private void InitializeDriver()
         {
-            UndetectDriver webDriver = new("");
+            UndetectDriver webDriver = new(_profilePath);
             _driver = webDriver.GetDriver();
         }
         #endregion

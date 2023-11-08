@@ -82,11 +82,11 @@ namespace DromAutoTrader.ViewModels
                     // TODO здесь запускаю парсинг по разным сервисам
 
 
-                    BergImageService bergImageService = new();
+                    TmpartsImageService tmpartsImageService = new TmpartsImageService();
                     // await bergImageService.RunAsync(brand, articul);
-                    await bergImageService.RunAsync(brand, articul);
+                    await tmpartsImageService.RunAsync(brand, articul);
 
-                    var testImages = bergImageService.BrandImages;
+                    var testImages = tmpartsImageService.BrandImages;
                 }
             }
         }
