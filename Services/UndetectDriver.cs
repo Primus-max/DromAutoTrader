@@ -22,7 +22,7 @@ namespace DromAutoTrader.Services
             ChromeOptions options = new();
             options.AddArgument("--silent");
             options.AddArgument("--disable-notifications");
-            //options.AddArgument("--headless=new");
+            options.AddArgument("--headless=new");
             options.AddArgument($"--user-data-dir={_profilePath}");
 
             //var chromeService = ChromeDriverService.CreateDefaultService();
@@ -34,9 +34,9 @@ namespace DromAutoTrader.Services
             {
                 driver = UndetectedChromeDriver.Create(options: options, hideCommandPromptWindow: true, driverExecutablePath: "chromedriver.exe");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show($"Не удалось получить драйвер, причина: {ex.ToString()}");
+                // TODO Сделать логирование именно для ChromeDriver
             }
 
             return driver;
