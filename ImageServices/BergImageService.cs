@@ -15,7 +15,7 @@ namespace DromAutoTrader.ImageServices
         #region Перезапись абстрактных свойст
         protected override string LoginPageUrl => "https://berg.ru/login";
 
-        protected override string SearchPageUrl => "https://berg.ru/search/step2?search=AG19166&brand=TRIALLI&withRedirect=1";
+        protected override string SearchPageUrl => "https://berg.ru/search?search=";
 
         protected override string UserName => "autobest038";
 
@@ -119,26 +119,47 @@ namespace DromAutoTrader.ImageServices
         // Метод открытия каротчки с полученным запросом
         protected override void OpenSearchedCard()
         {
-            //try
-            //{
-            //    IWebElement searchedCard = _driver.FindElement(By.CssSelector("div.search_result__row"));
-            //    IWebElement searchCardLink = searchedCard.FindElement(By.CssSelector(".pseudo_link.part_description__link"));
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(7));
+            try
+            {
+                // Получаю все карточки на странице
+                IList<IWebElement> searchedCards = wait.Until(e => e.FindElements(By.CssSelector("div.search_result__row")));
 
-            //    IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
-            //    js.ExecuteScript("arguments[0].click();", searchCardLink);
-            //}
-            //catch (Exception ex)
-            //{
-            //    string message = $"Произошла ошибка в методе GetSearchedCard: {ex.Message}";
-            //    Console.WriteLine(message);
-            //}
+                foreach (var card in searchedCards)
+                {
+                    // Получаю бренд и артикул из карточек
+                    string brand = card.FindElement(By.ClassName("brand_name")).Text.ToLower().Replace(" ", "");
+                    string articul = card.FindElement(By.XPath("//div[@class='article']/a[1]")).Text;
+                    string? globalNameBrand = Brand.ToLower().Replace(" ", "");
+
+                    // Если совпадает открываю Popup
+                    if (globalNameBrand == brand && Articul == articul)
+                    {
+                        IWebElement popUp = card.FindElement(By.CssSelector("a.pseudo_link.part_description__link"));
+                        // Получаю ссылку на Popup
+                        string popupUrl = popUp.GetAttribute("href");
+                        string popUpLink = $"{ServiceName}{popupUrl}";
+
+                        try
+                        {
+                            _driver.Navigate().GoToUrl(popupUrl);
+                        }
+                        catch (Exception) { }
+
+                    }
+                }
+
+            }
+            catch (Exception)
+            {
+
+            }
         }
 
         // Метод проверки, появились картинки или нет
         protected override bool IsImagesVisible()
         {
             WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(7));
-
 
             try
             {
@@ -278,13 +299,8 @@ namespace DromAutoTrader.ImageServices
         // Метод для формирования Url поискового запроса
         public string BuildUrl()
         {
-            var uri = new Uri(SearchPageUrl);
-            var query = HttpUtility.ParseQueryString(uri.Query);
-            query["search"] = Articul;
-            query["brand"] = Brand;
-
             // Построение нового URL с обновленными параметрами
-            string newUrl = uri.GetLeftPart(UriPartial.Path) + "?" + query.ToString();
+            string newUrl = SearchPageUrl + Articul;
 
             return newUrl;
         }
