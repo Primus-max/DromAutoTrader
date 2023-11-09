@@ -187,7 +187,7 @@ namespace DromAutoTrader.ViewModels
 
         #region КОМАНДЫ
 
-        
+
 
         #region Поставщики
         public ICommand AddSupplierCommand { get; } = null!;
@@ -366,7 +366,7 @@ namespace DromAutoTrader.ViewModels
             InitializeDatabase();
 
             #region Инициализация команд
-            
+
 
 
             #region Команда для получения нескольких параметров
@@ -484,7 +484,7 @@ namespace DromAutoTrader.ViewModels
                 // Здесь передаём путь к файлу для скачивания(локально)
             }
 
-           await RemoveAtArchive(); // Убираю в архив
+            await RemoveAtArchive(); // Убираю в архив
 
             DeleteOutdatedAdsAtDb(); // Убираю старые объявления
         }
@@ -618,7 +618,7 @@ namespace DromAutoTrader.ViewModels
                 PostingProgressItems.Add(postingProgressItem);
             });
 
-            DromAdPublisher dromAdPublisher = new();
+
 
             var channels = adInfos.Select(adInfo => adInfo.AdDescription).Distinct();
 
@@ -628,13 +628,13 @@ namespace DromAutoTrader.ViewModels
             {
                 var channelAdInfos = adInfos.Where(adInfo => adInfo.AdDescription == channelName).ToList();
 
-                tasks.Add(ProcessChannelAdsAsync(dromAdPublisher, channelAdInfos, channelName));
+                tasks.Add(ProcessChannelAdsAsync(channelAdInfos, channelName));
             }
 
             await Task.WhenAll(tasks);
         }
 
-        private async Task ProcessChannelAdsAsync(DromAdPublisher dromAdPublisher, List<AdPublishingInfo> channelAdInfos, string channelName)
+        private async Task ProcessChannelAdsAsync(List<AdPublishingInfo> channelAdInfos, string channelName)
         {
             foreach (var adInfo in channelAdInfos)
             {
@@ -647,6 +647,7 @@ namespace DromAutoTrader.ViewModels
                 postingProgressItem.ProcessName = "Публикация объявлений на Drom.ru";
                 postingProgressItem.ChannelName = channelName;
 
+                DromAdPublisher dromAdPublisher = new();
                 bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, channelName);
 
                 if (isPublished)
