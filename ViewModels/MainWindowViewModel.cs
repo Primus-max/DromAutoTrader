@@ -1,4 +1,5 @@
-﻿using DromAutoTrader.DromManager;
+﻿using DromAutoTrader.AdsPowerManager;
+using DromAutoTrader.DromManager;
 using DromAutoTrader.Infrastacture.Commands;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
@@ -626,15 +627,23 @@ namespace DromAutoTrader.ViewModels
             {
                 var channelAdInfos = adInfos.Where(adInfo => adInfo.AdDescription == channelName).ToList();
 
-                DromAdPublisher dromAdPublisher = new(channelName); 
+                DromAdPublisher dromAdPublisher = new(channelName);
 
                 tasks.Add(ProcessChannelAdsAsync(dromAdPublisher, channelAdInfos));
             }
 
             await Task.WhenAll(tasks);
+
+            // Закрываю прфоили
+            var channelsForClose = context.Channels.ToList();
+            BrowserManager browser = new();
+            foreach (var channel in channelsForClose)
+            {
+                await browser.CloseBrowser(channel.Name);
+            }
         }
 
-
+        // Метод публикации объявлений
         private async Task ProcessChannelAdsAsync(DromAdPublisher dromAdPublisher, List<AdPublishingInfo> channelAdInfos)
         {
             foreach (var adInfo in channelAdInfos)
@@ -657,16 +666,17 @@ namespace DromAutoTrader.ViewModels
                     if (existingAdInfo != null)
                     {
                         existingAdInfo.PriceBuy = "1";
-                    }                    
+                    }
 
                     try
-                    {                        
+                    {
                         context.AdPublishingInfo.Update(existingAdInfo);
                         context.SaveChanges(); // Сохраняем изменения в базе данных
                     }
                     catch (Exception ex)
                     {
                         // Обработка ошибок при добавлении в базу данных
+                        MessageBox.Show($"ОШибка {ex.ToString()} в методе ProcessChannelAdsAsync");
                     }
                 }
 
