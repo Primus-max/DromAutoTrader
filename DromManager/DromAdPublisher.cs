@@ -484,12 +484,10 @@ namespace DromAutoTrader.DromManager
         }
 
 
-        // Инициализация драйвера
-        private static SemaphoreSlim browserSemaphore = new(1, 1);
+        // Инициализация драйвера       
 
         private async Task InitializeDriver(string channelName)
-        {
-            await browserSemaphore.WaitAsync();
+        {            
             try
             {
                 BrowserManager adsPower = new();
@@ -502,10 +500,7 @@ namespace DromAutoTrader.DromManager
                     _driver = await adsPower.InitializeDriver(profile.UserId);
                 }
             }
-            finally
-            {
-                browserSemaphore.Release();
-            }
+            catch(Exception) { }
         }
     }
 }
