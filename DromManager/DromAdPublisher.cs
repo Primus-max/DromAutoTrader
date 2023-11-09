@@ -190,10 +190,7 @@ namespace DromAutoTrader.DromManager
         {
             try
             {
-                //  WaitLoadingPage();
-
                 // Нахождение и клик по элементу по CSS селектору
-                // IWebElement dirControlVariant = _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".dir_control__variant")));
                 IWebElement dirControlVariant = _wait.Until(e => e.FindElement(By.CssSelector(".dir_control__variant")));
                 ScrollToElement(dirControlVariant);
 
@@ -211,7 +208,6 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Нахождение и клик по элементу по CSS селектору
-                //IWebElement bulletinTypeVariant = _driver.FindElement(By.CssSelector(".choice-w-caption__variant:nth-child(1) .bulletin-type__variant-title"));
                 IWebElement bulletinTypeVariant = _wait.Until(e => e.FindElement(By.CssSelector(".choice-w-caption__variant:nth-child(1) .bulletin-type__variant-title")));
                 ScrollToElement(bulletinTypeVariant);
 
@@ -229,7 +225,6 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Найти элемент <input type="file>
-                //IWebElement fileInput = _driver.FindElement(By.Name("up[]"));
                 IWebElement fileInput = _wait.Until(e => e.FindElement(By.Name("up[]")));
 
                 ScrollToElement(fileInput);
@@ -251,7 +246,6 @@ namespace DromAutoTrader.DromManager
             {
                 // Найти элемент <input type="file>
                 IWebElement brandNameInput = _wait.Until(e => e.FindElement(By.Name("manufacturer")));
-                //IWebElement fileInput = _wait.Until(e => e.FindElement(By.Name("up[]")));
 
                 if (string.IsNullOrEmpty(brandNameInput.Text))
                 {

@@ -659,6 +659,7 @@ namespace DromAutoTrader.ViewModels
         // Метод публикации объявлений
         private async Task ProcessChannelAdsAsync(DromAdPublisher dromAdPublisher, List<AdPublishingInfo> channelAdInfos)
         {
+
             foreach (var adInfo in channelAdInfos)
             {
                 if (adInfo.IsArchived == true) continue; // Если объявление в архиве
@@ -669,10 +670,13 @@ namespace DromAutoTrader.ViewModels
                 postingProgressItem.TotalStages = channelAdInfos.Count;
                 postingProgressItem.ProcessName = "Публикация объявлений на Drom.ru";
 
+
                 bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo);
 
                 if (isPublished)
                 {
+                    Console.WriteLine($"Публикация {adInfo.Artikul} || {adInfo.Brand} || канал: {adInfo.AdDescription}");
+
                     using var context = new AppContext();
                     var existingAdInfo = context.AdPublishingInfo.Find(adInfo.Id);
 
@@ -689,7 +693,7 @@ namespace DromAutoTrader.ViewModels
                     catch (Exception ex)
                     {
                         // Обработка ошибок при добавлении в базу данных
-                        MessageBox.Show($"ОШибка {ex.ToString()} в методе ProcessChannelAdsAsync");
+                        Console.WriteLine($"ОШибка {ex.ToString()} в методе ProcessChannelAdsAsync");
                     }
                 }
 
