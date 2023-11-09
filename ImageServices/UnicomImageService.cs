@@ -136,7 +136,7 @@ namespace DromAutoTrader.ImageServices
             }
             catch (Exception)
             {
-                CloseDriverAsync();
+               await CloseDriverAsync();
             }
 
             if (images.Count != 0)
@@ -154,7 +154,7 @@ namespace DromAutoTrader.ImageServices
             FolderManager folderManager = new();
             bool folderContainsFiles = folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
 
-            Thread.Sleep(1000);
+            await Task.Delay(1000);
 
             if (!folderContainsFiles)
             {

@@ -61,7 +61,6 @@ namespace DromAutoTrader.ImageServices
 
         protected override void SetArticulInSearchInput()
         {
-            // TODO везде обернуть эти места в try catch           
             try
             {
                 string? searchUrl = BuildUrl();
@@ -69,6 +68,7 @@ namespace DromAutoTrader.ImageServices
             }
             catch (Exception)
             {
+                // TODO разобраться в этих ожиданиях
                 Thread.Sleep(5000);
             }
             Thread.Sleep(1500);
@@ -152,7 +152,7 @@ namespace DromAutoTrader.ImageServices
             FolderManager folderManager = new();
             bool folderContainsFiles = folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
 
-            Thread.Sleep(1000);
+            await Task.Delay(1000);
 
             if (!folderContainsFiles)
             {
