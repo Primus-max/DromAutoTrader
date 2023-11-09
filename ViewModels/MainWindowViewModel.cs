@@ -618,8 +618,6 @@ namespace DromAutoTrader.ViewModels
                 PostingProgressItems.Add(postingProgressItem);
             });
 
-
-
             var channels = adInfos.Select(adInfo => adInfo.AdDescription).Distinct();
 
             var tasks = new List<Task>();
@@ -628,13 +626,16 @@ namespace DromAutoTrader.ViewModels
             {
                 var channelAdInfos = adInfos.Where(adInfo => adInfo.AdDescription == channelName).ToList();
 
-                tasks.Add(ProcessChannelAdsAsync(channelAdInfos, channelName));
+                DromAdPublisher dromAdPublisher = new(channelName); 
+
+                tasks.Add(ProcessChannelAdsAsync(dromAdPublisher, channelAdInfos));
             }
 
             await Task.WhenAll(tasks);
         }
 
-        private async Task ProcessChannelAdsAsync(List<AdPublishingInfo> channelAdInfos, string channelName)
+
+        private async Task ProcessChannelAdsAsync(DromAdPublisher dromAdPublisher, List<AdPublishingInfo> channelAdInfos)
         {
             foreach (var adInfo in channelAdInfos)
             {
@@ -645,10 +646,8 @@ namespace DromAutoTrader.ViewModels
                 PostingProgressItem postingProgressItem = new();
                 postingProgressItem.TotalStages = channelAdInfos.Count;
                 postingProgressItem.ProcessName = "Публикация объявлений на Drom.ru";
-                postingProgressItem.ChannelName = channelName;
 
-                DromAdPublisher dromAdPublisher = new();
-                bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo, channelName);
+                bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo);
 
                 if (isPublished)
                 {
@@ -668,8 +667,6 @@ namespace DromAutoTrader.ViewModels
 
             }
         }
-
-
 
 
         // Метод для формирования прайса
