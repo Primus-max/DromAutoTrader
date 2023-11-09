@@ -17,23 +17,28 @@ namespace DromAutoTrader.DromManager
         private BrowserManager adsPower = null!;
         private List<Profile> profiles = null!;
         private WebDriverWait _wait = null!;
+        private readonly string? _channelName = null!;
 
-        public DromAdPublisher()
+        public DromAdPublisher(string channelName)
         {
+            _channelName = channelName;
             adsPower = new BrowserManager();
+
+            // Инициализация драйвера Chrome
+            InitializeDriver(channelName);
         }
-        // TODO сделать проверку при запуске на окно выбора города публикации объявления
-        // <input class="bzr-field__text-input bzr-field__text-input_search bzr-field__text-input_clearable" name="search" placeholder="Название города">
+
+        
         /// <summary>
         /// Метод точка входа для размещения объявления на Drom
         /// </summary>
         /// <param name="adTitle"></param>
-        public async Task<bool> PublishAdAsync(AdPublishingInfo adPublishingInfo, string channelName)
+        public async Task<bool> PublishAdAsync(AdPublishingInfo adPublishingInfo)
         {
             bool isPublited = false;
             if (adPublishingInfo == null) return isPublited;
-            // Инициализация драйвера Chrome
-            await InitializeDriver(channelName);
+            
+            
             _wait = new(_driver, TimeSpan.FromSeconds(20));
 
 
@@ -85,7 +90,7 @@ namespace DromAutoTrader.DromManager
 
             isPublited = ClickPublishButton();
 
-            await adsPower.CloseBrowser(channelName);
+            await adsPower.CloseBrowser(_channelName);
             _driver.Quit();
 
             return isPublited;
@@ -483,14 +488,11 @@ namespace DromAutoTrader.DromManager
 
         }
 
-
         // Инициализация драйвера       
-
         private async Task InitializeDriver(string channelName)
         {            
             try
-            {
-                BrowserManager adsPower = new();
+            {                
                 List<Profile> profiles = await ProfileManager.GetProfiles();
 
                 foreach (Profile profile in profiles)
