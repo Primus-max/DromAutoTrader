@@ -25,10 +25,9 @@ namespace DromAutoTrader.DromManager
             adsPower = new BrowserManager();
 
             // Инициализация драйвера Chrome
-            InitializeDriver(channelName);
+            InitializeDriver(channelName).GetAwaiter().GetResult();            
         }
 
-        
         /// <summary>
         /// Метод точка входа для размещения объявления на Drom
         /// </summary>
@@ -37,11 +36,12 @@ namespace DromAutoTrader.DromManager
         {
             bool isPublited = false;
             if (adPublishingInfo == null) return isPublited;
-            
-            
+
+            // Глобально ожидание
             _wait = new(_driver, TimeSpan.FromSeconds(20));
 
 
+            await Task.Delay(200);
             OpenGoodsPage();
             SetWindowSize();
 
@@ -73,25 +73,25 @@ namespace DromAutoTrader.DromManager
             // Цена для публикации
             PriceInput(adPublishingInfo?.OutputPrice?.ToString());
             //Сondition();
-            Thread.Sleep(500);
+            await Task.Delay(500);
 
             DescriptionTextInput(adPublishingInfo?.Description);
 
-            Thread.Sleep(500);
+            await Task.Delay(500);
             // Кнопка наличие или под заказ
             GoodPresentState();
 
             // Проверяю заполненность полей
             CheckAndFillRequiredFields();
 
-            Thread.Sleep(500);
+           await Task.Delay(500);
             // Публикую
             //ClickPublishButton();
 
             isPublited = ClickPublishButton();
 
-            await adsPower.CloseBrowser(_channelName);
-            _driver.Quit();
+            //await adsPower.CloseBrowser(_channelName);
+            //_driver.Quit();
 
             return isPublited;
         }
@@ -106,7 +106,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Ошибка при открытии веб-сайта: " + ex.Message);
+                //MessageBox.Show($"ОШибка {ex.ToString()} в методе OpenGoodsPage");
             }
         }
 
@@ -120,7 +120,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Ошибка при открытии веб-сайта: " + ex.Message);
+                //MessageBox.Show("Ошибка при открытии веб-сайта: " + ex.Message);
             }
         }
 
@@ -134,7 +134,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Ошибка при установке размера окна: " + ex.Message);
+                //MessageBox.Show("Ошибка при установке размера окна: " + ex.Message);
             }
         }
 
@@ -148,7 +148,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Ошибка при прокрутке к элементу: " + ex.Message);
+               // MessageBox.Show("Ошибка при прокрутке к элементу: " + ex.Message);
             }
         }
 
@@ -166,7 +166,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Ошибка при вводе текста в поле 'subject': " + ex.Message);
+                //MessageBox.Show("Ошибка при вводе текста в поле 'subject': " + ex.Message);
             }
         }
 
@@ -181,7 +181,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Ошибка при нажатии клавиши Enter: " + ex.Message);
+                //MessageBox.Show("Ошибка при нажатии клавиши Enter: " + ex.Message);
             }
         }
 
@@ -201,7 +201,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Ошибка при клике на элемент 'dir_control__variant': " + ex.Message);
+                //MessageBox.Show("Ошибка при клике на элемент 'dir_control__variant': " + ex.Message);
             }
         }
 
@@ -219,7 +219,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Ошибка при клике на элемент 'bulletin-type__variant-title': " + ex.Message);
+                //MessageBox.Show("Ошибка при клике на элемент 'bulletin-type__variant-title': " + ex.Message);
             }
         }
 
@@ -240,7 +240,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Произошла ошибка при вставке изображения: " + ex.Message);
+                //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
             }
         }
 
@@ -265,7 +265,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Произошла ошибка при вставке изображения: " + ex.Message);
+                //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
             }
         }
 
@@ -288,7 +288,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Произошла ошибка при вставке изображения: " + ex.Message);
+                //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
             }
         }
 
@@ -306,7 +306,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Произошла ошибка при вставке изображения: " + ex.Message);
+                //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
             }
         }
 
@@ -323,7 +323,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Произошла ошибка при вставке изображения: " + ex.Message);
+                //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
             }
         }
 
@@ -341,7 +341,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Произошла ошибка при вставке изображения: " + ex.Message);
+                //MessageBox.Show($"ОШибка {ex.ToString()} в методе DescriptionTextInput");
             }
         }
 
@@ -359,7 +359,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Произошла ошибка при вставке изображения: " + ex.Message);
+                //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
             }
         }
 
@@ -384,7 +384,7 @@ namespace DromAutoTrader.DromManager
             catch (Exception)
             {
                 //TODO добавить логирование
-                //Console.WriteLine("Ошибка при клике на кнопку 'Опубликовать': " + ex.Message);
+                //MessageBox.Show("Ошибка при клике на кнопку 'Опубликовать': " + ex.Message);
                 CheckAndFillRequiredFields(); // Если попали сюда, надо проверить, все ли поля заполнены
                 return false;
             }
