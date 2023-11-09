@@ -471,7 +471,7 @@ namespace DromAutoTrader.ViewModels
         public async Task RunAllWork()
         {
             // Получаю, обрабатываю, записываю в базу прайсы
-            await ParsingPricesAsync();
+            //await ParsingPricesAsync();
 
             AdsArchiver adsArchiver = new();
             adsArchiver.CompareAndArchiveAds();
@@ -640,7 +640,7 @@ namespace DromAutoTrader.ViewModels
             foreach (var adInfo in channelAdInfos)
             {
                 if (adInfo.IsArchived == true) continue; // Если объявление в архиве
-                if (adInfo.PriceBuy == 1) continue; // Если уже публиковал
+                if (adInfo.PriceBuy == "1") continue; // Если уже публиковал
                 if (adInfo.Artikul == null || adInfo.Brand == null) continue; // Если бренд или артикул пустые
 
                 PostingProgressItem postingProgressItem = new();
@@ -651,15 +651,20 @@ namespace DromAutoTrader.ViewModels
 
                 if (isPublished)
                 {
-                    adInfo.PriceBuy = 1;
+                    using var context = new AppContext();
+                    var existingAdInfo = context.AdPublishingInfo.Find(adInfo.Id);
+
+                    if (existingAdInfo != null)
+                    {
+                        existingAdInfo.PriceBuy = "1";
+                    }                    
 
                     try
-                    {
-                        using var context = new AppContext();
-                        context.AdPublishingInfo.Add(adInfo);
+                    {                        
+                        context.AdPublishingInfo.Update(existingAdInfo);
                         context.SaveChanges(); // Сохраняем изменения в базе данных
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
                         // Обработка ошибок при добавлении в базу данных
                     }

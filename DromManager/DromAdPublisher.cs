@@ -25,10 +25,10 @@ namespace DromAutoTrader.DromManager
             adsPower = new BrowserManager();
 
             // Инициализация драйвера Chrome
-            InitializeDriver(channelName);
+            InitializeDriver(channelName).GetAwaiter().GetResult();            
         }
 
-        
+
         /// <summary>
         /// Метод точка входа для размещения объявления на Drom
         /// </summary>
@@ -37,10 +37,9 @@ namespace DromAutoTrader.DromManager
         {
             bool isPublited = false;
             if (adPublishingInfo == null) return isPublited;
-            
-            
-            _wait = new(_driver, TimeSpan.FromSeconds(20));
 
+            // Глобально ожидание
+            _wait = new(_driver, TimeSpan.FromSeconds(20));
 
             OpenGoodsPage();
             SetWindowSize();
@@ -73,25 +72,25 @@ namespace DromAutoTrader.DromManager
             // Цена для публикации
             PriceInput(adPublishingInfo?.OutputPrice?.ToString());
             //Сondition();
-            Thread.Sleep(500);
+            await Task.Delay(500);
 
             DescriptionTextInput(adPublishingInfo?.Description);
 
-            Thread.Sleep(500);
+            await Task.Delay(500);
             // Кнопка наличие или под заказ
             GoodPresentState();
 
             // Проверяю заполненность полей
             CheckAndFillRequiredFields();
 
-            Thread.Sleep(500);
+           await Task.Delay(500);
             // Публикую
             //ClickPublishButton();
 
             isPublited = ClickPublishButton();
 
-            await adsPower.CloseBrowser(_channelName);
-            _driver.Quit();
+            //await adsPower.CloseBrowser(_channelName);
+            //_driver.Quit();
 
             return isPublited;
         }
@@ -106,7 +105,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Ошибка при открытии веб-сайта: " + ex.Message);
+               // Console.WriteLine("Ошибка при открытии веб-сайта: " + ex.Message);
             }
         }
 
@@ -134,7 +133,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Ошибка при установке размера окна: " + ex.Message);
+                //Console.WriteLine("Ошибка при установке размера окна: " + ex.Message);
             }
         }
 
