@@ -25,7 +25,15 @@
                     if (existingAds.Count == 0)
                     {
                         // Если нет существующих объявлений, сохраняем новое объявление
-                        context.AdPublishingInfo.Add(adInfo);
+                        try
+                        {
+                            context.AdPublishingInfo.Add(adInfo);
+                        }
+                        catch (Exception ex)
+                        {
+                            string message = $"ОШибка в FilterAndSaveByPrice, не удалось добавить {adInfo.Artikul} || {adInfo.Brand} {ex.Message}";
+                            Console.WriteLine(message);
+                        }
                     }
                     else
                     {
@@ -59,13 +67,13 @@
                     catch (Exception ex)
                     {
                         string message = $"ОШибка в FilterAndSaveByPrice {ex.Message}" ;
-                        MessageBox.Show(message);
+                        Console.WriteLine(message);
                     }
                 }
                 catch (Exception ex)
                 {
                     string message = $"ОШибка в FilterAndSaveByPrice {ex.Message}";
-                    MessageBox.Show(message);
+                    Console.WriteLine(message);
                 }
             }
         }

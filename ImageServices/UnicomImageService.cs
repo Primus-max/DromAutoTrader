@@ -2,7 +2,6 @@
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using System.IO;
 using System.Threading;
 
 namespace DromAutoTrader.ImageServices
@@ -22,7 +21,7 @@ namespace DromAutoTrader.ImageServices
         #endregion
 
         #region Приватные поля      
-       
+
         private readonly string _profilePath = @"C:\SeleniumProfiles\Unicom";
         private string _tempProfilePath = string.Empty;
         #endregion
@@ -35,7 +34,7 @@ namespace DromAutoTrader.ImageServices
             ProfilePathService profilePathService = new();
             _tempProfilePath = profilePathService.CreateTempProfile(_profilePath);
 
-            InitializeDriver(); 
+            InitializeDriver();
         }
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
@@ -48,14 +47,14 @@ namespace DromAutoTrader.ImageServices
         {
             try
             {
-                _driver.Manage().Window.Maximize();               
+                _driver.Manage().Window.Maximize();
             }
             catch (Exception) { }
         }
 
         protected override void Authorization()
-        {           
-        }        
+        {
+        }
 
         protected override void SetArticulInSearchInput()
         {
@@ -245,7 +244,7 @@ namespace DromAutoTrader.ImageServices
                 Thread.Sleep(random.Next(50, 100));  // Добавляем небольшую паузу между вводом каждого символа
             }
         }
-        
+
         // Инициализация драйвера
         private void InitializeDriver()
         {

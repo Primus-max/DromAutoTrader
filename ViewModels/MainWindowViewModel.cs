@@ -3,6 +3,7 @@ using DromAutoTrader.DromManager;
 using DromAutoTrader.Infrastacture.Commands;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
+using Serilog.Core;
 using System.IO;
 using System.Text;
 
@@ -24,8 +25,8 @@ namespace DromAutoTrader.ViewModels
         private List<PriceChannelMapping> _priceChannelMappings = null!;
         private ObservableCollection<AdPublishingInfo> _adPublishingInfos = null!;
         private ObservableCollection<PostingProgressItem> _postingProgressItems = null!;
-        private bool _isModeRunAllWork = true;
-        private static IServiceProvider _serviceProvider = null!;
+        private bool _isModeRunAllWork = true;      
+        private readonly Logger _logger = null!;
         #endregion
 
         #region Поставщики
@@ -498,6 +499,9 @@ namespace DromAutoTrader.ViewModels
             foreach (var path in PathsFilePrices)
             {
                 string priceName = Path.GetFileName(path);
+
+               
+
                 var postingProgressItem = new PostingProgressItem
                 {
                     ProcessName = $"Начал обработку прайса",
@@ -509,8 +513,12 @@ namespace DromAutoTrader.ViewModels
 
                 Task task = Task.Run(async () =>
                 {
+                    Console.WriteLine($"Начал парсинг прайса {priceName}");
+
                     // Парсинг прайсов и обработка данных
                     PriceList prices = await ProcessPriceAsync(path);
+
+                    Console.WriteLine($"Закончил парсинг прайса {priceName}");
 
                     postingProgressItem.ProcessName = "Получил прайс";
                     postingProgressItem.TotalStages = prices.Count;
@@ -534,7 +542,7 @@ namespace DromAutoTrader.ViewModels
                     //  Добавляю бренды в базу. Флаг регулирует в каком режиме находится метод,
                     // true = полная работа, false = только получение брендов из прайсов
                     if (!_isModeRunAllWork)
-                        AddBrandsAtDb(prices);
+                        AddBrandsAtDb(prices);                    
                 });
 
                 tasks.Add(task);
@@ -558,8 +566,11 @@ namespace DromAutoTrader.ViewModels
                 return;
             }
 
+            string priceName = Path.GetFileName(path);
+
             foreach (var price in prices)
             {
+                
 
                 List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
                 foreach (var priceChannelMapping in priceChannels.SelectedChannels)
@@ -586,10 +597,12 @@ namespace DromAutoTrader.ViewModels
                     PriceFilter priceFilter = new();
                     priceFilter.FilterAndSaveByPrice(adInfo);
                     elCount++;
+
+                    Console.WriteLine($"Добавил {adInfo.Artikul} || {adInfo.Brand} из прайса {priceName} для канала {priceChannelMapping.Name}");
                 }
             }
 
-            MessageBox.Show($"Закончил обработку прайсов, всего элементов {elCount}");
+            Console.WriteLine($"Закончил обработку прайса {priceName}, всего элементов {elCount}");
         }
 
         // метод получения брендов для канала с отдельным контекстом, чтобы EF не залупался

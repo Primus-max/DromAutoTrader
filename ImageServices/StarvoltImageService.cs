@@ -111,7 +111,6 @@ namespace DromAutoTrader.ImageServices
 
         protected override bool IsImagesVisible()
         {
-            Thread.Sleep(500);
             return true;
         }
 
@@ -127,7 +126,7 @@ namespace DromAutoTrader.ImageServices
 
             try
             {
-                Thread.Sleep(500);
+                await Task.Delay(500);
                 // Получаем изображение
 
                 var imageBlocks = _document.QuerySelectorAll("img.product__gallery-thumbs-slider-card-image");

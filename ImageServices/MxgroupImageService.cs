@@ -181,7 +181,7 @@ namespace DromAutoTrader.ImageServices
                 if (itemProductIcon is not null)
                 {
                     itemProductIcon.Click();
-                    Thread.Sleep(1000);
+                    await Task.Delay(1000);
 
                     try
                     {
@@ -255,7 +255,7 @@ namespace DromAutoTrader.ImageServices
                 if (itemProductIcon is not null)
                 {
                     itemProductIcon.Click();
-                    Thread.Sleep(1000);
+                    await Task.Delay(1000);
 
                     try
                     {
@@ -304,7 +304,7 @@ namespace DromAutoTrader.ImageServices
             FolderManager folderManager = new();
             bool folderContainsFiles = folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
 
-            Thread.Sleep(1000);
+            await Task.Delay(1000);
 
             if (!folderContainsFiles)
             {

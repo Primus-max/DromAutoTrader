@@ -54,7 +54,7 @@ namespace DromAutoTrader.ImageServices.Base
             GoTo();
 
             // Закрывает окно с предложением получения уведомлений
-            Thread.Sleep(500);
+            await Task.Delay(500);
             //ClosePermissionRequestPopup();
 
             Authorization();
@@ -64,7 +64,7 @@ namespace DromAutoTrader.ImageServices.Base
 
             if (IsNotMatchingArticul())
             {
-                CloseDriverAsync();
+               await CloseDriverAsync();
                 return;
             }
 
@@ -80,7 +80,7 @@ namespace DromAutoTrader.ImageServices.Base
                 BrandImages = null;
             }
 
-            CloseDriverAsync();
+           await CloseDriverAsync();
 
         }
 
