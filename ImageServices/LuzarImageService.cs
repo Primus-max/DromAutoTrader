@@ -100,14 +100,11 @@ namespace DromAutoTrader.ImageServices
             }
             catch (Exception)
             {
-
-                throw;
             }
         }
 
         protected override bool IsImagesVisible()
-        {
-            Thread.Sleep(500);
+        {           
             return true;
         }
 
@@ -123,7 +120,7 @@ namespace DromAutoTrader.ImageServices
 
             try
             {
-                Thread.Sleep(500);
+               await Task.Delay(500);
                 // Получаем изображение
 
                 var imageBlocks = _document.QuerySelectorAll(".product-card-image-list-item");

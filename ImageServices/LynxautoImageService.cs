@@ -32,8 +32,7 @@ namespace DromAutoTrader.ImageServices
         public LynxautoImageService() { }
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
-
-
+       
         #region Перезаписанные методы базового класса       
         protected override void GoTo()
         {
@@ -80,8 +79,7 @@ namespace DromAutoTrader.ImageServices
 
         // Метод проверки наличия сообщения, что ничего не найдено
         protected override bool IsImagesVisible()
-        {
-            Thread.Sleep(500);
+        {            
             return true;
         }
 
@@ -95,7 +93,7 @@ namespace DromAutoTrader.ImageServices
 
             try
             {
-                Thread.Sleep(500);
+                await Task.Delay(500);
                 // Получаем изображение
                 var linkElement = _document.QuerySelector("a.lightbox");
 

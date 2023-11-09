@@ -72,7 +72,16 @@ namespace DromAutoTrader.Services
 
                 foreach (string file in Directory.GetFiles(path))
                 {
-                    File.Delete(file); // Удаляем файлы
+                    try
+                    {
+                        File.Delete(file); // Попытка удаления файла
+                    }
+                    catch (IOException)
+                    {
+                        // Файл занят другим процессом, можно добавить логику повторного удаления
+                        await Task.Delay(500); // Подождать 1 секунду и повторить попытку
+                        File.Delete(file); // Повторная попытка удаления файла
+                    }
                 }
 
                 Directory.Delete(path, true); // Удаляем саму директорию
@@ -83,6 +92,7 @@ namespace DromAutoTrader.Services
                 Console.WriteLine($"Ошибка при удалении директории: {ex.Message}");
             }
         }
+
     }
 
 }
