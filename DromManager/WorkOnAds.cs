@@ -31,19 +31,15 @@ namespace DromAutoTrader.DromManager
         public async Task RemoveAll(string channelName)
         {
             await InitializeDriver(channelName);
-            _wait = new(_driver, TimeSpan.FromSeconds(30));
-
+            _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(30));
 
             // Открываю страницу  с объявлениями
-            OpenAllBulletinsPage(actualUrl); // Открываю странциу
+            OpenAllBulletinsPage(actualUrl); // Открываю странцию
             CloseAllTabsExceptCurrent(); // Закрываю все вкладки кроме текущей            
             SetWindowSize(); // Размер окна
 
             bool isPaginationExists = false; // Есть или нет пагинация на странице           
             string lastPageUrl = string.Empty; // Запоминаю страницу перед переходом для подтверждения ставок
-
-            List<string> allElenetsForRemove = new List<string>();
-
 
             do
             {
@@ -52,31 +48,26 @@ namespace DromAutoTrader.DromManager
                 // Запоминаю последнюю страницу перед переходом в карточку ставок
                 lastPageUrl = _driver.Url;
 
-                // Получаю элементы и сохраняю (ID объявлений)
-                allElenetsForRemove.AddRange(GetIdsFromElements());
+                // Получаю элементы и удаляю объявления на текущей странице
+                RemoveAdsOnCurrentPage();
 
                 if (isPaginationExists == true)
                     NextPage(lastPageUrl, true); // Пагинация  
 
             } while (isPaginationExists);
 
-            //Удаляю объявления
-            RemoveAds(allElenetsForRemove);
+            MessageBox.Show($"Все объявления успешно перемещены в архив", "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
 
             CloseDriver();
-
-            MessageBox.Show($"Все объявления успешно перемещены в архив", "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        // Метод удаления объявлений
-        private void RemoveAds(List<string> adsIds)
+        // Удаляю объявления на каждой странице
+        private void RemoveAdsOnCurrentPage()
         {
-            int batchSize = 50;
+            List<string> bulletinIds = GetIdsFromElements();
 
-            for (int index = 0; index < adsIds.Count; index += batchSize)
-            {
-                List<string> batch = adsIds.Skip(index).Take(batchSize).ToList();
-                string deleteUrl = BuildDeleteUrl(batch);
+            
+                string deleteUrl = BuildDeleteUrl(bulletinIds);
 
                 try
                 {
@@ -88,7 +79,35 @@ namespace DromAutoTrader.DromManager
                 }
 
                 SubmitBtn(); // Ваш метод для удаления на текущей странице
+            
+        }
+
+        // Получаю все элементы на странице
+        private List<string> GetIdsFromElements()
+        {
+            List<string> bulletinIds = new List<string>();
+            WebDriverWait driverWait = new WebDriverWait(_driver, TimeSpan.FromSeconds(7));
+            try
+            {
+                // Находим все элементы с классом "imageCell bull-item__image-cell"
+                var elements = driverWait.Until(e => e.FindElements(By.CssSelector("div.imageCell.bull-item__image-cell")));
+
+                foreach (var element in elements)
+                {
+                    // Извлекаем значение атрибута "data-bulletin-id" и добавляем его в список
+                    string bulletinId = element.GetAttribute("data-bulletin-id");
+                    if (!string.IsNullOrEmpty(bulletinId))
+                    {
+                        bulletinIds.Add(bulletinId);
+                    }
+                }
             }
+            catch (Exception)
+            {
+                // Обработка ошибок при поиске элементов
+            }
+
+            return bulletinIds;
         }
 
 
@@ -114,34 +133,7 @@ namespace DromAutoTrader.DromManager
             return $"{baseUrl}?{queryString}";
         }
 
-        // Собираю элементы для удаления
-        private List<string> GetIdsFromElements()
-        {
-            List<string> bulletinIds = new List<string>();
-            WebDriverWait driverWait = new(_driver, TimeSpan.FromSeconds(7));
-            try
-            {
-                // Находим все элементы с классом "imageCell bull-item__image-cell"
-                var elements = driverWait.Until(e => e.FindElements(By.CssSelector("div.imageCell.bull-item__image-cell")));
-
-                foreach (var element in elements)
-                {
-                    // Извлекаем значение атрибута "data-bulletin-id" и добавляем его в список
-                    string bulletinId = element.GetAttribute("data-bulletin-id");
-                    if (!string.IsNullOrEmpty(bulletinId))
-                    {
-                        bulletinIds.Add(bulletinId);
-                    }
-                }
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
-
-            return bulletinIds;
-        }
+        
 
         /// <summary>
         /// Метод перемещения объявлений в архив по одному
