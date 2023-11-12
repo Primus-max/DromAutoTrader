@@ -25,6 +25,11 @@ namespace DromAutoTrader.Services
             options.AddArgument("--headless=new");
             options.AddArgument($"--user-data-dir={_profilePath}");
 
+            // Отключение расширений
+            options.AddArgument("--disable-extensions");
+            options.AddArgument("--disable-extensions-file-access-check");
+            options.AddArgument("--disable-extensions-http-throttling");
+
             //var chromeService = ChromeDriverService.CreateDefaultService();
             //chromeService.HideCommandPromptWindow = true;
 
@@ -36,7 +41,7 @@ namespace DromAutoTrader.Services
             }
             catch (Exception)
             {
-                // TODO Сделать логирование именно для ChromeDriver
+                Console.WriteLine("Проблемы при создании драйевера");
             }
 
             return driver;
