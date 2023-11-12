@@ -165,11 +165,19 @@ namespace DromAutoTrader.ImageServices
 
         protected override async Task CloseDriverAsync()
         {
-            _driver.Close();
+            try
+            {
+                _driver.Close();
+                _driver.Quit();
+                _driver.Dispose();
 
-            // Удаляю временную директорию профиля после закрытия браузера
-            ProfilePathService profilePathService = new();
-            await profilePathService.DeleteDirectoryAsync(_tempProfilePath);
+                // Удаляю временную директорию профиля после закрытия браузера
+                ProfilePathService profilePathService = new();
+                await profilePathService.DeleteDirectoryAsync(_tempProfilePath);
+            }
+            catch (Exception)
+            {
+            }
         }
         #endregion
 

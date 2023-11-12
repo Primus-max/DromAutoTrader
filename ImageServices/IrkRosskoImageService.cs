@@ -180,6 +180,8 @@ namespace DromAutoTrader.ImageServices
             try
             {
                 _driver.Close();
+                _driver.Quit();
+                _driver.Dispose();
 
                 // Удаляю временную директорию профиля после закрытия браузера
                 ProfilePathService profilePathService = new();
