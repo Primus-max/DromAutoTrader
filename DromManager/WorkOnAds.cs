@@ -41,8 +41,9 @@ namespace DromAutoTrader.DromManager
             bool isPaginationExists = false; // Есть или нет пагинация на странице           
             string lastPageUrl = string.Empty; // Запоминаю страницу перед переходом для подтверждения ставок
 
+        elseElementsExists:
             do
-            {
+            {    
                 isPaginationExists = HasNextPage();
 
                 // Запоминаю последнюю страницу перед переходом в карточку ставок
@@ -56,9 +57,38 @@ namespace DromAutoTrader.DromManager
 
             } while (isPaginationExists);
 
+            bool isElseElementsExists = IsElementsExists();
+
+            if (isElseElementsExists == true) goto elseElementsExists;
+
             MessageBox.Show($"Все объявления успешно перемещены в архив", "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
 
             CloseDriver();
+        }
+
+        // Проверяю, удалилсь все объявления или нет
+        private bool IsElementsExists()
+        {
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(7));
+            try
+            {
+                var counterElementParent = wait.Until(e => e.FindElements(By.CssSelector("small.micro-counter")))[0];
+                //IWebElement counter = counterElementParent.FindElement(By.TagName("small"));
+
+                if (int.TryParse(counterElementParent.Text, out int count))
+                {
+                    return count > 0;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return false;
         }
 
         // Удаляю объявления на каждой странице
