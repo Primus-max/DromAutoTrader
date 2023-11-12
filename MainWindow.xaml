@@ -236,11 +236,8 @@
                     </DockPanel>
                 </TabItem>
 
-                <TabItem Header="Каналы">
-                    <StackPanel>
-                        <Frame Name="ChannelFrame" NavigationUIVisibility="Hidden" />
-                        <!--<Button Click="Edit_Click"/>-->
-                    </StackPanel>
+                <TabItem Header="Каналы">                    
+                        <Frame Name="ChannelFrame" NavigationUIVisibility="Hidden" />                           
                 </TabItem>
                 <TabItem Header="Брэнды">
                     <DockPanel>

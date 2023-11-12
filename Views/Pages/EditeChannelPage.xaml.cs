@@ -1,6 +1,4 @@
-﻿using System.Windows.Controls;
-
-namespace DromAutoTrader.Views.Pages
+﻿namespace DromAutoTrader.Views.Pages
 {
     /// <summary>
     /// Логика взаимодействия для EditeChannelPage.xaml
