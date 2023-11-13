@@ -83,42 +83,7 @@ namespace DromAutoTrader.ImageServices.Base
            await CloseDriverAsync();
 
         }
-
-        /// <summary>
-        /// Метод вставки текста с предварительной очисткой инпута (настраивается рандомная задержка для эмитации поведения человека)
-        /// </summary>
-        /// <param name="element"></param>
-        /// <param name="text"></param>        
-        public void ClearAndEnterText(IWebElement element, string text)
-        {
-            Random random = new Random();
-            // Используем JavaScriptExecutor для выполнения JavaScript-кода
-            IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)((IWrapsDriver)element).WrappedDriver;
-
-            // Очищаем поле ввода с помощью JavaScript
-            jsExecutor.ExecuteScript("arguments[0].value = '';", element);
-            // Установить стиль display элемента в block
-            jsExecutor.ExecuteScript("arguments[0].style.display = 'block';", element);
-            // Вставляем текст по одному символу без изменений
-            foreach (char letter in text)
-            {
-                if (letter == '\b')
-                {
-                    // Если символ является символом backspace, удаляем последний введенный символ
-                    element.SendKeys(Keys.Backspace);
-                }
-                else
-                {
-                    // Вводим символ
-                    element.SendKeys(letter.ToString());
-                }
-
-                Thread.Sleep(random.Next(50, 150));  // Добавляем небольшую паузу между вводом каждого символа
-            }
-            Thread.Sleep(random.Next(300, 700));
-        }
-
-
+       
         #endregion
 
         #region Абстратные метод
