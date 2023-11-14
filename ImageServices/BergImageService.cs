@@ -52,47 +52,53 @@ namespace DromAutoTrader.ImageServices
         protected override void Authorization() { }
 
         // Метод отправки поискового запроса
-        protected override void SetArticulInSearchInput() { Task.Run(async () => await GoToAsync()).Wait(); }
+        protected override void SetArticulInSearchInput() {  }
 
         // Метод открытия каротчки с полученным запросом
         protected override void OpenSearchedCard()
         {
-            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(7));
             try
             {
                 // Получаю все карточки на странице
-                IList<IWebElement> searchedCards = wait.Until(e => e.FindElements(By.CssSelector("div.search_result__row")));
+                var cards = _document?.QuerySelectorAll("div.search_result__row");
 
-                foreach (var card in searchedCards)
+                if (cards != null)
                 {
-                    // Получаю бренд и артикул из карточек
-                    string brand = card.FindElement(By.ClassName("brand_name")).Text.ToLower().Replace(" ", "");
-                    string articul = card.FindElement(By.XPath("//div[@class='article']/a[1]")).Text;
-                    string? globalNameBrand = Brand.ToLower().Replace(" ", "");
-
-                    // Если совпадает открываю Popup
-                    if (globalNameBrand == brand && Articul == articul)
+                    foreach (var card in cards)
                     {
-                        IWebElement popUp = card.FindElement(By.CssSelector("a.pseudo_link.part_description__link"));
-                        // Получаю ссылку на Popup
-                        string popupUrl = popUp.GetAttribute("href");
-                        string popUpLink = $"{ServiceName}{popupUrl}";
+                        // Получаю бренд и артикул из карточек
+                        string brand = card.QuerySelector(".brand_name")?.TextContent.ToLower().Replace(" ", "") ?? "";
+                        string articul = card.QuerySelector("div.article a")?.TextContent ?? "";
+                        string globalNameBrand = Brand.ToLower().Replace(" ", "");
 
-                        try
+                        // Если совпадает, открываю Popup
+                        if (globalNameBrand == brand && Articul == articul)
                         {
-                            _driver.Navigate().GoToUrl(popupUrl);
-                        }
-                        catch (Exception) { }
+                            var popUp = card.QuerySelector("a.pseudo_link.part_description__link");
+                            // Получаю ссылку на Popup
+                            string popupUrl = popUp?.GetAttribute("href") ?? "";
+                            string popUpLink = $"{ServiceName}{popupUrl}";
 
+                            try
+                            {
+                                // Переходим по ссылке, используя метод GoToAsync                                
+                                Task.Run(async () => await GoToAsync(popupUrl)).Wait();
+                            }
+                            catch (Exception)
+                            {
+                                // Обработка исключения, например, логирование
+                            }
+                        }
                     }
                 }
-
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                // Обработка исключения, например, логирование
+                Console.WriteLine($"Произошло исключение: {ex.Message}");
             }
         }
+
 
         // Метод проверки, появились картинки или нет
         protected override bool IsImagesVisible()
@@ -113,20 +119,21 @@ namespace DromAutoTrader.ImageServices
         // Метод проверки результатов поиска детали
         protected override bool IsNotMatchingArticul()
         {
-            bool isNotMatchingArticul = false;
             try
             {
-                IWebElement attentionMessage = _driver.FindElement(By.ClassName("attention_message"));
+                var attentionMessage = _document?.QuerySelector(".attention_message");
 
-                // Если получили этот элемент значит по запросу ничего не найдено
-                return true;
-
+                // Если получили этот элемент, значит, по запросу ничего не найдено
+                return attentionMessage != null;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return isNotMatchingArticul;
+                // Обработка исключения, например, логирование
+                Console.WriteLine($"Произошло исключение: {ex.Message}");
+                return false;
             }
         }
+
 
         // Метод сбора картинок из открытой карточки
         protected override async Task<List<string>> GetImagesAsync()
@@ -217,13 +224,14 @@ namespace DromAutoTrader.ImageServices
 
                 if (url != null)
                 {
-                    searchUrl = url; // Если передали ссылку, то по ней будет переходить
+                    // Если передали ссылку, строим полный адрес
+                    var uri = new Uri(new Uri(ServiceName), url);
+                    searchUrl = uri.AbsoluteUri;
                 }
                 else
                 {
-                    searchUrl = BuildUrl(); // Получаю ссылку для поиска
+                    searchUrl = BuildUrl(); // Получаем ссылку для поиска
                 }
-                                
 
                 // Создаем контейнер для хранения кук
                 var cookieContainer = new System.Net.CookieContainer();
