@@ -1,4 +1,4 @@
-﻿using DromAutoTrader.AdsPowerManager;
+using DromAutoTrader.AdsPowerManager;
 using DromAutoTrader.Prices;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
