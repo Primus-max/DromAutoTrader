@@ -46,49 +46,42 @@ namespace DromAutoTrader.DromManager
 
             //ClickSubjectField();
             // Устанавливаю заголовок объявления
-            await TitleInput(adPublishingInfo.KatalogName);
-            await PressEnterKey();
+           TitleInput(adPublishingInfo.KatalogName);
+             PressEnterKey();
 
-            await Task.Delay(200);
-            await ClickDirControlVariant();
-            await ClickBulletinTypeVariant();
+             ClickDirControlVariant();
+            ClickBulletinTypeVariant();
             List<string> ImagesPaths = adPublishingInfo.ImagesPath.Split(";").ToList();
 
             // Вставляю изображение
             foreach (var imagePath in ImagesPaths)
             {
                 string absolutePath = Path.Combine(Environment.CurrentDirectory, imagePath);
-                await InsertImage(absolutePath);
+                InsertImage(absolutePath);
             }
 
             // Бренд для публикации
-            await BrandInput(adPublishingInfo?.Brand);
+            BrandInput(adPublishingInfo?.Brand);
 
 
             // Артикул для публикации
-            await ArticulInput(adPublishingInfo?.Artikul);
+            ArticulInput(adPublishingInfo?.Artikul);
 
             // Цена для публикации
-            await PriceInput(adPublishingInfo?.OutputPrice?.ToString());           
+            PriceInput(adPublishingInfo?.OutputPrice?.ToString());           
            
 
-            await DescriptionTextInput(adPublishingInfo?.Description);
+            DescriptionTextInput(adPublishingInfo?.Description);
 
           
             // Кнопка наличие или под заказ
-            await GoodPresentState();
+            GoodPresentState();
 
             // Проверяю заполненность полей
             CheckAndFillRequiredFields();
 
-            await Task.Delay(200);
-            // Публикую
-            //ClickPublishButton();
+            isPublited =  ClickPublishButton();
 
-            isPublited = await ClickPublishButton();
-
-            //await adsPower.CloseBrowser(_channelName);
-            //_driver.Quit();
 
             return isPublited;
         }
@@ -150,9 +143,9 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод получение input заголовка и ввода текста
-        public async Task TitleInput(string text)
+        public void TitleInput(string text)
         {
-            await Task.Delay(500);
+            Thread.Sleep(200);
             try
             {
                 // Ввод текста в поле ввода
@@ -169,9 +162,9 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод нажатия Enter
-        public async Task PressEnterKey()
+        public void PressEnterKey()
         {
-            await Task.Delay(500);
+            Thread.Sleep(200);
             try
             {
                 // Нажатие клавиши Enter
@@ -185,9 +178,9 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод открытия разделов
-        public async Task ClickDirControlVariant()
+        public void ClickDirControlVariant()
         {
-            await Task.Delay(500);
+            Thread.Sleep(200);
             try
             {
                 // Нахождение и клик по элементу по CSS селектору
@@ -203,9 +196,9 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод выбора раздела
-        public async Task ClickBulletinTypeVariant()
+        public void ClickBulletinTypeVariant()
         {
-            await Task.Delay(500);
+            Thread.Sleep(200);
             try
             {
                 // Нахождение и клик по элементу по CSS селектору
@@ -221,9 +214,9 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод вставки картинок
-        public async Task InsertImage(string imgPath)
+        public void InsertImage(string imgPath)
         {
-            await Task.Delay(500);
+            Thread.Sleep(200);
             try
             {
                 // Найти элемент <input type="file>
@@ -242,9 +235,9 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод получения инпута и вставки имени брэнда
-        public async Task BrandInput(string brandName)
+        public void BrandInput(string brandName)
         {
-            await Task.Delay(500);
+            Thread.Sleep(200);
             try
             {
                 // Найти элемент <input type="file>
@@ -269,9 +262,9 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод получения инпута и вставки номера 
-        public async Task ArticulInput(string articulName)
+        public void ArticulInput(string articulName)
         {
-            await Task.Delay(500);
+            Thread.Sleep(200);
             try
             {
                 // Найти элемент <input type="file>
@@ -295,9 +288,9 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод получения инпута и вставки цены 
-        public async Task PriceInput(string price)
+        public void PriceInput(string price)
         {
-            await Task.Delay(500);
+            Thread.Sleep(200);
             try
             {
                 // Найти элемент <input type="file>
@@ -318,9 +311,9 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод получения кнопки выбора состояния (новое или б/у)
-        public async Task Сondition()
+        public void Сondition()
         {
-            await Task.Delay(500);
+            Thread.Sleep(200);
             try
             {
                 IWebElement stateButton = _wait.Until(e => e.FindElement(By.XPath("//label[text()='Новый']")));
@@ -336,9 +329,9 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод получения инпута и вставки описания 
-        public async Task DescriptionTextInput(string description)
+        public void DescriptionTextInput(string description)
         {
-            await Task.Delay(500);
+            Thread.Sleep(200);
             try
             {
                 // Найти элемент <input type="file>
@@ -357,9 +350,9 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод получения кнопки наличия или под заказ
-        public async Task GoodPresentState()
+        public void GoodPresentState()
         {
-            await Task.Delay(500);
+            Thread.Sleep(200);
             try
             {
 
@@ -376,9 +369,9 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод публицкации объявления
-        public async Task<bool> ClickPublishButton()
+        public bool ClickPublishButton()
         {
-            await Task.Delay(500);
+            Thread.Sleep(200);
             try
             {
                 // Нахождение и клик по элементу по ID
