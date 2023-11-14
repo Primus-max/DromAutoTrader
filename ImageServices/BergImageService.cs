@@ -49,25 +49,10 @@ namespace DromAutoTrader.ImageServices
 
 
         // Метод авторизации
-        protected override void Authorization()
-        {
-
-        }
+        protected override void Authorization() { }
 
         // Метод отправки поискового запроса
-        protected override void SetArticulInSearchInput()
-        {
-            string? searchUrl = BuildUrl();
-
-            try
-            {
-                _driver.Navigate().GoToUrl(searchUrl);
-            }
-            catch (Exception)
-            {
-
-            }
-        }
+        protected override void SetArticulInSearchInput() { Task.Run(async () => await GoToAsync()).Wait(); }
 
         // Метод открытия каротчки с полученным запросом
         protected override void OpenSearchedCard()
