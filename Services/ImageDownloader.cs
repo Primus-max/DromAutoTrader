@@ -41,9 +41,9 @@ namespace DromAutoTrader.Services
                     string fileName = $"{_articul}_{i:00}.jpg";
                     string localFilePath = Path.Combine(_downloadDirectory, fileName);
 
-                    Uri uri = new Uri($"https:{imageUrl}"); // Явно указываем схему "https"
+                    //Uri uri = new Uri($"https:{imageUrl}"); // Явно указываем схему "https"
 
-                    using HttpResponseMessage response = await client.GetAsync(uri);
+                    using HttpResponseMessage response = await client.GetAsync(imageUrl);
                     if (response.IsSuccessStatusCode)
                     {
                         using Stream imageStream = await response.Content.ReadAsStreamAsync();

@@ -1,12 +1,7 @@
-﻿using AngleSharp;
-using AngleSharp.Dom;
+﻿using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
-using DromAutoTrader.ImageServices.Base;
-using DromAutoTrader.Services;
-using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Threading;
 
 namespace DromAutoTrader.ImageServices
 {
@@ -41,10 +36,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override void Authorization() { }
 
-        protected override void SetArticulInSearchInput()
-        {
-            Task.Run(async () => await GoToAsync()).Wait();
-        }
+        protected override void SetArticulInSearchInput() { }
 
         protected override bool IsNotMatchingArticul()
         {
@@ -74,37 +66,37 @@ namespace DromAutoTrader.ImageServices
 
         protected override void OpenSearchedCard()
         {
-            try
-            {
-                // Находим div с классом "module-spisok-product"
-                var productDiv = _document.QuerySelector(".module-spisok-product");
+            //try
+            //{
+            //    // Находим div с классом "module-spisok-product"
+            //    var productDiv = _document.QuerySelector(".module-spisok-product");
 
-                if (productDiv != null)
-                {
-                    // Находим первый элемент li внутри div
-                    var firstLi = productDiv.QuerySelector("li");
+            //    if (productDiv != null)
+            //    {
+            //        // Находим первый элемент li внутри div
+            //        var firstLi = productDiv.QuerySelector("li");
 
-                    if (firstLi != null)
-                    {
-                        // Извлекаем ссылку из тега a
-                        var linkElement = firstLi.QuerySelector("a");
-                        if (linkElement != null)
-                        {
-                            string? link = linkElement.GetAttribute("href");
+            //        if (firstLi != null)
+            //        {
+            //            // Извлекаем ссылку из тега a
+            //            var linkElement = firstLi.QuerySelector("a");
+            //            if (linkElement != null)
+            //            {
+            //                string? link = linkElement.GetAttribute("href");
 
-                            Task.Run(async () => await GoToAsync(link)).Wait();
-                            // Здесь можно осуществить переход по полученной ссылке и продолжить парсинг следующей страницы
-                        }
-                    }
-                }
-            }
-            catch (Exception)
-            {
-            }
+            //                Task.Run(async () => await GoToAsync(link)).Wait();
+            //                // Здесь можно осуществить переход по полученной ссылке и продолжить парсинг следующей страницы
+            //            }
+            //        }
+            //    }
+            //}
+            //catch (Exception)
+            //{
+            //}
         }
 
         protected override bool IsImagesVisible()
-        {           
+        {
             return true;
         }
 
@@ -114,32 +106,33 @@ namespace DromAutoTrader.ImageServices
             List<string> downloadedImages = new();
 
             // Временное хранилище изображений
-            List<string> images = new();
+            List<string> imageUrls = new List<string>();
 
             using HttpClient httpClient = new();
 
             try
             {
-               await Task.Delay(500);
+                await Task.Delay(500);
                 // Получаем изображение
 
-                var imageBlocks = _document.QuerySelectorAll(".product-card-image-list-item");
+                // Получаем изображение
+                var imageBlocks = _document.QuerySelectorAll("img.lazyload.catalog__main-products-card-image");
 
-                List<string> imageUrls = new List<string>();
+                
 
                 foreach (var imageBlock in imageBlocks)
                 {
-                    // Находим изображение внутри блока
-                    var imgElement = imageBlock.QuerySelector("img");
-                    if (imgElement != null)
-                    {
-                        string? imgUrl = imgElement.GetAttribute("data-big-image");
-                        httpClient.BaseAddress = new Uri(LoginPageUrl);
-                        string? fullUrl = new Uri(httpClient.BaseAddress, imgUrl).AbsoluteUri;
 
-                        images.Add(fullUrl);
-                    }
+                    string? imgUrl = imageBlock.GetAttribute("src");
+
+                    // Построение абсолютного URL
+                    Uri baseUri = new Uri(ServiceName);
+                    Uri fullUri = new Uri(baseUri, imgUrl);
+                    string fullUrl = fullUri.AbsoluteUri;
+
+                    imageUrls.Add(fullUrl);
                 }
+
             }
             catch (Exception)
             {
@@ -147,8 +140,8 @@ namespace DromAutoTrader.ImageServices
             }
 
 
-            if (images.Count != 0)
-                downloadedImages = await ImagesProcessAsync(images);
+            if (imageUrls.Count != 0)
+                downloadedImages = await ImagesProcessAsync(imageUrls);
 
             return downloadedImages;
         }

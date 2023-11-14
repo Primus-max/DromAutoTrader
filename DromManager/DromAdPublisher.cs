@@ -1,9 +1,4 @@
-﻿using DromAutoTrader.AdsPowerManager;
-using DromAutoTrader.Prices;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
-using System.IO;
-using System.Threading;
+﻿
 
 namespace DromAutoTrader.DromManager
 {
@@ -54,7 +49,7 @@ namespace DromAutoTrader.DromManager
             // Устанавливаю заголовок объявления
             TitleInput(adPublishingInfo.KatalogName);
             await Task.Delay(200);
-           
+
             ClickDirControlVariant();
             await Task.Delay(200);
             ClickBulletinTypeVariant();
