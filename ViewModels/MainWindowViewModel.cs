@@ -473,7 +473,7 @@ namespace DromAutoTrader.ViewModels
         public async Task RunAllWork()
         {
             // Получаю, обрабатываю, записываю в базу прайсы
-            await ParsingPricesAsync();
+            //await ParsingPricesAsync();
 
             AdsArchiver adsArchiver = new();
             adsArchiver.CompareAndArchiveAds();

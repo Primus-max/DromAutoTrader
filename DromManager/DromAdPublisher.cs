@@ -1,4 +1,8 @@
-﻿using DromAutoTrader.AdsPowerManager;
+using DromAutoTrader.AdsPowerManager;
+using DromAutoTrader.Prices;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
+using System.IO;
 using System.Threading;
 
 namespace DromAutoTrader.DromManager
@@ -40,48 +44,56 @@ namespace DromAutoTrader.DromManager
 
             await Task.Delay(200);
             OpenGoodsPage();
+
+            await Task.Delay(200);
             SetWindowSize();
 
+            await Task.Delay(200);
             CloseAllTabsExceptCurrent();
-
-            //ClickSubjectField();
+            await Task.Delay(200);
             // Устанавливаю заголовок объявления
-           TitleInput(adPublishingInfo.KatalogName);
-             PressEnterKey();
-
-             ClickDirControlVariant();
+            TitleInput(adPublishingInfo.KatalogName);
+            await Task.Delay(200);
+           
+            ClickDirControlVariant();
+            await Task.Delay(200);
             ClickBulletinTypeVariant();
             List<string> ImagesPaths = adPublishingInfo.ImagesPath.Split(";").ToList();
 
             // Вставляю изображение
             foreach (var imagePath in ImagesPaths)
             {
+                await Task.Delay(200);
                 string absolutePath = Path.Combine(Environment.CurrentDirectory, imagePath);
                 InsertImage(absolutePath);
             }
 
+            await Task.Delay(200);
             // Бренд для публикации
             BrandInput(adPublishingInfo?.Brand);
 
-
+            await Task.Delay(200);
             // Артикул для публикации
             ArticulInput(adPublishingInfo?.Artikul);
-
+            await Task.Delay(200);
             // Цена для публикации
-            PriceInput(adPublishingInfo?.OutputPrice?.ToString());           
-           
-
+            PriceInput(adPublishingInfo?.OutputPrice?.ToString());
+            await Task.Delay(200);
             DescriptionTextInput(adPublishingInfo?.Description);
-
-          
+            await Task.Delay(200);
             // Кнопка наличие или под заказ
             GoodPresentState();
-
+            await Task.Delay(200);
             // Проверяю заполненность полей
             CheckAndFillRequiredFields();
 
-            isPublited =  ClickPublishButton();
+            // Публикую
+            await Task.Delay(200);
 
+            isPublited = ClickPublishButton();
+
+            //await adsPower.CloseBrowser(_channelName);
+            //_driver.Quit();
 
             return isPublited;
         }
@@ -145,7 +157,6 @@ namespace DromAutoTrader.DromManager
         // Метод получение input заголовка и ввода текста
         public void TitleInput(string text)
         {
-            Thread.Sleep(200);
             try
             {
                 // Ввод текста в поле ввода
@@ -162,25 +173,23 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод нажатия Enter
-        public void PressEnterKey()
-        {
-            Thread.Sleep(200);
-            try
-            {
-                // Нажатие клавиши Enter
-                IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));
-                subjectInput.SendKeys(Keys.Enter);
-            }
-            catch (Exception)
-            {
-                //MessageBox.Show("Ошибка при нажатии клавиши Enter: " + ex.Message);
-            }
-        }
+        //public void PressEnterKey()
+        //{
+        //    //try
+        //    //{
+        //    //    // Нажатие клавиши Enter
+        //    //    IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));
+        //    //    subjectInput.SendKeys(Keys.Enter);
+        //    //}
+        //    //catch (Exception)
+        //    //{
+        //    //    //MessageBox.Show("Ошибка при нажатии клавиши Enter: " + ex.Message);
+        //    //}
+        //}
 
         // Метод открытия разделов
         public void ClickDirControlVariant()
         {
-            Thread.Sleep(200);
             try
             {
                 // Нахождение и клик по элементу по CSS селектору
@@ -198,7 +207,6 @@ namespace DromAutoTrader.DromManager
         // Метод выбора раздела
         public void ClickBulletinTypeVariant()
         {
-            Thread.Sleep(200);
             try
             {
                 // Нахождение и клик по элементу по CSS селектору
@@ -216,7 +224,6 @@ namespace DromAutoTrader.DromManager
         // Метод вставки картинок
         public void InsertImage(string imgPath)
         {
-            Thread.Sleep(200);
             try
             {
                 // Найти элемент <input type="file>
@@ -226,7 +233,6 @@ namespace DromAutoTrader.DromManager
 
                 // Вставить путь к изображению в элемент
                 fileInput.SendKeys(imgPath);
-
             }
             catch (Exception)
             {
@@ -237,7 +243,6 @@ namespace DromAutoTrader.DromManager
         // Метод получения инпута и вставки имени брэнда
         public void BrandInput(string brandName)
         {
-            Thread.Sleep(200);
             try
             {
                 // Найти элемент <input type="file>
@@ -248,9 +253,9 @@ namespace DromAutoTrader.DromManager
 
                     ScrollToElement(brandNameInput);
 
-                    // Вставить путь к изображению в элемент
                     brandNameInput.Clear();
                     brandNameInput.SendKeys(brandName);
+                    // Вставить путь к изображению в элемент
                     //ClearAndEnterText(brandNameInput, brandName);
                 }
 
@@ -264,7 +269,6 @@ namespace DromAutoTrader.DromManager
         // Метод получения инпута и вставки номера 
         public void ArticulInput(string articulName)
         {
-            Thread.Sleep(200);
             try
             {
                 // Найти элемент <input type="file>
@@ -290,14 +294,12 @@ namespace DromAutoTrader.DromManager
         // Метод получения инпута и вставки цены 
         public void PriceInput(string price)
         {
-            Thread.Sleep(200);
             try
             {
                 // Найти элемент <input type="file>
                 IWebElement priceInput = _wait.Until(e => e.FindElement(By.Name("price")));
 
                 ScrollToElement(priceInput);
-
 
                 priceInput.Clear();
                 priceInput.SendKeys(price);
@@ -313,7 +315,6 @@ namespace DromAutoTrader.DromManager
         // Метод получения кнопки выбора состояния (новое или б/у)
         public void Сondition()
         {
-            Thread.Sleep(200);
             try
             {
                 IWebElement stateButton = _wait.Until(e => e.FindElement(By.XPath("//label[text()='Новый']")));
@@ -331,13 +332,13 @@ namespace DromAutoTrader.DromManager
         // Метод получения инпута и вставки описания 
         public void DescriptionTextInput(string description)
         {
-            Thread.Sleep(200);
             try
             {
                 // Найти элемент <input type="file>
                 IWebElement descriptionTextInput = _wait.Until(e => e.FindElement(By.Name("text")));
 
                 ScrollToElement(descriptionTextInput);
+
 
                 descriptionTextInput.Clear();
                 descriptionTextInput.SendKeys(description);
@@ -352,7 +353,6 @@ namespace DromAutoTrader.DromManager
         // Метод получения кнопки наличия или под заказ
         public void GoodPresentState()
         {
-            Thread.Sleep(200);
             try
             {
 
@@ -371,11 +371,11 @@ namespace DromAutoTrader.DromManager
         // Метод публицкации объявления
         public bool ClickPublishButton()
         {
-            Thread.Sleep(200);
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(5));
             try
             {
                 // Нахождение и клик по элементу по ID
-                IWebElement bulletinPublicationFree = _wait.Until(e => e.FindElement(By.Id("bulletin_publication_free")));
+                IWebElement bulletinPublicationFree = wait.Until(e => e.FindElement(By.Id("bulletin_publication_free")));
 
                 ScrollToElement(bulletinPublicationFree);
 
