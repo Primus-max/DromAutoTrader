@@ -1,4 +1,5 @@
 ﻿
+using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 
@@ -52,7 +53,7 @@ namespace DromAutoTrader.ImageServices
         protected override void Authorization() { }
 
         // Метод отправки поискового запроса
-        protected override void SetArticulInSearchInput() {  }
+        protected override void SetArticulInSearchInput() { }
 
         // Метод открытия каротчки с полученным запросом
         protected override void OpenSearchedCard()
@@ -103,18 +104,21 @@ namespace DromAutoTrader.ImageServices
         // Метод проверки, появились картинки или нет
         protected override bool IsImagesVisible()
         {
-            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(3));
-
             try
             {
-                IWebElement mainImageParentDiv = wait.Until(e => e.FindElement(By.ClassName("photo_gallery")));
-                return true;
+                var photoGallery = _document?.QuerySelector(".photo_gallery");
+
+                // Если получили этот элемент, значит, изображения видны
+                return photoGallery != null;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // Обработка исключения, например, логирование
+                Console.WriteLine($"Произошло исключение: {ex.Message}");
                 return false;
             }
         }
+
 
         // Метод проверки результатов поиска детали
         protected override bool IsNotMatchingArticul()
@@ -138,39 +142,51 @@ namespace DromAutoTrader.ImageServices
         // Метод сбора картинок из открытой карточки
         protected override async Task<List<string>> GetImagesAsync()
         {
-            // Список изображений которые возвращаем из метода
+            // Список изображений, которые возвращаем из метода
             List<string> downloadedImages = new List<string>();
 
             // Временное хранилище изображений
             List<string> images = new List<string>();
-            IWebElement mainImageParentDiv = null!;
+            IElement mainImageParentDiv = null;
 
-            // Получаю контейнер с картинками
+            // Получаем контейнер с картинками
             try
             {
-                mainImageParentDiv = _driver.FindElement(By.ClassName("photo_gallery"));
+                mainImageParentDiv = _document?.QuerySelector(".photo_gallery");
             }
-            catch (Exception) { }
+            catch (Exception ex)
+            {
+                // Обработка исключения, например, логирование
+                Console.WriteLine($"Произошло исключение: {ex.Message}");
+            }
 
-            // Получаю все картинки thumbs
+            // Получаем все картинки thumbs
             try
             {
                 // Находим все img элементы в li элементах с data-type='thumb'
-                IList<IWebElement> imagesThumb = mainImageParentDiv.FindElements(By.XPath("//li[@data-type='thumb']/img"));
+                var imagesThumb = mainImageParentDiv?.QuerySelectorAll("li[data-type='thumb'] img");
 
-                foreach (var image in imagesThumb)
+                if (imagesThumb != null)
                 {
-                    string imagePath = image.GetAttribute("src");
-                    images.Add(imagePath);
+                    foreach (var image in imagesThumb)
+                    {
+                        string imagePath = image.GetAttribute("data-src");
+                        images.Add(imagePath);
+                    }
                 }
             }
-            catch (Exception) { }
+            catch (Exception ex)
+            {
+                // Обработка исключения, например, логирование
+                Console.WriteLine($"Произошло исключение: {ex.Message}");
+            }
 
             if (images.Count != 0)
                 downloadedImages = await ImagesProcessAsync(images);
 
             return downloadedImages;
         }
+
 
         // Метод создания директории и скачивания изображений
         private async Task<List<string>> ImagesProcessAsync(List<string> images)
@@ -195,20 +211,20 @@ namespace DromAutoTrader.ImageServices
 
         protected override async Task CloseDriverAsync()
         {
-            try
-            {
-                _driver.Close();
-                _driver.Quit();
-                _driver.Dispose();
+            //try
+            //{
+            //    _driver.Close();
+            //    _driver.Quit();
+            //    _driver.Dispose();
 
-                // Удаляю временную директорию профиля после закрытия браузера
-                ProfilePathService profilePathService = new();
-                await profilePathService.DeleteDirectoryAsync(_tempProfilePath);
-            }
-            catch (Exception)
-            {
+            //    // Удаляю временную директорию профиля после закрытия браузера
+            //    ProfilePathService profilePathService = new();
+            //    await profilePathService.DeleteDirectoryAsync(_tempProfilePath);
+            //}
+            //catch (Exception)
+            //{
 
-            }
+            //}
         }
         #endregion
 
