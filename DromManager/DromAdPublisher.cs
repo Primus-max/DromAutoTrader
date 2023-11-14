@@ -26,7 +26,7 @@ namespace DromAutoTrader.DromManager
             adsPower = new BrowserManager();
 
             // Инициализация драйвера Chrome
-            InitializeDriver(channelName).GetAwaiter().GetResult();            
+            InitializeDriver(channelName).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -54,8 +54,7 @@ namespace DromAutoTrader.DromManager
             // Устанавливаю заголовок объявления
             TitleInput(adPublishingInfo.KatalogName);
             await Task.Delay(200);
-            PressEnterKey();
-            await Task.Delay(200);
+           
             ClickDirControlVariant();
             await Task.Delay(200);
             ClickBulletinTypeVariant();
@@ -87,7 +86,7 @@ namespace DromAutoTrader.DromManager
             await Task.Delay(200);
             // Проверяю заполненность полей
             CheckAndFillRequiredFields();
-            await Task.Delay(200);
+
             // Публикую
             await Task.Delay(200);
 
@@ -135,7 +134,7 @@ namespace DromAutoTrader.DromManager
                 // Установка размера окна браузера
                 _driver.Manage().Window.Maximize();
             }
-            catch (Exception )
+            catch (Exception)
             {
                 //MessageBox.Show("Ошибка при установке размера окна: " + ex.Message);
             }
@@ -149,9 +148,9 @@ namespace DromAutoTrader.DromManager
                 // Прокрутка страницы к указанному элементу
                 ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].scrollIntoView(true);", element);
             }
-            catch (Exception )
+            catch (Exception)
             {
-               // MessageBox.Show("Ошибка при прокрутке к элементу: " + ex.Message);
+                // MessageBox.Show("Ошибка при прокрутке к элементу: " + ex.Message);
             }
         }
 
@@ -164,7 +163,7 @@ namespace DromAutoTrader.DromManager
                 IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));
 
                 subjectInput.Clear();
-                subjectInput.SendKeys(text);   
+                subjectInput.SendKeys(text);
                 //ClearAndEnterText(subjectInput, text);
             }
             catch (Exception)
@@ -174,19 +173,19 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод нажатия Enter
-        public void PressEnterKey()
-        {
-            try
-            {
-                // Нажатие клавиши Enter
-                IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));               
-                subjectInput.SendKeys(Keys.Enter);
-            }
-            catch (Exception)
-            {
-                //MessageBox.Show("Ошибка при нажатии клавиши Enter: " + ex.Message);
-            }
-        }
+        //public void PressEnterKey()
+        //{
+        //    //try
+        //    //{
+        //    //    // Нажатие клавиши Enter
+        //    //    IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));
+        //    //    subjectInput.SendKeys(Keys.Enter);
+        //    //}
+        //    //catch (Exception)
+        //    //{
+        //    //    //MessageBox.Show("Ошибка при нажатии клавиши Enter: " + ex.Message);
+        //    //}
+        //}
 
         // Метод открытия разделов
         public void ClickDirControlVariant()
@@ -234,7 +233,6 @@ namespace DromAutoTrader.DromManager
 
                 // Вставить путь к изображению в элемент
                 fileInput.SendKeys(imgPath);
-
             }
             catch (Exception)
             {
@@ -332,7 +330,7 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод получения инпута и вставки описания 
-        public void DescriptionTextInput(string description)    
+        public void DescriptionTextInput(string description)
         {
             try
             {
@@ -373,10 +371,11 @@ namespace DromAutoTrader.DromManager
         // Метод публицкации объявления
         public bool ClickPublishButton()
         {
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(5));
             try
             {
                 // Нахождение и клик по элементу по ID
-                IWebElement bulletinPublicationFree = _wait.Until(e => e.FindElement(By.Id("bulletin_publication_free")));
+                IWebElement bulletinPublicationFree = wait.Until(e => e.FindElement(By.Id("bulletin_publication_free")));
 
                 ScrollToElement(bulletinPublicationFree);
 
@@ -497,9 +496,9 @@ namespace DromAutoTrader.DromManager
 
         // Инициализация драйвера       
         private async Task InitializeDriver(string channelName)
-        {            
+        {
             try
-            {                
+            {
                 List<Profile> profiles = await ProfileManager.GetProfiles();
 
                 foreach (Profile profile in profiles)
@@ -509,7 +508,7 @@ namespace DromAutoTrader.DromManager
                     _driver = await adsPower.InitializeDriver(profile.UserId);
                 }
             }
-            catch(Exception) { }
+            catch (Exception) { }
         }
     }
 }
