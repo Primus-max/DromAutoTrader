@@ -44,7 +44,7 @@ namespace DromAutoTrader.ImageServices
             try
             {
                 Thread.Sleep(500);
-                IHtmlElement wrongMessageElement = _document?.QuerySelector("h1.page__h1.page-title__heading.page-title__heading--fullwidth") as IHtmlElement;
+                IHtmlElement? wrongMessageElement = _document?.QuerySelector("h1.page__h1.page-title__heading.page-title__heading--fullwidth") as IHtmlElement;
 
                 string? wrongMessage = wrongMessageElement.Text();
 

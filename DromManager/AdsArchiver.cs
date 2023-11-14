@@ -45,6 +45,7 @@ namespace DromAutoTrader.DromManager
                 .ToList();
         }
 
+        // Метод проверки объявлений для перемещения в архив
         private void ArchiveOutdatedAds(List<AdPublishingInfo> currentAds, List<AdPublishingInfo> outdatedAds)
         {
             foreach (var outdatedAd in outdatedAds)
@@ -59,7 +60,14 @@ namespace DromAutoTrader.DromManager
                     // Объявление отсутствует в текущих объявлениях, устанавливаем флаг IsArchived
                     outdatedAd.IsArchived = true;
                     // Сохраняем изменения в базе данных
-                    _db.SaveChanges();
+                    try
+                    {
+                        using var context = new AppContext();
+                        context.SaveChanges();
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
             }
         }
