@@ -30,18 +30,18 @@ namespace DromAutoTrader.Services
         /// <returns>Результат сохраняется в <paramref name="downloadDirectory" />. Возвращает список путей к скачанным изображениям.</returns>
         public async Task<List<string>> DownloadImagesAsync()
         {
-            List<string> downloadedImagePaths = new();
+            List<string> downloadedImagePaths = new List<string>();
 
             try
             {
-                using HttpClient client = new();
+                using HttpClient client = new HttpClient();
                 for (int i = 0; i < _imageUrls.Count; i++)
                 {
                     string imageUrl = _imageUrls[i];
                     string fileName = $"{_articul}_{i:00}.jpg";
                     string localFilePath = Path.Combine(_downloadDirectory, fileName);
 
-                    Uri uri = new(imageUrl);
+                    Uri uri = new Uri($"https:{imageUrl}"); // Явно указываем схему "https"
 
                     using HttpResponseMessage response = await client.GetAsync(uri);
                     if (response.IsSuccessStatusCode)
@@ -49,7 +49,7 @@ namespace DromAutoTrader.Services
                         using Stream imageStream = await response.Content.ReadAsStreamAsync();
                         using FileStream fileStream = File.Create(localFilePath);
                         await imageStream.CopyToAsync(fileStream);
-                        await fileStream.FlushAsync(); // Добавьте эту строку
+                        await fileStream.FlushAsync();
                         downloadedImagePaths.Add(localFilePath);
                     }
                 }
@@ -61,6 +61,7 @@ namespace DromAutoTrader.Services
 
             return downloadedImagePaths;
         }
+
 
         /// <summary>
         /// Асинхронный метод для скачивания изображений из удалённых источников с использованием 

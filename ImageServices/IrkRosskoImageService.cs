@@ -2,7 +2,6 @@
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -55,42 +54,35 @@ namespace DromAutoTrader.ImageServices
 
         protected override void SetArticulInSearchInput()
         {
+            WebDriverWait driverWait = new(_driver, TimeSpan.FromSeconds(10));
             IWebElement searchInput = null!;
-
-            while (true)
+            try
             {
-                Thread.Sleep(500);
-                try
-                {
 
-                    searchInput = _driver.FindElement(By.Id("1"));
+                searchInput = driverWait.Until(e => e.FindElement(By.Id("1")));
+                //searchInput.Clear();
 
-                    searchInput.Clear();
-
-                    ClearAndEnterText(searchInput, Articul);
-                    Thread.Sleep(200);
-                    //searchInput.SendKeys(Articul);
-
-                    searchInput.Submit();
-
-                    break;
-
-                }
-                catch (Exception)
-                {
-                    continue;
-                }
+                ClearAndEnterText(searchInput, Articul);
+                //Thread.Sleep(200);
+                //searchInput.SendKeys(Articul);
+                Console.WriteLine($"Ввёл Артикул в инпут");
+                searchInput.Submit();
+                Console.WriteLine($"Нажал сабмит на инпуте");
             }
+            catch (Exception)
+            {
 
+            }
         }
 
         protected override bool IsNotMatchingArticul()
         {
+            WebDriverWait driverWait = new(_driver, TimeSpan.FromSeconds(5));
             bool isMatching = false;
             try
             {
-                Thread.Sleep(500);
-                IWebElement? wrongMessageElement = (_driver?.FindElement(By.CssSelector("div.src-components-SearchNotFound-___styles__notFoundTitle___IWpeT")));
+
+                IWebElement? wrongMessageElement = driverWait.Until(e => e.FindElement(By.CssSelector("div.src-components-SearchNotFound-___styles__notFoundTitle___IWpeT")));
 
                 string? wrongMessage = wrongMessageElement?.Text;
 
@@ -111,14 +103,17 @@ namespace DromAutoTrader.ImageServices
 
         protected override void OpenSearchedCard()
         {
+            WebDriverWait driverWait = new(_driver, TimeSpan.FromSeconds(7));
             try
             {
-                Thread.Sleep(1000);
-                IWebElement searchCardLink = _driver.FindElement(By.ClassName("src-features-search-components-result-item-___index__isLinkFocused___-+EPf"));
+                IWebElement searchCardLink = driverWait.Until(e => e.FindElement(By.ClassName("src-features-search-components-result-item-___index__isLinkFocused___-+EPf")));
 
-                Thread.Sleep(200);
+
+                Console.WriteLine("Открываю карточку");
                 IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
                 js.ExecuteScript("arguments[0].click();", searchCardLink);
+                Console.WriteLine("Открыл карточку");
+
             }
             catch (Exception)
             {
@@ -128,7 +123,6 @@ namespace DromAutoTrader.ImageServices
 
         protected override bool IsImagesVisible()
         {
-            Thread.Sleep(500);
             return true;
         }
 
@@ -141,16 +135,14 @@ namespace DromAutoTrader.ImageServices
             List<string> images = new List<string>();
 
             // Устанавливаю ожидание
-            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(7));
-            wait.IgnoreExceptionTypes();
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(5));
 
             // Получаю все картинки thumbs
             try
             {
-                // Находим все img элементы 
-                IWebElement imagesThumb = wait.Until(e => e.FindElement(By.ClassName("src-features-product-card-components-info-___index__image___KeiQL")));
-
-                string imagePath = imagesThumb.GetAttribute("style");
+                // Находим div элемент с изображением, исключая тот, у которого есть подпись
+                IWebElement imageDiv = wait.Until(e => e.FindElement(By.XPath("//div[contains(@class,'src-features-product-card-components-info-___index__image___KeiQL') and not(contains(., 'Посмотреть на Яндекс Картинках'))]")));
+                string imagePath = imageDiv.GetAttribute("style");
 
                 // Находим позиции, где начинается URL и заканчивается
                 int startIndex = imagePath.IndexOf("https://");
@@ -166,7 +158,7 @@ namespace DromAutoTrader.ImageServices
             }
             catch (Exception ex)
             {
-                string asdf = ex.Message;
+                //string asdf = ex.Message;
             }
 
             if (images.Count != 0)
@@ -179,9 +171,11 @@ namespace DromAutoTrader.ImageServices
         {
             try
             {
+                Console.WriteLine("Перед закрытием драйвера");
                 _driver.Close();
                 _driver.Quit();
                 _driver.Dispose();
+                Console.WriteLine("После закрытия драйвера");
 
                 // Удаляю временную директорию профиля после закрытия браузера
                 ProfilePathService profilePathService = new();
@@ -207,7 +201,7 @@ namespace DromAutoTrader.ImageServices
             FolderManager folderManager = new();
             bool folderContainsFiles = folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
 
-            await Task.Delay(1000);
+            await Task.Delay(500);
 
             if (!folderContainsFiles)
             {

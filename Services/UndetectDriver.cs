@@ -37,11 +37,17 @@ namespace DromAutoTrader.Services
 
             try
             {
-                driver = UndetectedChromeDriver.Create(options: options, hideCommandPromptWindow: true, driverExecutablePath: "chromedriver.exe");
+                driver = UndetectedChromeDriver.Create(options: options, hideCommandPromptWindow: true, driverExecutablePath: "chromedriver.exe", commandTimeout: TimeSpan.FromSeconds(15));
             }
             catch (Exception)
             {
                 Console.WriteLine("Проблемы при создании драйевера");
+            }
+
+            // Глобальное ожидание
+            if (driver != null)
+            {
+                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(15);
             }
 
             return driver;

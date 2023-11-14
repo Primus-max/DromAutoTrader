@@ -1,10 +1,6 @@
-﻿using AngleSharp;
-using AngleSharp.Dom;
+﻿using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
-using DromAutoTrader.ImageServices.Base;
-using DromAutoTrader.Services;
-using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -15,7 +11,7 @@ namespace DromAutoTrader.ImageServices
         #region Перезапись абстрактных свойст
         protected override string LoginPageUrl => "https://luzar.ru/";
 
-        protected override string SearchPageUrl => "https://luzar.ru/search/";
+        protected override string SearchPageUrl => "https://luzar.ru/catalogue/?q=";
 
         protected override string UserName => "";
 
@@ -41,10 +37,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override void Authorization() { }
 
-        protected override void SetArticulInSearchInput()
-        {
-            Task.Run(async () => await GoToAsync()).Wait();
-        }
+        protected override void SetArticulInSearchInput() { }
 
         protected override bool IsNotMatchingArticul()
         {
@@ -52,13 +45,13 @@ namespace DromAutoTrader.ImageServices
             try
             {
                 Thread.Sleep(500);
-                IHtmlElement wrongMessageElement = _document?.QuerySelector("font.notetext") as IHtmlElement;
+                IHtmlElement wrongMessageElement = _document?.QuerySelector("h1.page__h1.page-title__heading.page-title__heading--fullwidth") as IHtmlElement;
 
                 string? wrongMessage = wrongMessageElement.Text();
 
 
                 string? cleanedText = Regex.Unescape(wrongMessage.Trim().Replace("\n", "").Replace("\r", ""));
-                string? comparisonStr = $"К сожалению, на ваш поисковый запрос ничего не найдено.";
+                string? comparisonStr = $"По точному совпадению результатов не найдено";
 
                 if (wrongMessage.Contains(comparisonStr, StringComparison.OrdinalIgnoreCase))
                 {
@@ -104,7 +97,7 @@ namespace DromAutoTrader.ImageServices
         }
 
         protected override bool IsImagesVisible()
-        {           
+        {
             return true;
         }
 
@@ -120,7 +113,7 @@ namespace DromAutoTrader.ImageServices
 
             try
             {
-               await Task.Delay(500);
+                await Task.Delay(500);
                 // Получаем изображение
 
                 var imageBlocks = _document.QuerySelectorAll(".product-card-image-list-item");
@@ -175,7 +168,7 @@ namespace DromAutoTrader.ImageServices
                 }
                 else
                 {
-                    fullUrl = $"{SearchPageUrl}?query={Articul}";
+                    fullUrl = $"{SearchPageUrl}{Articul}";
                 }
 
 
