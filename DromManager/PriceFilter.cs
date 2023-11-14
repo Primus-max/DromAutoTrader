@@ -53,7 +53,7 @@
                             existingAd.KatalogName = adInfo.KatalogName;
                             existingAd.PriceName = adInfo.PriceName;
                             existingAd.Description = adInfo.Description;
-                            existingAd.PriceBuy = null;
+                            existingAd.PriceBuy = "2"; // Ставлю флаг что это изменённая цена, значит буду это учитывать при публикации объявленй
                         }
                     }
                 }

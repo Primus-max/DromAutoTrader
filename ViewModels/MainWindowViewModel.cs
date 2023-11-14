@@ -479,7 +479,7 @@ namespace DromAutoTrader.ViewModels
             AdsArchiver adsArchiver = new();
             adsArchiver.CompareAndArchiveAds();
 
-            Console.WriteLine("Проверку закончил, приступаю к размещению");
+            MessageBox.Show("Проверку закончил, приступаю к размещению");
             await ProcessPublishingAdsAtDrom();
 
             Console.WriteLine("Публикацию закончил, создаю прайс");
