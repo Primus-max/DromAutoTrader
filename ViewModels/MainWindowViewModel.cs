@@ -647,7 +647,7 @@ namespace DromAutoTrader.ViewModels
 
             await Task.WhenAll(tasks);
 
-            // Закрываю прфоили
+            // Закрываю профили
             var channelsForClose = context.Channels.ToList();
             BrowserManager browser = new();
             foreach (var channel in channelsForClose)

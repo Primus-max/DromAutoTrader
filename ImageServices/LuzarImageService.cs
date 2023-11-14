@@ -116,9 +116,7 @@ namespace DromAutoTrader.ImageServices
                 // Получаем изображение
 
                 // Получаем изображение
-                var imageBlocks = _document.QuerySelectorAll("img.lazyload.catalog__main-products-card-image");
-
-                
+                var imageBlocks = _document.QuerySelectorAll("img.lazyload.catalog__main-products-card-image");                
 
                 foreach (var imageBlock in imageBlocks)
                 {
@@ -194,7 +192,6 @@ namespace DromAutoTrader.ImageServices
             }
         }
 
-        // TODO вынести этот метод в базовый и сделать для всех
         // Метод создания директории и скачивания изображений
         private async Task<List<string>> ImagesProcessAsync(List<string> images)
         {
@@ -204,7 +201,7 @@ namespace DromAutoTrader.ImageServices
             FolderManager folderManager = new();
             bool folderContainsFiles = folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
 
-            Thread.Sleep(1000);
+           await Task.Delay(500);
 
             if (!folderContainsFiles)
             {
