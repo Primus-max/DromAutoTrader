@@ -1,4 +1,5 @@
 ﻿using DromAutoTrader.AdsPowerManager;
+using DromAutoTrader.Prices;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System.IO;
@@ -104,7 +105,7 @@ namespace DromAutoTrader.DromManager
                 // Открытие URL
                 _driver.Navigate().GoToUrl(gooodsUrl);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show($"ОШибка {ex.ToString()} в методе OpenGoodsPage");
             }
@@ -118,7 +119,7 @@ namespace DromAutoTrader.DromManager
                 // Открытие URL
                 _driver.Navigate().GoToUrl(archivedUrl);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show("Ошибка при открытии веб-сайта: " + ex.Message);
             }
@@ -132,7 +133,7 @@ namespace DromAutoTrader.DromManager
                 // Установка размера окна браузера
                 _driver.Manage().Window.Maximize();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show("Ошибка при установке размера окна: " + ex.Message);
             }
@@ -146,7 +147,7 @@ namespace DromAutoTrader.DromManager
                 // Прокрутка страницы к указанному элементу
                 ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].scrollIntoView(true);", element);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                // MessageBox.Show("Ошибка при прокрутке к элементу: " + ex.Message);
             }
@@ -164,7 +165,7 @@ namespace DromAutoTrader.DromManager
                 subjectInput.SendKeys(text);   
                 //ClearAndEnterText(subjectInput, text);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show("Ошибка при вводе текста в поле 'subject': " + ex.Message);
             }
@@ -179,7 +180,7 @@ namespace DromAutoTrader.DromManager
                 IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));               
                 subjectInput.SendKeys(Keys.Enter);
             }
-            catch (Exception ex)
+            catch (Exception )
             {
                 //MessageBox.Show("Ошибка при нажатии клавиши Enter: " + ex.Message);
             }
@@ -196,7 +197,7 @@ namespace DromAutoTrader.DromManager
 
                 dirControlVariant.Click();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show("Ошибка при клике на элемент 'dir_control__variant': " + ex.Message);
             }
@@ -213,7 +214,7 @@ namespace DromAutoTrader.DromManager
 
                 bulletinTypeVariant.Click();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show("Ошибка при клике на элемент 'bulletin-type__variant-title': " + ex.Message);
             }
@@ -233,7 +234,7 @@ namespace DromAutoTrader.DromManager
                 fileInput.SendKeys(imgPath);
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
             }
@@ -253,11 +254,13 @@ namespace DromAutoTrader.DromManager
                     ScrollToElement(brandNameInput);
 
                     // Вставить путь к изображению в элемент
-                    ClearAndEnterText(brandNameInput, brandName);
+                    brandNameInput.Clear();
+                    brandNameInput.SendKeys(brandName);
+                    //ClearAndEnterText(brandNameInput, brandName);
                 }
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
             }
@@ -276,11 +279,13 @@ namespace DromAutoTrader.DromManager
 
                     ScrollToElement(articulNameInput);
 
-                    ClearAndEnterText(articulNameInput, articulName);
+                    articulNameInput.Clear();
+                    articulNameInput.SendKeys(articulName);
+                    //ClearAndEnterText(articulNameInput, articulName);
                 }
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
             }
@@ -295,10 +300,14 @@ namespace DromAutoTrader.DromManager
                 IWebElement priceInput = _wait.Until(e => e.FindElement(By.Name("price")));
 
                 ScrollToElement(priceInput);
-                ClearAndEnterText(priceInput, price);
+
+
+                priceInput.Clear();
+                priceInput.SendKeys(price);
+                //ClearAndEnterText(priceInput, price);
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
             }
@@ -315,7 +324,7 @@ namespace DromAutoTrader.DromManager
                 IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)_driver;
                 jsExecutor.ExecuteScript("arguments[0].click();", stateButton);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
             }
@@ -331,9 +340,11 @@ namespace DromAutoTrader.DromManager
 
                 ScrollToElement(descriptionTextInput);
 
-                ClearAndEnterText(descriptionTextInput, description);
+                descriptionTextInput.Clear();
+                descriptionTextInput.SendKeys(description);
+                //ClearAndEnterText(descriptionTextInput, description);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show($"ОШибка {ex.ToString()} в методе DescriptionTextInput");
             }
@@ -351,7 +362,7 @@ namespace DromAutoTrader.DromManager
                 IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)_driver;
                 jsExecutor.ExecuteScript("arguments[0].click();", presentPartBtn);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
             }

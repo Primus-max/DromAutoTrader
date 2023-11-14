@@ -1,10 +1,6 @@
-﻿using AngleSharp;
-using AngleSharp.Dom;
+﻿using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
-using DromAutoTrader.ImageServices.Base;
-using DromAutoTrader.Services;
-using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -41,10 +37,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override void Authorization() { }
 
-        protected override void SetArticulInSearchInput()
-        {
-            Task.Run(async () => await GoToAsync()).Wait();
-        }
+        protected override void SetArticulInSearchInput() { }
 
         protected override bool IsNotMatchingArticul()
         {
@@ -104,7 +97,7 @@ namespace DromAutoTrader.ImageServices
         }
 
         protected override bool IsImagesVisible()
-        {           
+        {
             return true;
         }
 
@@ -120,7 +113,7 @@ namespace DromAutoTrader.ImageServices
 
             try
             {
-               await Task.Delay(500);
+                await Task.Delay(500);
                 // Получаем изображение
 
                 var imageBlocks = _document.QuerySelectorAll(".product-card-image-list-item");
