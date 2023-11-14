@@ -2,6 +2,7 @@
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DromAutoTrader.ImageServices
 {
@@ -47,7 +48,6 @@ namespace DromAutoTrader.ImageServices
         {
             Task.Run(async () => await GoToAsync()).Wait();
         }
-
 
         // Метод авторизации
         protected override void Authorization() { }
@@ -118,7 +118,6 @@ namespace DromAutoTrader.ImageServices
                 return false;
             }
         }
-
 
         // Метод проверки результатов поиска детали
         protected override bool IsNotMatchingArticul()
@@ -217,20 +216,7 @@ namespace DromAutoTrader.ImageServices
 
         protected override async Task CloseDriverAsync()
         {
-            //try
-            //{
-            //    _driver.Close();
-            //    _driver.Quit();
-            //    _driver.Dispose();
-
-            //    // Удаляю временную директорию профиля после закрытия браузера
-            //    ProfilePathService profilePathService = new();
-            //    await profilePathService.DeleteDirectoryAsync(_tempProfilePath);
-            //}
-            //catch (Exception)
-            //{
-
-            //}
+           
         }
         #endregion
 
@@ -297,14 +283,6 @@ namespace DromAutoTrader.ImageServices
 
             return newUrl;
         }
-
-        // Инициализация драйвера
-        private void InitializeDriver()
-        {
-            UndetectDriver webDriver = new(_tempProfilePath);
-            _driver = webDriver.GetDriver();
-        }
-
         #endregion
     }
 }
