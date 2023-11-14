@@ -169,8 +169,14 @@ namespace DromAutoTrader.ImageServices
                 {
                     foreach (var image in imagesThumb)
                     {
-                        string imagePath = image.GetAttribute("data-src");
-                        images.Add(imagePath);
+                        string relativePath = image.GetAttribute("data-src");
+
+                        // Формируем абсолютный URL
+                        Uri baseUri = new Uri(ServiceName);
+                        Uri fullUri = new Uri(baseUri, relativePath);
+                        string fullUrl = fullUri.AbsoluteUri;
+
+                        images.Add(fullUrl);
                     }
                 }
             }
