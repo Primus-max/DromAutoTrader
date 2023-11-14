@@ -1,8 +1,6 @@
-﻿using DromAutoTrader.ImageServices.Base;
-using DromAutoTrader.Services;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
-using System.Threading;
+﻿
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
 
 namespace DromAutoTrader.ImageServices
 {
@@ -26,6 +24,7 @@ namespace DromAutoTrader.ImageServices
         #region Приватный поля        
         private readonly string _profilePath = @"C:\SeleniumProfiles\Berg";
         private string _tempProfilePath = string.Empty;
+        private IHtmlDocument _document = null!;
         #endregion        
 
         public BergImageService()
@@ -34,7 +33,7 @@ namespace DromAutoTrader.ImageServices
             ProfilePathService profilePathService = new();
             _tempProfilePath = profilePathService.CreateTempProfile(_profilePath);
 
-            InitializeDriver();
+            //InitializeDriver();
         }
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
@@ -45,14 +44,9 @@ namespace DromAutoTrader.ImageServices
         // Метод перехода по ссылке
         protected override void GoTo()
         {
-            try
-            {
-                _driver.Manage().Window.Maximize();
-            }
-            catch (Exception)
-            {
-            }
+            Task.Run(async () => await GoToAsync()).Wait();
         }
+
 
         // Метод авторизации
         protected override void Authorization()
@@ -212,7 +206,7 @@ namespace DromAutoTrader.ImageServices
             try
             {
                 _driver.Close();
-                _driver.Quit();                
+                _driver.Quit();
                 _driver.Dispose();
 
                 // Удаляю временную директорию профиля после закрытия браузера
@@ -226,7 +220,50 @@ namespace DromAutoTrader.ImageServices
         }
         #endregion
 
-        #region Специфичные методы класса       
+        #region Специфичные методы класса    
+        // Асинхронный метод получения DOM
+        protected async Task GoToAsync()
+        {
+            try
+            {
+                // Создаем объект HttpClient
+                using var httpClient = new HttpClient();
+                // Формируем URL для запроса
+                var searchUrl = BuildUrl(); // замените "your_keyword" на фактическое значение
+
+                // Создаем контейнер для хранения кук
+                var cookieContainer = new System.Net.CookieContainer();
+
+                // Устанавливаем куки (замените значения на актуальные)
+                cookieContainer.Add(new Uri(ServiceName), new System.Net.Cookie("BERG_SESSID", "b39b60eadfac0d2fc91d7f8acf45687e"));
+
+                // Создаем объект HttpClientHandler и передаем ему контейнер с куками
+                var handler = new HttpClientHandler { CookieContainer = cookieContainer };
+
+                // Создаем новый HttpClient с настроенным обработчиком
+                using var httpClientWithCookies = new HttpClient(handler);
+                // Отправляем GET-запрос и получаем ответ
+                var response = await httpClientWithCookies.GetAsync(searchUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Получаем документ
+                    var pageSource = await response.Content.ReadAsStringAsync();
+                    var context = BrowsingContext.New(Configuration.Default);
+                    var parser = context.GetService<IHtmlParser>();
+                    _document = parser?.ParseDocument(pageSource);
+                }
+                else
+                {
+                    Console.WriteLine($"Не удалось получить DOM для Berg {response.Headers}");
+                    // TODO: сделать логирование
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при обращении к Berg {ex.Message}");
+            }
+        }
 
         // Метод для формирования Url поискового запроса
         public string BuildUrl()

@@ -75,8 +75,8 @@ namespace DromAutoTrader.ViewModels
                     // TODO здесь запускаю парсинг по разным сервисам
 
 
-                   // BergImageService bergImageService = new();
-                     UnicomImageService unicomImageService = new();
+                    BergImageService bergImageService = new();
+                    // UnicomImageService unicomImageService = new();
                     //LynxautoImageService lynxautoImageService = new LynxautoImageService();
                     //LuzarImageService LuzarimageService = new LuzarImageService();
                     //StarvoltImageService starvoltImageService = new StarvoltImageService();
@@ -84,9 +84,9 @@ namespace DromAutoTrader.ViewModels
                     //MxgroupImageService imageService = new MxgroupImageService();
                     // TmpartsImageService tmpartsImageService = new TmpartsImageService();
                     // await bergImageService.RunAsync(brand, articul);
-                    await unicomImageService.RunAsync(brand, articul);
+                    await bergImageService.RunAsync(brand, articul);
 
-                    var testImages = unicomImageService.BrandImages;
+                    var testImages = bergImageService.BrandImages;
                 }
             }
         }
