@@ -1,10 +1,5 @@
 ﻿using DromAutoTrader.AdsPowerManager;
-using DromAutoTrader.Prices;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
-using System.IO;
 using System.Threading;
-using System.Windows.Media;
 
 namespace DromAutoTrader.DromManager
 {
@@ -27,7 +22,7 @@ namespace DromAutoTrader.DromManager
             adsPower = new BrowserManager();
 
             // Инициализация драйвера Chrome
-            InitializeDriver(channelName).GetAwaiter().GetResult();            
+            InitializeDriver(channelName).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -51,46 +46,46 @@ namespace DromAutoTrader.DromManager
 
             //ClickSubjectField();
             // Устанавливаю заголовок объявления
-           await TitleInput(adPublishingInfo.KatalogName);
-            PressEnterKey();
+            await TitleInput(adPublishingInfo.KatalogName);
+            await PressEnterKey();
 
-            await Task.Delay(500);
-           await ClickDirControlVariant();
-           await ClickBulletinTypeVariant();
+            await Task.Delay(200);
+            await ClickDirControlVariant();
+            await ClickBulletinTypeVariant();
             List<string> ImagesPaths = adPublishingInfo.ImagesPath.Split(";").ToList();
 
             // Вставляю изображение
             foreach (var imagePath in ImagesPaths)
             {
                 string absolutePath = Path.Combine(Environment.CurrentDirectory, imagePath);
-                InsertImage(absolutePath);
+                await InsertImage(absolutePath);
             }
 
             // Бренд для публикации
-           await BrandInput(adPublishingInfo?.Brand);
+            await BrandInput(adPublishingInfo?.Brand);
 
 
             // Артикул для публикации
-           await ArticulInput(adPublishingInfo?.Artikul);
+            await ArticulInput(adPublishingInfo?.Artikul);
+
             // Цена для публикации
-          await  PriceInput(adPublishingInfo?.OutputPrice?.ToString());
-            //Сondition();
-            await Task.Delay(500);
+            await PriceInput(adPublishingInfo?.OutputPrice?.ToString());           
+           
 
             await DescriptionTextInput(adPublishingInfo?.Description);
 
-            await Task.Delay(500);
+          
             // Кнопка наличие или под заказ
-           await GoodPresentState();
+            await GoodPresentState();
 
             // Проверяю заполненность полей
             CheckAndFillRequiredFields();
 
-           await Task.Delay(500);
+            await Task.Delay(200);
             // Публикую
             //ClickPublishButton();
 
-            isPublited =  await ClickPublishButton();
+            isPublited = await ClickPublishButton();
 
             //await adsPower.CloseBrowser(_channelName);
             //_driver.Quit();
@@ -150,7 +145,7 @@ namespace DromAutoTrader.DromManager
             }
             catch (Exception)
             {
-               // MessageBox.Show("Ошибка при прокрутке к элементу: " + ex.Message);
+                // MessageBox.Show("Ошибка при прокрутке к элементу: " + ex.Message);
             }
         }
 
@@ -164,7 +159,7 @@ namespace DromAutoTrader.DromManager
                 IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));
 
                 subjectInput.Clear();
-                subjectInput.SendKeys(text);   
+                subjectInput.SendKeys(text);
                 //ClearAndEnterText(subjectInput, text);
             }
             catch (Exception)
@@ -180,10 +175,10 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Нажатие клавиши Enter
-                IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));               
+                IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));
                 subjectInput.SendKeys(Keys.Enter);
             }
-            catch (Exception )
+            catch (Exception)
             {
                 //MessageBox.Show("Ошибка при нажатии клавиши Enter: " + ex.Message);
             }
@@ -341,7 +336,7 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод получения инпута и вставки описания 
-        public async Task DescriptionTextInput(string description)    
+        public async Task DescriptionTextInput(string description)
         {
             await Task.Delay(500);
             try
@@ -362,7 +357,7 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод получения кнопки наличия или под заказ
-        public async  Task GoodPresentState()
+        public async Task GoodPresentState()
         {
             await Task.Delay(500);
             try
@@ -381,7 +376,7 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод публицкации объявления
-        public async Task< bool> ClickPublishButton()
+        public async Task<bool> ClickPublishButton()
         {
             await Task.Delay(500);
             try
@@ -508,9 +503,9 @@ namespace DromAutoTrader.DromManager
 
         // Инициализация драйвера       
         private async Task InitializeDriver(string channelName)
-        {            
+        {
             try
-            {                
+            {
                 List<Profile> profiles = await ProfileManager.GetProfiles();
 
                 foreach (Profile profile in profiles)
@@ -520,7 +515,7 @@ namespace DromAutoTrader.DromManager
                     _driver = await adsPower.InitializeDriver(profile.UserId);
                 }
             }
-            catch(Exception) { }
+            catch (Exception) { }
         }
     }
 }
