@@ -32,10 +32,15 @@ namespace DromAutoTrader.DromManager
         {
             bool isPublited = false;
             if (adPublishingInfo == null) return isPublited;
-
             // Глобально ожидание
             _wait = new(_driver, TimeSpan.FromSeconds(20));
 
+
+            if(adPublishingInfo.PriceBuy == "2")
+            {
+                // Здесь логика удаления в архив или просто изменение цены
+              
+            }
 
             await Task.Delay(200);
             OpenGoodsPage();
