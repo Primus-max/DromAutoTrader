@@ -207,14 +207,23 @@ namespace DromAutoTrader.ImageServices
 
         #region Специфичные методы класса    
         // Асинхронный метод получения DOM
-        protected async Task GoToAsync()
+        protected async Task GoToAsync(string url = null!)
         {
             try
             {
                 // Создаем объект HttpClient
                 using var httpClient = new HttpClient();
-                // Формируем URL для запроса
-                var searchUrl = BuildUrl(); // замените "your_keyword" на фактическое значение
+                var searchUrl = string.Empty;
+
+                if (url != null)
+                {
+                    searchUrl = url; // Если передали ссылку, то по ней будет переходить
+                }
+                else
+                {
+                    searchUrl = BuildUrl(); // Получаю ссылку для поиска
+                }
+                                
 
                 // Создаем контейнер для хранения кук
                 var cookieContainer = new System.Net.CookieContainer();
