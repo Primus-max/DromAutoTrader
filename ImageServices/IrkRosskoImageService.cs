@@ -2,6 +2,7 @@
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -24,6 +25,7 @@ namespace DromAutoTrader.ImageServices
         #region Приватные поля
         private readonly string _profilePath = @"C:\SeleniumProfiles\IrkRossko";
         private string _tempProfilePath = string.Empty;
+        private Process _chromedriverProcess;
         #endregion
 
         public IrkRosskoImageService()
