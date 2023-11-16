@@ -1,8 +1,11 @@
 ﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
+using SeleniumUndetectedChromeDriver;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -220,7 +223,45 @@ namespace DromAutoTrader.ImageServices
         {
             UndetectDriver webDriver = new(_tempProfilePath);
             _driver = webDriver.GetDriver();
+
+            //string driverProcess = GetSessionId();
         }
+
+        private string GetSessionId()
+        {
+            try
+            {
+                var browserField = typeof(UndetectedChromeDriver).GetField("_browser", BindingFlags.NonPublic | BindingFlags.Instance);
+                var browserInstance = browserField?.GetValue(_driver);
+
+                if (browserInstance != null)
+                {
+                    var sessionIdField = browserInstance.GetType().GetField("Id", BindingFlags.NonPublic | BindingFlags.Instance);
+                    var sessionId = sessionIdField?.GetValue(browserInstance);
+
+                    if (sessionId != null)
+                    {
+                        return sessionId.ToString();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Не удалось получить SessionId");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Не удалось получить BrowserInstance");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Произошла ошибка при получении SessionId: {ex.Message}");
+            }
+
+            return null;
+        }
+
+
 
         public void ClearAndEnterText(IWebElement element, string text)
         {
