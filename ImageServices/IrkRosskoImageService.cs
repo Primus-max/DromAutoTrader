@@ -1,13 +1,8 @@
-﻿using AngleSharp.Html.Dom;
-using AngleSharp.Html.Parser;
-using DromAutoTrader.ImageServices.Base;
+﻿using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
-using SeleniumUndetectedChromeDriver;
 using System.Diagnostics;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -30,11 +25,12 @@ namespace DromAutoTrader.ImageServices
         #region Приватные поля
         private readonly string _profilePath = @"C:\SeleniumProfiles\IrkRossko";
         private string _tempProfilePath = string.Empty;
-        private IHtmlDocument _document = null!;
+        private Process _chromedriverProcess;
         #endregion
 
         public IrkRosskoImageService()
         {
+
             // Создаю временную копию профиля (на эту сессию)
             ProfilePathService profilePathService = new();
             _tempProfilePath = profilePathService.CreateTempProfile(_profilePath);
@@ -48,60 +44,13 @@ namespace DromAutoTrader.ImageServices
         #region Перезаписанные методы базового класса
         protected override void GoTo()
         {
-            Task.Run(async () => await GoToAsync()).Wait();
-        }
-
-        protected async Task GoToAsync(string url = null!)
-        {
             try
             {
-                using HttpClient httpClient = new();
-                string? fullUrl = string.Empty;
-
-                if (url != null)
-                {
-                    httpClient.BaseAddress = new Uri(LoginPageUrl);
-                    fullUrl = new Uri(httpClient.BaseAddress, url).AbsoluteUri;
-                }
-                else
-                {
-                    fullUrl = $"{SearchPageUrl}{Articul}";
-                }
-
-
-                var response = await httpClient.GetAsync(fullUrl);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    // Получаю документ
-                    var pageSource = await response.Content.ReadAsStringAsync();
-                    var contextt = BrowsingContext.New(Configuration.Default);
-                    var parser = contextt.GetService<IHtmlParser>();
-                    _document = parser?.ParseDocument(pageSource);
-                }
-                else
-                {
-                    // TODO сделать логирование                    
-                }
+                _driver.Manage().Window.Maximize();
+                _driver.Navigate().GoToUrl(LoginPageUrl);
             }
-            catch (Exception ex)
-            {
-                // Обработка исключения, например, логирование
-                Console.WriteLine($"Произошло исключение: {ex.Message}");
-            }
+            catch (Exception) { }
         }
-
-
-
-
-
-
-
-
-
-
-
-
 
         protected override void Authorization() { }
 
@@ -271,45 +220,7 @@ namespace DromAutoTrader.ImageServices
         {
             UndetectDriver webDriver = new(_tempProfilePath);
             _driver = webDriver.GetDriver();
-
-            //string driverProcess = GetSessionId();
         }
-
-        private string GetSessionId()
-        {
-            try
-            {
-                var browserField = typeof(UndetectedChromeDriver).GetField("_browser", BindingFlags.NonPublic | BindingFlags.Instance);
-                var browserInstance = browserField?.GetValue(_driver);
-
-                if (browserInstance != null)
-                {
-                    var sessionIdField = browserInstance.GetType().GetField("Id", BindingFlags.NonPublic | BindingFlags.Instance);
-                    var sessionId = sessionIdField?.GetValue(browserInstance);
-
-                    if (sessionId != null)
-                    {
-                        return sessionId.ToString();
-                    }
-                    else
-                    {
-                        Console.WriteLine("Не удалось получить SessionId");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Не удалось получить BrowserInstance");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Произошла ошибка при получении SessionId: {ex.Message}");
-            }
-
-            return null;
-        }
-
-
 
         public void ClearAndEnterText(IWebElement element, string text)
         {
