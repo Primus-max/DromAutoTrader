@@ -1,10 +1,8 @@
-﻿using DromAutoTrader.AdsPowerManager;
-using DromAutoTrader.DromManager;
+﻿using DromAutoTrader.DromManager;
 using DromAutoTrader.Infrastacture.Commands;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
 using Serilog.Core;
-using System.IO;
 using System.Text;
 
 namespace DromAutoTrader.ViewModels
@@ -25,7 +23,7 @@ namespace DromAutoTrader.ViewModels
         private List<PriceChannelMapping> _priceChannelMappings = null!;
         private ObservableCollection<AdPublishingInfo> _adPublishingInfos = null!;
         private ObservableCollection<PostingProgressItem> _postingProgressItems = null!;
-        private bool _isModeRunAllWork = true;      
+        private bool _isModeRunAllWork = true;
         private readonly Logger _logger = null!;
         #endregion
 
@@ -479,7 +477,7 @@ namespace DromAutoTrader.ViewModels
             AdsArchiver adsArchiver = new();
             adsArchiver.CompareAndArchiveAds();
 
-            MessageBox.Show("Проверку закончил, приступаю к размещению");
+            Console.WriteLine("Проверку закончил, приступаю к размещению");
             await ProcessPublishingAdsAtDrom();
 
             Console.WriteLine("Публикацию закончил, создаю прайс");
@@ -503,8 +501,6 @@ namespace DromAutoTrader.ViewModels
             foreach (var path in PathsFilePrices)
             {
                 string priceName = Path.GetFileName(path);
-
-               
 
                 var postingProgressItem = new PostingProgressItem
                 {
@@ -546,7 +542,7 @@ namespace DromAutoTrader.ViewModels
                     //  Добавляю бренды в базу. Флаг регулирует в каком режиме находится метод,
                     // true = полная работа, false = только получение брендов из прайсов
                     if (!_isModeRunAllWork)
-                        AddBrandsAtDb(prices);                    
+                        AddBrandsAtDb(prices);
                 });
 
                 tasks.Add(task);
@@ -574,7 +570,7 @@ namespace DromAutoTrader.ViewModels
 
             foreach (var price in prices)
             {
-                
+
 
                 List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
                 foreach (var priceChannelMapping in priceChannels.SelectedChannels)
@@ -590,6 +586,18 @@ namespace DromAutoTrader.ViewModels
                         break; // Если не нашли совпадение, выходим из цикла
                     }
 
+
+                    // Проверяю, может такое объявление уже есть
+                    using var context = new AppContext();
+                    var isAdExists = context.AdPublishingInfo
+                   .Any(existing => existing.Artikul == price.Artikul
+                                   && existing.Brand == price.Brand
+                                   && existing.InputPrice == price.PriceBuy
+                                    && existing.KatalogName == price.KatalogName
+                                   // ... (остальные свойства)
+                                   );
+
+                    if (isAdExists) continue;
 
                     // Конструктор строителя объекта для публикации
                     var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
@@ -636,15 +644,16 @@ namespace DromAutoTrader.ViewModels
                 PostingProgressItems.Add(postingProgressItem);
             });
 
-            var channels = adInfos.Select(adInfo => adInfo.AdDescription).Distinct();
+
+            var selectedChannels = SelectedChannels.Select(channel => channel.Name).ToList();
 
             var tasks = new List<Task>();
 
-            foreach (var channelName in channels)
+            foreach (var selectedChannel in selectedChannels)
             {
-                var channelAdInfos = adInfos.Where(adInfo => adInfo.AdDescription == channelName).ToList();
+                var channelAdInfos = adInfos.Where(adInfo => adInfo.AdDescription == selectedChannel).ToList();
 
-                DromAdPublisher dromAdPublisher = new(channelName);
+                DromAdPublisher dromAdPublisher = new(selectedChannel);
 
                 tasks.Add(ProcessChannelAdsAsync(dromAdPublisher, channelAdInfos));
             }
@@ -663,12 +672,23 @@ namespace DromAutoTrader.ViewModels
         // Метод публикации объявлений
         private async Task ProcessChannelAdsAsync(DromAdPublisher dromAdPublisher, List<AdPublishingInfo> channelAdInfos)
         {
+            using var context = new AppContext();
 
             foreach (var adInfo in channelAdInfos)
             {
                 if (adInfo.IsArchived == true) continue; // Если объявление в архиве
                 if (adInfo.PriceBuy == "1") continue; // Если уже публиковал
                 if (adInfo.Artikul == null || adInfo.Brand == null) continue; // Если бренд или артикул пустые
+
+                var isAdExists = context.AdPublishingInfo
+                    .Any(existing => existing.Artikul == adInfo.Artikul
+                                    && existing.Brand == adInfo.Brand
+                                    && existing.InputPrice == adInfo.InputPrice
+                                     && existing.OutputPrice == adInfo.OutputPrice
+                                    // ... (остальные свойства)
+                                    );
+
+
 
                 PostingProgressItem postingProgressItem = new();
                 postingProgressItem.TotalStages = channelAdInfos.Count;
@@ -681,7 +701,7 @@ namespace DromAutoTrader.ViewModels
                 {
                     Console.WriteLine($"Публикация {adInfo.Artikul} || {adInfo.Brand} || канал: {adInfo.AdDescription}");
 
-                    using var context = new AppContext();
+
                     var existingAdInfo = context.AdPublishingInfo.Find(adInfo.Id);
 
                     if (existingAdInfo != null)

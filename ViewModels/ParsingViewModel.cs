@@ -80,7 +80,7 @@ namespace DromAutoTrader.ViewModels
                     //LynxautoImageService lynxautoImageService = new LynxautoImageService();
                     //LuzarImageService LuzarimageService = new LuzarImageService();
                     //StarvoltImageService starvoltImageService = new StarvoltImageService();
-                    //IrkRosskoImageService irkRosskoImageService = new();
+                   // IrkRosskoImageService irkRosskoImageService = new();
                     //MxgroupImageService imageService = new MxgroupImageService();
                     // TmpartsImageService tmpartsImageService = new TmpartsImageService();
                     // await bergImageService.RunAsync(brand, articul);

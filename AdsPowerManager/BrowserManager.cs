@@ -19,7 +19,7 @@ namespace DromAutoTrader.AdsPowerManager
         /// <returns>Интерфейс веб-драйвера.</returns>
         public async Task<IWebDriver> InitializeDriver(string profileId)
         {
-            string launchUrl = $"http://local.adspower.com:50325/api/v1/browser/start?user_id={profileId}";
+            string launchUrl = $"http://localhost:50325/api/v1/browser/start?user_id={profileId}";
 
             using var httpClient = new HttpClient();
             var response = await httpClient.GetAsync(launchUrl);
@@ -178,7 +178,7 @@ namespace DromAutoTrader.AdsPowerManager
         {
             try
             {
-                string apiUrl = "http://local.adspower.com:50325/api/v1/user/list?page_size=100";
+                string apiUrl = "http://localhost:50325/api/v1/user/list?page_size=100";
                 using var httpClient = new HttpClient();
 
                 var response = await httpClient.GetAsync(apiUrl);

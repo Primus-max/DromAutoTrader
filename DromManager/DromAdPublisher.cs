@@ -1,5 +1,3 @@
-
-
 namespace DromAutoTrader.DromManager
 {
     /// <summary>
@@ -53,7 +51,7 @@ namespace DromAutoTrader.DromManager
             await Task.Delay(200);
             // Устанавливаю заголовок объявления
             TitleInput(adPublishingInfo.KatalogName);
-            await Task.Delay(200);
+            await Task.Delay(1000);
 
             ClickDirControlVariant();
             await Task.Delay(200);
@@ -111,20 +109,7 @@ namespace DromAutoTrader.DromManager
                 //MessageBox.Show($"ОШибка {ex.ToString()} в методе OpenGoodsPage");
             }
         }
-
-        // Метод открытия страницы с архивом объявлений
-        public void OpenarchivedPage()
-        {
-            try
-            {
-                // Открытие URL
-                _driver.Navigate().GoToUrl(archivedUrl);
-            }
-            catch (Exception)
-            {
-                //MessageBox.Show("Ошибка при открытии веб-сайта: " + ex.Message);
-            }
-        }
+            
 
         // Метод установки размера экрана
         public void SetWindowSize()
@@ -193,7 +178,7 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Нахождение и клик по элементу по CSS селектору
-                IWebElement dirControlVariant = _wait.Until(e => e.FindElement(By.CssSelector(".dir_control__variant")));
+                IWebElement dirControlVariant = _wait.Until(e => e.FindElement(By.CssSelector("label.button.dir_control__variant[data-action='accept-dir'][data-value='14']")));
                 ScrollToElement(dirControlVariant);
 
                 dirControlVariant.Click();

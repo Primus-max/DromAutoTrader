@@ -1,8 +1,7 @@
-﻿
+
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
-using System.Diagnostics.CodeAnalysis;
 
 namespace DromAutoTrader.ImageServices
 {
@@ -23,19 +22,12 @@ namespace DromAutoTrader.ImageServices
         public override string ServiceName => "https://berg.ru";
         #endregion
 
-        #region Приватный поля        
-        private readonly string _profilePath = @"C:\SeleniumProfiles\Berg";
-        private string _tempProfilePath = string.Empty;
+        #region Приватный поля               
         private IHtmlDocument _document = null!;
         #endregion        
 
         public BergImageService()
         {
-            // Создаю временную копию профиля (на эту сессию)
-            //ProfilePathService profilePathService = new();
-            //_tempProfilePath = profilePathService.CreateTempProfile(_profilePath);
-
-            //InitializeDriver();
         }
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
@@ -48,6 +40,7 @@ namespace DromAutoTrader.ImageServices
         {
             Task.Run(async () => await GoToAsync()).Wait();
         }
+
 
         // Метод авторизации
         protected override void Authorization() { }
@@ -119,6 +112,7 @@ namespace DromAutoTrader.ImageServices
             }
         }
 
+
         // Метод проверки результатов поиска детали
         protected override bool IsNotMatchingArticul()
         {
@@ -171,6 +165,8 @@ namespace DromAutoTrader.ImageServices
                     {
                         string relativePath = image.GetAttribute("data-src");
 
+                        if (relativePath.Contains("thumb_tecdoc_small")) break; // Если это превью, пропускаем
+
                         // Формируем абсолютный URL
                         Uri baseUri = new Uri(ServiceName);
                         Uri fullUri = new Uri(baseUri, relativePath);
@@ -214,10 +210,7 @@ namespace DromAutoTrader.ImageServices
             return downloadedImages;
         }
 
-        protected override async Task CloseDriverAsync()
-        {
-           
-        }
+        protected override async Task CloseDriverAsync() { }
         #endregion
 
         #region Специфичные методы класса    
@@ -283,6 +276,7 @@ namespace DromAutoTrader.ImageServices
 
             return newUrl;
         }
+                
         #endregion
     }
 }
