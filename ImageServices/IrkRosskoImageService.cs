@@ -7,7 +7,9 @@ using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
 using SeleniumUndetectedChromeDriver;
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -39,7 +41,7 @@ namespace DromAutoTrader.ImageServices
             ProfilePathService profilePathService = new();
             _tempProfilePath = profilePathService.CreateTempProfile(_profilePath);
 
-            InitializeDriver();
+            //InitializeDriver();
         }
 
 
@@ -48,63 +50,75 @@ namespace DromAutoTrader.ImageServices
         #region Перезаписанные методы базового класса
         protected override void GoTo()
         {
-            try
-            {
-                HttpClient client = new HttpClient();
-
-                var response = client.GetAsync("https://oem-catalog.rossko.ru/api/Search?query=SAS032R ");
-
-                //https://oem-catalog.rossko.ru/api/Search?query=SAS032R    
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
             Task.Run(async () => await GoToAsync()).Wait();
         }
 
         protected async Task GoToAsync(string url = null!)
         {
-            try
+            string apiUrl = "https://productcard.rossko.ru/api/Product/Card/NSII0018328706?CurrencyCode=643&uin=&tariffTimings=true&newCart=true&addressGuid=&deliveryType=000000001&newClaimSystem=true";
+
+            // Создаем экземпляр HttpClientHandler, чтобы управлять куками
+            var handler = new HttpClientHandler();
+            handler.CookieContainer = new System.Net.CookieContainer();
+
+            using (HttpClient client = new HttpClient(handler))
             {
-                using HttpClient httpClient = new();
-                string? fullUrl = string.Empty;
-
-                if (url != null)
+                try
                 {
-                    httpClient.BaseAddress = new Uri(LoginPageUrl);
-                    fullUrl = new Uri(httpClient.BaseAddress, url).AbsoluteUri;
-                }
-                else
-                {
-                    fullUrl = $"{SearchPageUrl}{Articul}";
-                }
+                    // Устанавливаем заголовки
+                    client.DefaultRequestHeaders.Add("accept", "*/*");
+                    client.DefaultRequestHeaders.Add("accept-encoding", "gzip, deflate, br");
+                    client.DefaultRequestHeaders.Add("accept-language", "ru,en-US;q=0.9,en;q=0.8,ru-RU;q=0.7");
+                    client.DefaultRequestHeaders.Add("access-control-allow-origin", "*");
+                    client.DefaultRequestHeaders.Add("authorization-domain", "https://irk.rossko.ru");
+                    client.DefaultRequestHeaders.Add("authorization-session", "m-nxPNCgzTDN9WngzVAgfRAdj2B3m2mtvHCh");
+                    client.DefaultRequestHeaders.Add("cache-control", "no-cache");
 
+                    client.DefaultRequestHeaders.Add("cookie", "_ym_d=1699948795; _ym_uid=1699948795417199734; _ym_isad=2; _ym_visorc=b");
+                    client.DefaultRequestHeaders.Add("origin", "https://irk.rossko.ru");
+                    client.DefaultRequestHeaders.Add("pragma", "no-cache");
+                    client.DefaultRequestHeaders.Add("referer", "https://irk.rossko.ru/");
+                    client.DefaultRequestHeaders.Add("sec-ch-ua", "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"102\"");
+                    client.DefaultRequestHeaders.Add("sec-ch-ua-mobile", "?0");
+                    client.DefaultRequestHeaders.Add("sec-ch-ua-platform", "\"Windows\"");
+                    client.DefaultRequestHeaders.Add("sec-fetch-dest", "empty");
+                    client.DefaultRequestHeaders.Add("sec-fetch-mode", "cors");
+                    client.DefaultRequestHeaders.Add("sec-fetch-site", "same-site");
+                    client.DefaultRequestHeaders.Add("source", "frontend");
+                    client.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36");
 
-                var response = await httpClient.GetAsync(fullUrl);
+                    // Отправка GET-запроса
+                    HttpResponseMessage response = await client.GetAsync(apiUrl);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    // Получаю документ
-                    var pageSource = await response.Content.ReadAsStringAsync();
-                    var contextt = BrowsingContext.New(Configuration.Default);
-                    var parser = contextt.GetService<IHtmlParser>();
-                    _document = parser?.ParseDocument(pageSource);
+                    // Проверка успешности запроса
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Получение содержимого ответа в виде строки
+                        string responseBody = await DecodeGzip(response.Content);
+
+                        Console.WriteLine(responseBody);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Ошибка: {response.StatusCode} - {response.ReasonPhrase}");
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    // TODO сделать логирование                    
+                    Console.WriteLine($"Ошибка: {ex.Message}");
                 }
-            }
-            catch (Exception ex)
-            {
-                // Обработка исключения, например, логирование
-                Console.WriteLine($"Произошло исключение: {ex.Message}");
             }
         }
 
-
+        private async Task<string> DecodeGzip(HttpContent content)
+        {
+            using (var stream = await content.ReadAsStreamAsync())
+            using (var gzip = new GZipStream(stream, CompressionMode.Decompress))
+            using (var reader = new StreamReader(gzip, Encoding.UTF8))
+            {
+                return await reader.ReadToEndAsync();
+            }
+        }
 
 
 
