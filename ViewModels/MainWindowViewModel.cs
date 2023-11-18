@@ -1,10 +1,8 @@
-﻿using DromAutoTrader.AdsPowerManager;
-using DromAutoTrader.DromManager;
+﻿using DromAutoTrader.DromManager;
 using DromAutoTrader.Infrastacture.Commands;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;
 using Serilog.Core;
-using System.IO;
 using System.Text;
 
 namespace DromAutoTrader.ViewModels
@@ -25,7 +23,7 @@ namespace DromAutoTrader.ViewModels
         private List<PriceChannelMapping> _priceChannelMappings = null!;
         private ObservableCollection<AdPublishingInfo> _adPublishingInfos = null!;
         private ObservableCollection<PostingProgressItem> _postingProgressItems = null!;
-        private bool _isModeRunAllWork = true;      
+        private bool _isModeRunAllWork = true;
         private readonly Logger _logger = null!;
         #endregion
 
@@ -502,7 +500,7 @@ namespace DromAutoTrader.ViewModels
 
             foreach (var path in PathsFilePrices)
             {
-                string priceName = Path.GetFileName(path);               
+                string priceName = Path.GetFileName(path);
 
                 var postingProgressItem = new PostingProgressItem
                 {
@@ -544,7 +542,7 @@ namespace DromAutoTrader.ViewModels
                     //  Добавляю бренды в базу. Флаг регулирует в каком режиме находится метод,
                     // true = полная работа, false = только получение брендов из прайсов
                     if (!_isModeRunAllWork)
-                        AddBrandsAtDb(prices);                    
+                        AddBrandsAtDb(prices);
                 });
 
                 tasks.Add(task);
@@ -572,7 +570,7 @@ namespace DromAutoTrader.ViewModels
 
             foreach (var price in prices)
             {
-                
+
 
                 List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
                 foreach (var priceChannelMapping in priceChannels.SelectedChannels)
@@ -703,7 +701,7 @@ namespace DromAutoTrader.ViewModels
                 {
                     Console.WriteLine($"Публикация {adInfo.Artikul} || {adInfo.Brand} || канал: {adInfo.AdDescription}");
 
-                   
+
                     var existingAdInfo = context.AdPublishingInfo.Find(adInfo.Id);
 
                     if (existingAdInfo != null)

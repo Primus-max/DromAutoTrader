@@ -1,4 +1,6 @@
-﻿using DromAutoTrader.ImageServices.Base;
+﻿using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
+using DromAutoTrader.ImageServices.Base;
 using DromAutoTrader.Services;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
@@ -28,12 +30,11 @@ namespace DromAutoTrader.ImageServices
         #region Приватные поля
         private readonly string _profilePath = @"C:\SeleniumProfiles\IrkRossko";
         private string _tempProfilePath = string.Empty;
-        private Process _chromedriverProcess;
+        private IHtmlDocument _document = null!;
         #endregion
 
         public IrkRosskoImageService()
         {
-
             // Создаю временную копию профиля (на эту сессию)
             ProfilePathService profilePathService = new();
             _tempProfilePath = profilePathService.CreateTempProfile(_profilePath);
@@ -47,13 +48,60 @@ namespace DromAutoTrader.ImageServices
         #region Перезаписанные методы базового класса
         protected override void GoTo()
         {
+            Task.Run(async () => await GoToAsync()).Wait();
+        }
+
+        protected async Task GoToAsync(string url = null!)
+        {
             try
             {
-                _driver.Manage().Window.Maximize();
-                _driver.Navigate().GoToUrl(LoginPageUrl);
+                using HttpClient httpClient = new();
+                string? fullUrl = string.Empty;
+
+                if (url != null)
+                {
+                    httpClient.BaseAddress = new Uri(LoginPageUrl);
+                    fullUrl = new Uri(httpClient.BaseAddress, url).AbsoluteUri;
+                }
+                else
+                {
+                    fullUrl = $"{SearchPageUrl}{Articul}";
+                }
+
+
+                var response = await httpClient.GetAsync(fullUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Получаю документ
+                    var pageSource = await response.Content.ReadAsStringAsync();
+                    var contextt = BrowsingContext.New(Configuration.Default);
+                    var parser = contextt.GetService<IHtmlParser>();
+                    _document = parser?.ParseDocument(pageSource);
+                }
+                else
+                {
+                    // TODO сделать логирование                    
+                }
             }
-            catch (Exception) { }
+            catch (Exception ex)
+            {
+                // Обработка исключения, например, логирование
+                Console.WriteLine($"Произошло исключение: {ex.Message}");
+            }
         }
+
+
+
+
+
+
+
+
+
+
+
+
 
         protected override void Authorization() { }
 
