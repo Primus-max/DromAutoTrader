@@ -1,12 +1,7 @@
-﻿using AngleSharp;
-using AngleSharp.Dom;
+﻿using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
-using DromAutoTrader.ImageServices.Base;
-using DromAutoTrader.Services;
-using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Threading;
 
 namespace DromAutoTrader.ImageServices
 {
@@ -32,19 +27,16 @@ namespace DromAutoTrader.ImageServices
         public LynxautoImageService() { }
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
-       
+
         #region Перезаписанные методы базового класса       
         protected override void GoTo()
         {
             Task.Run(async () => await GoToAsync()).Wait();
-        }      
+        }
 
         protected override void Authorization() { }
 
-        protected override void SetArticulInSearchInput()
-        {
-            Task.Run(async () => await GoToAsync()).Wait();
-        }
+        protected override void SetArticulInSearchInput() { }
 
         // Метод проверки есть ли данных по артикулу
         protected override bool IsNotMatchingArticul()
@@ -73,13 +65,13 @@ namespace DromAutoTrader.ImageServices
             return isMatching;
         }
 
-        protected override void OpenSearchedCard() 
+        protected override void OpenSearchedCard()
         {
-                   }
+        }
 
         // Метод проверки наличия сообщения, что ничего не найдено
         protected override bool IsImagesVisible()
-        {            
+        {
             return true;
         }
 

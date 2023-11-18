@@ -100,17 +100,7 @@ namespace DromAutoTrader.ImageServices
             {
                 Console.WriteLine($"Ошибка: {ex.Message}");
             }
-        }
-
-        // Класс для десериализации ответа от сервера
-        public class SearchResult
-        {
-            public string brandName { get; set; }
-            public string article { get; set; }
-            public string goodsName { get; set; }
-            public string goodsLink { get; set; }
-            public string goodsCode { get; set; }
-        }
+        }     
 
         // Декодирую ответ от сервера
         private async Task<string> DecodeGzip(HttpContent content)
@@ -195,6 +185,16 @@ namespace DromAutoTrader.ImageServices
         protected override async Task CloseDriverAsync() { }
 
         #endregion
+
+        // Класс для десериализации ответа от сервера
+        public class SearchResult
+        {
+            public string? brandName { get; set; }
+            public string? article { get; set; }
+            public string? goodsName { get; set; }
+            public string? goodsLink { get; set; }
+            public string? goodsCode { get; set; }
+        }
 
         #region Специфичные методы класса 
 
