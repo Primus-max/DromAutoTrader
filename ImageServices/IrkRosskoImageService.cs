@@ -1,4 +1,4 @@
-﻿using AngleSharp.Html.Dom;
+﻿using Newtonsoft.Json.Linq;
 using System.IO.Compression;
 using System.Text;
 
@@ -22,7 +22,7 @@ namespace DromAutoTrader.ImageServices
         private string _response = string.Empty;
         #endregion
 
-        public IrkRosskoImageService()        {                  }
+        public IrkRosskoImageService() { }
 
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
@@ -79,7 +79,7 @@ namespace DromAutoTrader.ImageServices
                         if (productResponse.IsSuccessStatusCode)
                         {
                             string productResponseBody = await productResponse.Content.ReadAsStringAsync();
-                            _response = await DecodeGzip(productResponse.Content); // Докодирую ответ                            
+                            _response = await DecodeGzip(productResponse.Content); // Декодирую ответ                            
                         }
                         else
                         {
@@ -124,31 +124,32 @@ namespace DromAutoTrader.ImageServices
         }
 
 
-
-
-
-
-
-
-
-
-
         protected override void Authorization() { }
 
-        protected override void SetArticulInSearchInput()
-        {
-
-        }
+        protected override void SetArticulInSearchInput() { }
 
         protected override bool IsNotMatchingArticul()
         {
-            return true;
+            if (_response == null) return true;
+            try
+            {
+                // Получение json из ответа
+                JObject jsonResponse = JObject.Parse(_response);
+
+                // Извлечение изображений из json
+                JArray imagesArray = jsonResponse["mainPart"]["images"] as JArray;
+                if (imagesArray != null)
+                    return false;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
+            return false;
         }
 
-        protected override void OpenSearchedCard()
-        {
-
-        }
+        protected override void OpenSearchedCard() { }
 
         protected override bool IsImagesVisible()
         {
@@ -159,53 +160,44 @@ namespace DromAutoTrader.ImageServices
         {
             // Список изображений которые возвращаем из метода
             List<string> downloadedImages = new List<string>();
+            // Временый список
+            List<string> images = new List<string>();
 
-            //// Временное хранилище изображений
-            //List<string> images = new List<string>();
+            try
+            {
+                // Получение json из ответа
+                JObject jsonResponse = JObject.Parse(_response);
 
-            //// Устанавливаю ожидание
-            //WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(5));
+                // Извлечение изображений из json
+                JArray imagesArray = jsonResponse["mainPart"]["images"] as JArray;
+                if (imagesArray != null)
+                {
+                    foreach (JToken imageToken in imagesArray)
+                    {
+                        string imageUrl = imageToken.ToString();
+                        if (!string.IsNullOrEmpty(imageUrl))
+                            images.Add(imageUrl);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Обработка ошибок
+            }
 
-            //// Получаю все картинки thumbs
-            //try
-            //{
-            //    // Находим div элемент с изображением, исключая тот, у которого есть подпись
-            //    IWebElement imageDiv = wait.Until(e => e.FindElement(By.XPath("//div[contains(@class,'src-features-product-card-components-info-___index__image___KeiQL') and not(contains(., 'Посмотреть на Яндекс Картинках'))]")));
-            //    string imagePath = imageDiv.GetAttribute("style");
-
-            //    // Находим позиции, где начинается URL и заканчивается
-            //    int startIndex = imagePath.IndexOf("https://");
-            //    int endIndex = imagePath.LastIndexOf("jpg") + 3;
-
-            //    if (startIndex >= 0 && endIndex > startIndex)
-            //    {
-            //        string imageUrl = imagePath.Substring(startIndex, endIndex - startIndex);
-
-            //        if (!string.IsNullOrEmpty(imageUrl))
-            //            images.Add(imageUrl);
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    //string asdf = ex.Message;
-            //}
-
-            //if (images.Count != 0)
-            //    downloadedImages = await ImagesProcessAsync(images);
+            if (images.Count != 0)
+                downloadedImages = await ImagesProcessAsync(images); // Передача изображений для обработки
 
             return downloadedImages;
         }
 
-        protected override async Task CloseDriverAsync()
-        {
 
-        }
+        protected override async Task CloseDriverAsync() { }
 
         #endregion
 
         #region Специфичные методы класса 
 
-        // TODO вынести этот метод в базовый и сделать для всех
         // Метод создания директории и скачивания изображений
         private async Task<List<string>> ImagesProcessAsync(List<string> images)
         {
