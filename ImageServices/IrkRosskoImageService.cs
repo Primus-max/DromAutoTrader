@@ -48,6 +48,19 @@ namespace DromAutoTrader.ImageServices
         #region Перезаписанные методы базового класса
         protected override void GoTo()
         {
+            try
+            {
+                HttpClient client = new HttpClient();
+
+                var response = client.GetAsync("https://oem-catalog.rossko.ru/api/Search?query=SAS032R ");
+
+                //https://oem-catalog.rossko.ru/api/Search?query=SAS032R    
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
             Task.Run(async () => await GoToAsync()).Wait();
         }
 

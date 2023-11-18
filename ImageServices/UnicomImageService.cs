@@ -14,21 +14,14 @@
         public override string ServiceName => "https://uniqom.ru";
         #endregion
 
-        #region Приватные поля      
-
-        private readonly string _profilePath = @"C:\SeleniumProfiles\Unicom";
-        private string _tempProfilePath = string.Empty;
+        #region Приватные поля         
+        private string _responseContent = string.Empty; // Глобально для класса сохраняю ответ
         #endregion
 
 
         public UnicomImageService()
         {
 
-            // Создаю временную копию профиля (на эту сессию)
-            ProfilePathService profilePathService = new();
-            _tempProfilePath = profilePathService.CreateTempProfile(_profilePath);
-
-            InitializeDriver();
         }
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
@@ -39,44 +32,65 @@
         // Метод перехода по ссылке
         protected override void GoTo()
         {
-            try
-            {
-                _driver.Manage().Window.Maximize();
-            }
-            catch (Exception) { }
+            Task.Run(async () => await GoToAsync()).Wait();
         }
 
-        protected override void Authorization()
+        // Отправляем запрос на получение изображений
+        protected async Task GoToAsync()
         {
-        }
+            string baseUrl = "https://uniqom.ru/search/api/query";
+            string rememberMeCookie = "QXBwXFNlY3VyaXR5XFVzZXI6UVhWMGIwSmxjM1F3TXpoQVoyMWhhV3d1WTI5dDoxNzMxODQzNDIzOjE3YmNjMWY3ZGE3NTViYjc1YTdjMjBjZTlhYjc1NzdkZDllYjkwZTYzZmRhNmFlZjJmNTM5NDdjN2I1NmM0YWM";
 
-        protected override void SetArticulInSearchInput()
-        {
-            try
+            using HttpClient client = new();
+            client.BaseAddress = new Uri(baseUrl);
+
+            // Set headers
+            client.DefaultRequestHeaders.Add("access-control-allow-origin", "*");
+
+            // Set cookies
+            client.DefaultRequestHeaders.Add("Cookie", rememberMeCookie);
+
+            // Perform the GET request with query parameters
+            HttpResponseMessage response = await client.GetAsync($"?term={Articul}&page=1");
+
+            // Handle the response as needed
+            if (response.IsSuccessStatusCode)
             {
-                string searchUrl = BuildUrl();
-
-                _driver.Navigate().GoToUrl(searchUrl);
+                _responseContent = await response.Content.ReadAsStringAsync();
             }
-            catch (Exception) { }
+            else
+            {
+                // Handle error
+            }
         }
+
+        protected override void Authorization() { }
+
+        protected override void SetArticulInSearchInput() { }
 
         // Метод проверяет если ничего не найдено
         protected override bool IsNotMatchingArticul()
         {
-            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(3));
             try
             {
-                IWebElement attentionMessage = wait.Until(e => e.FindElement(By.CssSelector("h4.not-found__title")));
+                // Замените на вашу структуру JSON
+                dynamic decodedResponse = Newtonsoft.Json.JsonConvert.DeserializeObject(_responseContent);
 
-                // Если получили этот элемент значит по запросу ничего не найдено
-                return true;
+                if (decodedResponse.products != null && decodedResponse.products.Count > 0 &&
+                    decodedResponse.products[0].thumbnail != null)
+                {
+                    string thumbnail = decodedResponse.products[0].thumbnail;
 
+                    // Проверка, содержит ли thumbnail подстроку "no_image"
+                    return thumbnail.Contains("no_image");
+                }
             }
             catch (Exception)
             {
-                return false;
+                // Обработка ошибки парсинга JSON
             }
+
+            return false;
         }
 
         // Открываю карточку с изображениями (в данном классе реализация не требуется)
@@ -85,59 +99,54 @@
         // Метод проверки наличия изображения для дальнейшего получения
         protected override bool IsImagesVisible()
         {
-            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(5));
-            try
-            {
-                // Получаем элемент-родитель если арткул найден
-                var divElement = wait.Until(e => e.FindElements(By.CssSelector("div.product__card")))[0];
-                // Получаем в элементе-родителе этот элемент
-                IWebElement pictureNotFounfDiv = divElement.FindElement(By.ClassName("picture_not-found"));
-
-                // Если элемент получили, значит картинки нет и значит не получаем
-                return false;
-            }
-            catch (Exception)
-            {
-                // Если элемент не получили, значит картинка есть и мы можем её получать
-                return true;
-            }
+            return true;
         }
 
         // Метод получения изображений
         protected override async Task<List<string>> GetImagesAsync()
         {
-            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(5));
-            // Список изображений которые возвращаем из метода
-            List<string> downloadedImages = new();
-
-            // Временное хранилище изображений
-            List<string> images = new();
+            List<string> downloadedImages = new List<string>();
+            List<string> imageUrls = new List<string>();
 
             try
             {
-                // Получаем изображение
-                // Получаем элемент-родитель если арткул найден
-                var divElement = wait.Until(e => e.FindElements(By.CssSelector("div.product__card")))[0];
+                // Замените на вашу структуру JSON
+                dynamic decodedResponse = Newtonsoft.Json.JsonConvert.DeserializeObject(_responseContent);
 
-                // Теперь, используя родительский элемент, получить ссылку на изображение
-                var imageUrlElement = divElement.FindElement(By.ClassName("feip-productsList-photoCell-image"));
+                if (decodedResponse.products != null && decodedResponse.products.Count > 0 &&
+                    decodedResponse.products[0].exact != null && decodedResponse.products[0].exact.items != null)
+                {
+                    var items = decodedResponse.products[0].exact.items;
 
-                string imgUrl = imageUrlElement.GetAttribute("href");
+                    foreach (var item in items)
+                    {
+                        if (item.photo != null)
+                        {
+                            string imageUrl = "https:" + item.photo.ToString();
 
-                if (!string.IsNullOrEmpty(imgUrl))
-                    images.Add(imgUrl);
-
+                            // Проверка, что изображение не является "photo_thumbnail"
+                            if (!imageUrl.Contains("photo_thumbnail"))
+                            {
+                                imageUrls.Add(imageUrl);
+                            }
+                        }
+                    }
+                }
             }
             catch (Exception)
             {
-                await CloseDriverAsync();
+                // Обработка ошибки парсинга JSON
+                return downloadedImages;
             }
 
-            if (images.Count != 0)
-                downloadedImages = await ImagesProcessAsync(images);
+            if (imageUrls.Count != 0)
+            {
+                downloadedImages = await ImagesProcessAsync(imageUrls);
+            }
 
             return downloadedImages;
         }
+
 
         // Метод создания директории и скачивания изображений
         private async Task<List<string>> ImagesProcessAsync(List<string> images)
@@ -160,93 +169,9 @@
             return downloadedImages;
         }
 
-        // Строю ссылку
-        public string BuildUrl()
-        {
-            var uri = new Uri(SearchPageUrl);
-
-            // Построение нового URL с обновленными параметрами
-            string newUrl = uri + Articul;
-
-            return newUrl;
-        }
-
-        protected override async Task CloseDriverAsync()
-        {
-            try
-            {
-                _driver.Close();
-                _driver.Quit();
-                _driver.Dispose();
-
-                // Удаляю временную директорию профиля после закрытия браузера
-                ProfilePathService profilePathService = new();
-                await profilePathService.DeleteDirectoryAsync(_tempProfilePath);
-            }
-            catch (Exception ex)
-            {
-
-            }
-        }
+        protected override async Task CloseDriverAsync() { }
 
         #endregion
 
-        #region Специфичные методы класса   
-        protected bool WaitReadyStatePage()
-        {
-            bool isModalWinOpen = true;
-            while (isModalWinOpen)
-            {
-                // f-modal__container
-                try
-                {
-                    IWebElement modalWin = _driver.FindElement(By.CssSelector("div.f-modal__container"));
-
-                    return isModalWinOpen;
-                }
-                catch (Exception)
-                {
-                    isModalWinOpen = false;
-                }
-            }
-            return isModalWinOpen;
-        }
-
-
-        public void ClearAndEnterText(IWebElement element, string text)
-        {
-            Random random = new Random();
-            // Используем JavaScriptExecutor для выполнения JavaScript-кода
-            IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)((IWrapsDriver)element).WrappedDriver;
-
-            // Очищаем поле ввода с помощью JavaScript
-            jsExecutor.ExecuteScript("arguments[0].value = '';", element);
-            // Установить стиль display элемента в block
-            jsExecutor.ExecuteScript("arguments[0].style.display = 'block';", element);
-            // Вставляем текст по одному символу без изменений
-            foreach (char letter in text)
-            {
-                if (letter == '\b')
-                {
-                    // Если символ является символом backspace, удаляем последний введенный символ
-                    element.SendKeys(Keys.Backspace);
-                }
-                else
-                {
-                    // Вводим символ
-                    element.SendKeys(letter.ToString());
-                }
-
-                Thread.Sleep(random.Next(50, 100));  // Добавляем небольшую паузу между вводом каждого символа
-            }
-        }
-
-        // Инициализация драйвера
-        private void InitializeDriver()
-        {
-            UndetectDriver webDriver = new(_tempProfilePath);
-            _driver = webDriver.GetDriver();
-        }
-        #endregion
     }
 }

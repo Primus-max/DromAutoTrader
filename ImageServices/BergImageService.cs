@@ -172,6 +172,8 @@ namespace DromAutoTrader.ImageServices
                     {
                         string relativePath = image.GetAttribute("data-src");
 
+                        if (relativePath.Contains("thumb_tecdoc_small")) break; // Если это превью, пропускаем
+
                         // Формируем абсолютный URL
                         Uri baseUri = new Uri(ServiceName);
                         Uri fullUri = new Uri(baseUri, relativePath);
@@ -215,23 +217,7 @@ namespace DromAutoTrader.ImageServices
             return downloadedImages;
         }
 
-        protected override async Task CloseDriverAsync()
-        {
-            //try
-            //{
-            //    _driver.Close();
-            //    _driver.Quit();
-            //    _driver.Dispose();
-
-            //    // Удаляю временную директорию профиля после закрытия браузера
-            //    ProfilePathService profilePathService = new();
-            //    await profilePathService.DeleteDirectoryAsync(_tempProfilePath);
-            //}
-            //catch (Exception)
-            //{
-
-            //}
-        }
+        protected override async Task CloseDriverAsync() { }
         #endregion
 
         #region Специфичные методы класса    
