@@ -476,10 +476,10 @@ namespace DromAutoTrader.ViewModels
             //await ParsingPricesAsync();
 
             Console.WriteLine("Парсинг закончил, приступаю к проверке");
-            AdsArchiver adsArchiver = new();
-            adsArchiver.CompareAndArchiveAds();
+           // AdsArchiver adsArchiver = new();
+            //adsArchiver.CompareAndArchiveAds();
 
-            MessageBox.Show("Проверку закончил, приступаю к размещению");
+           // MessageBox.Show("Проверку закончил, приступаю к размещению");
             await ProcessPublishingAdsAtDrom();
 
             Console.WriteLine("Публикацию закончил, создаю прайс");
