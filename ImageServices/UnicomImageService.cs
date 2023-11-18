@@ -1,10 +1,4 @@
-﻿using DromAutoTrader.ImageServices.Base;
-using DromAutoTrader.Services;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
-using System.Threading;
-
-namespace DromAutoTrader.ImageServices
+﻿namespace DromAutoTrader.ImageServices
 {
     public class UnicomImageService : ImageServiceBase
     {
@@ -136,7 +130,7 @@ namespace DromAutoTrader.ImageServices
             }
             catch (Exception)
             {
-               await CloseDriverAsync();
+                await CloseDriverAsync();
             }
 
             if (images.Count != 0)
