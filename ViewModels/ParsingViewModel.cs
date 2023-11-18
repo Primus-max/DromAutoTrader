@@ -76,17 +76,17 @@ namespace DromAutoTrader.ViewModels
 
 
                     //BergImageService bergImageService = new();
-                    // UnicomImageService unicomImageService = new();
+                     UnicomImageService unicomImageService = new();
                     //LynxautoImageService lynxautoImageService = new LynxautoImageService();
                     //LuzarImageService LuzarimageService = new LuzarImageService();
                     //StarvoltImageService starvoltImageService = new StarvoltImageService();
-                    IrkRosskoImageService irkRosskoImageService = new();
+                   // IrkRosskoImageService irkRosskoImageService = new();
                     //MxgroupImageService imageService = new MxgroupImageService();
                     // TmpartsImageService tmpartsImageService = new TmpartsImageService();
                     // await bergImageService.RunAsync(brand, articul);
-                    await irkRosskoImageService.RunAsync(brand, articul);
+                    await unicomImageService.RunAsync(brand, articul);
 
-                    var testImages = irkRosskoImageService.BrandImages;
+                    var testImages = unicomImageService.BrandImages;
                 }
             }
         }
