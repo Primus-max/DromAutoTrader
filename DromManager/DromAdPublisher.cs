@@ -1,4 +1,4 @@
-﻿namespace DromAutoTrader.DromManager
+namespace DromAutoTrader.DromManager
 {
     /// <summary>
     /// Класс для публикации объявлений на Drom
