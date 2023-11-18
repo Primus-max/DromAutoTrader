@@ -1,6 +1,7 @@
 ﻿using OfficeOpenXml;
+using OfficeOpenXml.FormulaParsing.Excel;
+
 using System.Globalization;
-using System.IO;
 
 namespace DromAutoTrader.Prices
 {
@@ -10,7 +11,7 @@ namespace DromAutoTrader.Prices
     public class PriceProcessor
     {
         private PriceFieldMapper fieldMapper;
-                
+
         public PriceProcessor()
         {
             fieldMapper = new PriceFieldMapper();
@@ -26,8 +27,14 @@ namespace DromAutoTrader.Prices
             var priceList = new PriceList(); // Создаем коллекцию для хранения обработанных прайс-листов.
 
             using (var package = new ExcelPackage(new FileInfo(filePath)))
-            {
-                var worksheet = package.Workbook.Worksheets[0]; // Предполагаем, что данные находятся в первом листе.
+            {                
+                var worksheet = package.Workbook.Worksheets.FirstOrDefault(); // Предполагаем, что данные находятся в первом листе.
+
+                if (worksheet == null)
+                {
+                    Console.WriteLine("Не удалось получить листы при парсинге прайса");
+                    return new PriceList();
+                }
 
                 int rowCount = worksheet.Dimension.End.Row;
 

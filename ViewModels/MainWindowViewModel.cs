@@ -473,13 +473,13 @@ namespace DromAutoTrader.ViewModels
         public async Task RunAllWork()
         {
             // Получаю, обрабатываю, записываю в базу прайсы
-            //await ParsingPricesAsync();
+            await ParsingPricesAsync();
 
             Console.WriteLine("Парсинг закончил, приступаю к проверке");
             AdsArchiver adsArchiver = new();
             adsArchiver.CompareAndArchiveAds();
 
-            MessageBox.Show("Проверку закончил, приступаю к размещению");
+            Console.WriteLine("Проверку закончил, приступаю к размещению");
             await ProcessPublishingAdsAtDrom();
 
             Console.WriteLine("Публикацию закончил, создаю прайс");
@@ -502,9 +502,7 @@ namespace DromAutoTrader.ViewModels
 
             foreach (var path in PathsFilePrices)
             {
-                string priceName = Path.GetFileName(path);
-
-               
+                string priceName = Path.GetFileName(path);               
 
                 var postingProgressItem = new PostingProgressItem
                 {
