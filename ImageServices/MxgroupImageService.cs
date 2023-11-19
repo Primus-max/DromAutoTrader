@@ -1,7 +1,7 @@
-﻿using DromAutoTrader.ImageServices.Base;
-using DromAutoTrader.Services;
-using OpenQA.Selenium;
-using System.Threading;
+﻿using Org.BouncyCastle.Asn1.Cms;
+using System.IO.Compression;
+using System.Text;
+using BrotliStream = BrotliSharpLib.BrotliStream;
 
 namespace DromAutoTrader.ImageServices
 {
@@ -27,12 +27,6 @@ namespace DromAutoTrader.ImageServices
         public MxgroupImageService()
         {
 
-            // Создаю временную копию профиля (на эту сессию)
-            ProfilePathService profilePathService = new();
-            _tempProfilePath = profilePathService.CreateTempProfile(_profilePath);
-
-            InitializeDriver();
-
         }
 
 
@@ -42,18 +36,95 @@ namespace DromAutoTrader.ImageServices
         #region Перезаписанные методы базового класса       
         protected override void GoTo()
         {
+            //Task.Run(async () => await GoToAsync()).Wait();
+        }
+
+
+
+        protected async Task GoToAsync(string url = null!)
+        {
             try
             {
-                _driver.Manage().Window.Maximize();
+
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine($"Ошибка при обращении к Berg {ex.Message}");
             }
         }
 
+
+
+
         protected override void Authorization()
         {
+            string apiUrl = "https://new.mxgroup.ru/b/search/n/SS-3025";
+            string accessToken = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpZCI6Ijg4MDJkMjUwNT" +
+                "NiYTJkYTU0YzgyMDBlN2U2OWQwZDEwNGRjNjA1NTQiLCJqdGkiOiI4ODAyZDI1MDUzYmEyZGE1NGM4MjAwZT" +
+                "dlNjlkMGQxMDRkYzYwNTU0IiwiaXNzIjoiTVggZ3JvdXAiLCJhdWQiOiJvel9mcm9udF9wcm9kIiwic3ViIj" +
+                "oiZjc1NTUyMDQtYTEwMi0xMWVkLTkyYmMtMDAxNTVkMDA1NjRjIiwiZXhwIjoxNzAwNDEyMTY5LCJpYXQiOj" +
+                "E3MDAzNzYxNjksInRva2VuX3R5cGUiOiJiZWFyZXIiLCJzY29wZSI6ImRlZmF1bHQifQ.tWD03Md9TWZFh6H" +
+                "VhMbsrjU0QQaF0NAZ86cEUXVYe1WtTtAzyy9MmhDab3B-EV79rvCJ3ORd0NMLfyezv18ujA"; // Токен авторизации
+
+            using HttpClient client = new HttpClient();
+            // Добавление заголовков запроса
+            //client.DefaultRequestHeaders.Add("authority", "api.mxgroup.ru");
+            //client.DefaultRequestHeaders.Add("method", "GET");
+            //client.DefaultRequestHeaders.Add("path", "/client/main");
+            //client.DefaultRequestHeaders.Add("scheme", "https");
+            //client.DefaultRequestHeaders.Add("accept", "application/json");
+            //client.DefaultRequestHeaders.Add("accept-encoding", "gzip, deflate, br");
+            //client.DefaultRequestHeaders.Add("accept-language", "ru,en-US;q=0.9,en;q=0.8,ru-RU;q=0.7");
+            client.DefaultRequestHeaders.Add("authorization", accessToken); // Заголовок Authorization с токеном
+            //client.DefaultRequestHeaders.Add("content-type", "application/json");
+            //client.DefaultRequestHeaders.Add("origin", "https://new.mxgroup.ru");
+            //client.DefaultRequestHeaders.Add("referer", "https://new.mxgroup.ru/");
+            //client.DefaultRequestHeaders.Add("sec-ch-ua", "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"102\"");
+            //client.DefaultRequestHeaders.Add("sec-ch-ua-mobile", "?0");
+            //client.DefaultRequestHeaders.Add("sec-ch-ua-platform", "\"Windows\"");
+            //client.DefaultRequestHeaders.Add("sec-fetch-dest", "empty");
+            //client.DefaultRequestHeaders.Add("sec-fetch-mode", "cors");
+            //client.DefaultRequestHeaders.Add("sec-fetch-site", "same-site");
+            //client.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36");
+            client.DefaultRequestHeaders.Add("x-session", "8802d25053ba2da54c8200e7e69d0d104dc60554%3A1700376169%3A1700412169%3A");
+
+            try
+            {
+                // Выполнение GET-запроса
+                HttpResponseMessage response = client.GetAsync(apiUrl).Result; // Внимание: использование Result блокирует выполнение, рекомендуется использовать async/await в асинхронном методе
+
+                // Проверка успешности запроса
+                if (response.IsSuccessStatusCode)
+                {
+                    // Чтение ответа
+                    string jsonResponse = response.Content.ReadAsStringAsync().Result;
+                    
+                }
+                else
+                {
+                    Console.WriteLine($"Ошибка при запросе: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка: {ex.Message}");
+            }
         }
+
+
+        // Декодирую ответ от сервера
+        static string DecompressBrotli(string compressedData)
+        {
+            byte[] compressedBytes = Encoding.UTF8.GetBytes(compressedData);
+
+            using (var compressedStream = new MemoryStream(compressedBytes))
+            using (var brotliStream = new BrotliStream(compressedStream, CompressionMode.Decompress))
+            using (var reader = new StreamReader(brotliStream))
+            {
+                return reader.ReadToEnd();
+            }
+        }
+
 
         protected override void SetArticulInSearchInput()
         {
@@ -114,7 +185,7 @@ namespace DromAutoTrader.ImageServices
         }
 
         protected override bool IsImagesVisible()
-        {            
+        {
             return true;
         }
 
