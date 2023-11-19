@@ -1,7 +1,4 @@
-﻿using DromAutoTrader.ImageServices.Base;
-using DromAutoTrader.Services;
-using OpenQA.Selenium;
-using System.Threading;
+﻿using OpenQA.Selenium.Interactions;
 
 namespace DromAutoTrader.ImageServices
 {
@@ -44,7 +41,7 @@ namespace DromAutoTrader.ImageServices
         {
             try
             {
-                _driver.Manage().Window.Maximize();
+                _driver.Navigate().GoToUrl(ServiceName);
             }
             catch (Exception)
             {
@@ -53,15 +50,21 @@ namespace DromAutoTrader.ImageServices
 
         protected override void Authorization()
         {
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(20));
+            try
+            {
+                IWebElement authBtn = wait.Until(e => e.FindElement(By.CssSelector("button.btn")));
+
+               authBtn.Submit();
+            }
+            catch (Exception)
+            {
+
+            }
         }
 
         protected override void SetArticulInSearchInput()
         {
-            string? searchUrl = BuildUrl();
-
-            _driver.Navigate().GoToUrl(searchUrl);
-
-
             // Проверка на наличие спиннеров свидетельствующих о загрузке страницы
             bool isSpinner = true;
             while (isSpinner)
@@ -85,6 +88,18 @@ namespace DromAutoTrader.ImageServices
                 {
                     isSpinner = false;
                 }
+            }
+
+            // Если страница загружена, то перехожу к поиску
+            if (!isSpinner)
+            {
+                string? searchUrl = BuildUrl();
+
+                try
+                {
+                    _driver.Navigate().GoToUrl(searchUrl);
+                }
+                catch (Exception) { }
             }
         }
 
@@ -114,7 +129,7 @@ namespace DromAutoTrader.ImageServices
         }
 
         protected override bool IsImagesVisible()
-        {            
+        {
             return true;
         }
 
@@ -130,7 +145,7 @@ namespace DromAutoTrader.ImageServices
                 //class="indicator-wrapper disabled"
                 Thread.Sleep(500);
                 try
-                {
+              {
                     IWebElement spinner2 = _driver.FindElement(By.CssSelector(".indicator-wrapper.enabled"));
 
 
