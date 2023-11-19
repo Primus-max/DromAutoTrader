@@ -1,9 +1,4 @@
-﻿using AngleSharp.Dom;
-using AngleSharp.Html.Dom;
-using AngleSharp.Html.Parser;
-using System.Text.RegularExpressions;
-
-namespace DromAutoTrader.ImageServices
+﻿namespace DromAutoTrader.ImageServices
 {
     public class LuzarImageService : ImageServiceBase
     {
@@ -64,36 +59,7 @@ namespace DromAutoTrader.ImageServices
             return isMatching;
         }
 
-        protected override void OpenSearchedCard()
-        {
-            //try
-            //{
-            //    // Находим div с классом "module-spisok-product"
-            //    var productDiv = _document.QuerySelector(".module-spisok-product");
-
-            //    if (productDiv != null)
-            //    {
-            //        // Находим первый элемент li внутри div
-            //        var firstLi = productDiv.QuerySelector("li");
-
-            //        if (firstLi != null)
-            //        {
-            //            // Извлекаем ссылку из тега a
-            //            var linkElement = firstLi.QuerySelector("a");
-            //            if (linkElement != null)
-            //            {
-            //                string? link = linkElement.GetAttribute("href");
-
-            //                Task.Run(async () => await GoToAsync(link)).Wait();
-            //                // Здесь можно осуществить переход по полученной ссылке и продолжить парсинг следующей страницы
-            //            }
-            //        }
-            //    }
-            //}
-            //catch (Exception)
-            //{
-            //}
-        }
+        protected override void OpenSearchedCard() { }
 
         protected override bool IsImagesVisible()
         {
@@ -116,7 +82,7 @@ namespace DromAutoTrader.ImageServices
                 // Получаем изображение
 
                 // Получаем изображение
-                var imageBlocks = _document.QuerySelectorAll("img.lazyload.catalog__main-products-card-image");                
+                var imageBlocks = _document.QuerySelectorAll("img.lazyload.catalog__main-products-card-image");
 
                 foreach (var imageBlock in imageBlocks)
                 {
@@ -201,7 +167,7 @@ namespace DromAutoTrader.ImageServices
             FolderManager folderManager = new();
             bool folderContainsFiles = folderManager.ArticulFolderContainsFiles(brand: Brand, articul: Articul, out _imagesLocalPath);
 
-           await Task.Delay(500);
+            await Task.Delay(500);
 
             if (!folderContainsFiles)
             {

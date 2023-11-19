@@ -1,7 +1,5 @@
-﻿using DromAutoTrader.Data;
-using DromAutoTrader.ImageServices;
+﻿using DromAutoTrader.ImageServices;
 using DromAutoTrader.ImageServices.Interfaces;
-using System.IO;
 
 namespace DromAutoTrader.Services
 {
@@ -190,7 +188,7 @@ namespace DromAutoTrader.Services
                     .Include(b => b.ImageServices)
                     .Load();
                 _db.BrandImageServiceMappings
-                    
+
                     .Load();
             }
             catch (Exception ex)

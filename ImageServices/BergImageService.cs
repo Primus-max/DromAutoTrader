@@ -1,9 +1,4 @@
-﻿
-using AngleSharp.Dom;
-using AngleSharp.Html.Dom;
-using AngleSharp.Html.Parser;
-
-namespace DromAutoTrader.ImageServices
+﻿namespace DromAutoTrader.ImageServices
 {
     /// <summary>
     /// Класс для получения изображений деталей брэндов с сайта https://berg.ru/ 
@@ -22,20 +17,13 @@ namespace DromAutoTrader.ImageServices
         public override string ServiceName => "https://berg.ru";
         #endregion
 
-        #region Приватный поля        
-        private readonly string _profilePath = @"C:\SeleniumProfiles\Berg";
+        #region Приватный поля      
+
         private string _tempProfilePath = string.Empty;
         private IHtmlDocument _document = null!;
         #endregion        
 
-        public BergImageService()
-        {
-            // Создаю временную копию профиля (на эту сессию)
-            //ProfilePathService profilePathService = new();
-            //_tempProfilePath = profilePathService.CreateTempProfile(_profilePath);
-
-            //InitializeDriver();
-        }
+        public BergImageService() { }
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
 
