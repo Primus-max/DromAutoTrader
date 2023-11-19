@@ -13,7 +13,7 @@
             fieldMappings = new Dictionary<string, List<string>>
             {
                 { PriceField.Brand.ToString(), new List<string> { "Brand", "Бренд", "Торговая марка" } },
-                { PriceField.Artikul.ToString(), new List<string> { "Artikul", "Артикул", "Номер производителя", "artikul", "artikul", "Катал. номер" } },
+                { PriceField.Artikul.ToString(), new List<string> { "Artikul", "Артикул", "Номер производителя", "artikul", "articul", "Катал. номер" } },
                 { PriceField.Description.ToString(), new List<string> { "Description",  } },
                 { PriceField.PriceBuy.ToString(), new List<string> { "PriceBuy", "Цена закупки", "Цена", "price", "Цена руб", "Цена, руб.", "ОПТ" } },
                 { PriceField.Count.ToString(), new List<string> { "Count", "Количество","Наличие", "stock", "Остаток", "qty", "Ост, не менее, шт.", "Кол-во всего" } },

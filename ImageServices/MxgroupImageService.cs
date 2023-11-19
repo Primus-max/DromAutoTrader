@@ -1,6 +1,4 @@
-﻿using OpenQA.Selenium.Interactions;
-
-namespace DromAutoTrader.ImageServices
+﻿namespace DromAutoTrader.ImageServices
 {
     public class MxgroupImageService : ImageServiceBase
     {
@@ -32,6 +30,13 @@ namespace DromAutoTrader.ImageServices
 
         }
 
+        // Передаю документ из Selenium в AngleSharp
+        protected IHtmlDocument GetHtmlDocument()
+        {
+            return (IHtmlDocument)BrowsingContext.New(Configuration.Default)
+                .OpenAsync(req => req.Content(_driver.PageSource)).Result;
+        }
+
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
 
@@ -55,11 +60,12 @@ namespace DromAutoTrader.ImageServices
             {
                 IWebElement authBtn = wait.Until(e => e.FindElement(By.CssSelector("button.btn")));
 
-               authBtn.Submit();
+                Thread.Sleep(1000);
+                authBtn.Submit();
             }
             catch (Exception)
             {
-
+                var asdf = "";
             }
         }
 
@@ -145,7 +151,7 @@ namespace DromAutoTrader.ImageServices
                 //class="indicator-wrapper disabled"
                 Thread.Sleep(500);
                 try
-              {
+                {
                     IWebElement spinner2 = _driver.FindElement(By.CssSelector(".indicator-wrapper.enabled"));
 
 
