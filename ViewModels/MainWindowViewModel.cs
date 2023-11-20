@@ -461,6 +461,20 @@
         // Метод запускающий всю работу
         public async Task RunAllWork()
         {
+            ////Временно получаю DromeId
+            //DromAdPublisher dromAdPublisher = new("DoctorCar38");
+
+            //using var context = new AppContext();
+            //var ads = context.AdPublishingInfo.ToList();
+            //foreach (var ad in ads)
+            //{
+            //    if (ad.DromeId != null) continue;
+
+            //    dromAdPublisher.GetIdFromAd(ad?.Artikul);
+            //}
+
+
+
             // Получаю, обрабатываю, записываю в базу прайсы
             await ParsingPricesAsync();
 

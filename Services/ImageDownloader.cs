@@ -1,7 +1,4 @@
-﻿using OpenQA.Selenium;
-using System.IO;
-using System.Net;
-using System.Net.Http;
+﻿using System.Net;
 
 namespace DromAutoTrader.Services
 {
@@ -12,13 +9,13 @@ namespace DromAutoTrader.Services
     {
         private string? _articul = string.Empty;
         private string? _downloadDirectory = string.Empty;
-        private List<string> _imageUrls = null!;         
+        private List<string> _imageUrls = null!;
 
-        public ImageDownloader( string articul, string downloadDirectory, List<string> imageUrls) 
+        public ImageDownloader(string articul, string downloadDirectory, List<string> imageUrls)
         {
             _articul = articul;
             _downloadDirectory = downloadDirectory;
-            _imageUrls = imageUrls;           
+            _imageUrls = imageUrls;
         }
 
         /// <summary>
