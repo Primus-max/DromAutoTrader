@@ -1,16 +1,5 @@
-﻿using DromAutoTrader.DromManager;
-using DromAutoTrader.Infrastacture.Commands;
-using DromAutoTrader.Prices;
-using Microsoft.Win32;
-using Serilog.Core;
-using System.Text;
-
-namespace DromAutoTrader.ViewModels
-{
-    // TODO изменить тип данных в TablePriceOfIncrease на decimal
-    // TODO сделать появления 2 пункта в загрузке прайсов если в списке есть прайсы
-    // TODO решить своевременную загрузку брендов, создать отдельную кнопку для получения, потому что при пустой базе, чтобы получить 
-    // прайсы, соответственно бренды из них, надо выбрать каналы. Это кольцевая зависимость.
+﻿namespace DromAutoTrader.ViewModels
+{    
     class MainWindowViewModel : BaseViewModel
     {
         #region ПРИВАТНЫЕ ПОЛЯ
@@ -438,6 +427,8 @@ namespace DromAutoTrader.ViewModels
             #endregion
             #endregion
 
+            _logger = new LoggingService().ConfigureLogger();
+
             // Метод отслеживающий прогресс
             _progressReporter = new Progress<PostingProgressItem>(reportItem =>
             {
@@ -490,7 +481,7 @@ namespace DromAutoTrader.ViewModels
             Console.WriteLine("Прайс создал, убираю в архив");
             await RemoveAtArchive(); // Убираю в архив
 
-            DeleteOutdatedAdsAtDb(); // Убираю старые объявления
+            //DeleteOutdatedAdsAtDb(); // Убираю старые объявления
         }
 
         // Метод получения и парсинга прайсов
@@ -500,6 +491,8 @@ namespace DromAutoTrader.ViewModels
 
             foreach (var path in PathsFilePrices)
             {
+                if (string.IsNullOrEmpty(path)) continue;
+
                 string priceName = Path.GetFileName(path);
 
                 var postingProgressItem = new PostingProgressItem
@@ -538,7 +531,6 @@ namespace DromAutoTrader.ViewModels
                         await BuildingAdsAsync(prices, path, postingProgressItem);
 
 
-
                     //  Добавляю бренды в базу. Флаг регулирует в каком режиме находится метод,
                     // true = полная работа, false = только получение брендов из прайсов
                     if (!_isModeRunAllWork)
@@ -560,7 +552,7 @@ namespace DromAutoTrader.ViewModels
 
             if (priceChannels == null)
             {
-                MessageBox.Show("Что-то пошло не так, попробуйте выбрать прайс и каналы для него", "Внимание",
+                MessageBox.Show("Что-то пошло не так, нужно сначала нажать на прайс и затем выбрать канал", "Внимание",
                    MessageBoxButton.OK, MessageBoxImage.Warning);
 
                 return;
@@ -570,8 +562,6 @@ namespace DromAutoTrader.ViewModels
 
             foreach (var price in prices)
             {
-
-
                 List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
                 foreach (var priceChannelMapping in priceChannels.SelectedChannels)
                 {
@@ -586,18 +576,7 @@ namespace DromAutoTrader.ViewModels
                         break; // Если не нашли совпадение, выходим из цикла
                     }
 
-
-                    // Проверяю, может такое объявление уже есть
-                    using var context = new AppContext();
-                    var isAdExists = context.AdPublishingInfo
-                   .Any(existing => existing.Artikul == price.Artikul
-                                   && existing.Brand == price.Brand
-                                   && existing.InputPrice == price.PriceBuy
-                                    && existing.KatalogName == price.KatalogName
-                                   // ... (остальные свойства)
-                                   );
-
-                    if (isAdExists) continue;
+                    
 
                     // Конструктор строителя объекта для публикации
                     var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
@@ -620,14 +599,12 @@ namespace DromAutoTrader.ViewModels
         // метод получения брендов для канала с отдельным контекстом, чтобы EF не залупался
         public List<Brand?> GetBrandsForChannel(int channelId)
         {
-            using (var context = new AppContext())
-            {
-                return context.BrandChannelMappings
-                    .Where(mapping => mapping.ChannelId == channelId)
-                    .Include(mapping => mapping.Brand.ImageServices)
-                    .Select(mapping => mapping.Brand)
-                    .ToList();
-            }
+            using var context = new AppContext();
+            return context.BrandChannelMappings
+                .Where(mapping => mapping.ChannelId == channelId)
+                .Include(mapping => mapping.Brand.ImageServices)
+                .Select(mapping => mapping.Brand)
+                .ToList();
         }
 
         // Асинхронный метод публикации объявления        
@@ -701,12 +678,12 @@ namespace DromAutoTrader.ViewModels
                 {
                     Console.WriteLine($"Публикация {adInfo.Artikul} || {adInfo.Brand} || канал: {adInfo.AdDescription}");
 
-
                     var existingAdInfo = context.AdPublishingInfo.Find(adInfo.Id);
 
                     if (existingAdInfo != null)
                     {
                         existingAdInfo.PriceBuy = "1";
+                        existingAdInfo.DatePublished = DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss");
                     }
 
                     try
@@ -740,10 +717,11 @@ namespace DromAutoTrader.ViewModels
         // Метод для перещения публикаций в архив
         private async Task RemoveAtArchive()
         {
+            // Получаю все объекты публикаций
             using var context = new AppContext();
             List<AdPublishingInfo> adPublishings = context.AdPublishingInfo.ToList();
-            WorkOnAds remover = new();
 
+            WorkOnAds remover = new();
             await remover.RemoveByFlag(SelectedChannel?.Name, adPublishings);
         }
 
@@ -751,11 +729,12 @@ namespace DromAutoTrader.ViewModels
         private void DeleteOutdatedAdsAtDb()
         {
             List<AdPublishingInfo> adsPublishedOutDateNow = GetOutdatedAds();
+            using var context = new AppContext();
 
             try
             {
-                _db.AdPublishingInfo.RemoveRange(adsPublishedOutDateNow);
-                _db.SaveChanges();
+                context.AdPublishingInfo.RemoveRange(adsPublishedOutDateNow);
+                context.SaveChanges();
             }
             catch (Exception)
             {
@@ -777,8 +756,16 @@ namespace DromAutoTrader.ViewModels
         // Метод поиска каналов для выбранного прайса
         private PriceChannelMapping GetChannelsForPrice(string path)
         {
-            string fileName = System.IO.Path.GetFileNameWithoutExtension(path);
-            PriceChannelMapping? priceChannels = PriceChannelMappings?.FirstOrDefault(mapping => mapping?.Price.Name == fileName);
+            PriceChannelMapping? priceChannels = null!;
+            try
+            {
+                string fileName = System.IO.Path.GetFileNameWithoutExtension(path);
+                priceChannels = PriceChannelMappings?.FirstOrDefault(mapping => mapping?.Price.Name == fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Ошибка при получении канала связанного с прайсом в методе GetChannelsForPrice: {ex.Message}");
+            }
 
             return priceChannels;
         }
@@ -829,25 +816,40 @@ namespace DromAutoTrader.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    // Сообщение об ошибке с указанием причины
-                    MessageBox.Show($"Ошибка при обработке прайса: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-
+                    _logger.Error($"Ошибка при обработке прайса: {ex.Message}");
                     return null;
                 }
             });
 
             var timeoutTask = Task.Delay(TimeSpan.FromSeconds(120)); // Время ожидания задачи
+            try
+            {
+                if (await Task.WhenAny(processTask, timeoutTask) == processTask)
+                {
+                    return await processTask;
+                }
+                else
+                {
+                    // Проверяем состояние задачи после await
+                    if (processTask.IsFaulted)
+                    {
+                        // Здесь можно выполнить логгирование ошибки
+                        _logger.Error($"Ошибка в процессе обработки прайса {pathToFile}: {processTask.Exception}");
+                    }
 
-            if (await Task.WhenAny(processTask, timeoutTask) == processTask)
-            {
-                return await processTask;
+                    // В этом случае прошло слишком много времени
+                    _logger.Error("Обработка прайса {pathToFile} заняла слишком много времени. Пожалуйста, попробуйте еще раз.");
+
+                    return null; // или выберите другое значение по умолчанию
+                }
             }
-            else
+            catch (Exception ex)
             {
-                // В этом случае прошло слишком много времени
-                MessageBox.Show("Обработка прайса заняла слишком много времени. Пожалуйста, попробуйте еще раз.", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+                // Обработка исключения, которое может возникнуть вне зависимости от processTask и timeoutTask
+                _logger.Error($"Произошло исключение: {ex}");
                 return null; // или выберите другое значение по умолчанию
             }
+
         }
         #endregion
 

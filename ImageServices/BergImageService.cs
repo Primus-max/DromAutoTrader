@@ -1,8 +1,3 @@
-
-using AngleSharp.Dom;
-using AngleSharp.Html.Dom;
-using AngleSharp.Html.Parser;
-
 namespace DromAutoTrader.ImageServices
 {
     /// <summary>
@@ -22,13 +17,11 @@ namespace DromAutoTrader.ImageServices
         public override string ServiceName => "https://berg.ru";
         #endregion
 
-        #region Приватный поля               
+        #region Приватные поля             
         private IHtmlDocument _document = null!;
         #endregion        
 
-        public BergImageService()
-        {
-        }
+        public BergImageService() { }
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
 
@@ -86,11 +79,7 @@ namespace DromAutoTrader.ImageServices
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                // Обработка исключения, например, логирование
-                Console.WriteLine($"Произошло исключение: {ex.Message}");
-            }
+            catch (Exception) { }
         }
 
 
@@ -276,7 +265,6 @@ namespace DromAutoTrader.ImageServices
 
             return newUrl;
         }
-                
         #endregion
     }
 }

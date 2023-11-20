@@ -1,10 +1,6 @@
-﻿using DromAutoTrader.ImageServices.Base;
-using DromAutoTrader.Services;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
-using System.Threading;
+using Newtonsoft.Json.Linq;
+using System.IO.Compression;
+using System.Text;
 
 namespace DromAutoTrader.ImageServices
 {
@@ -23,20 +19,10 @@ namespace DromAutoTrader.ImageServices
         #endregion
 
         #region Приватные поля
-        private readonly string _profilePath = @"C:\SeleniumProfiles\IrkRossko";
-        private string _tempProfilePath = string.Empty;
-        private Process _chromedriverProcess;
+        private string _response = string.Empty;
         #endregion
 
-        public IrkRosskoImageService()
-        {
-
-            // Создаю временную копию профиля (на эту сессию)
-            ProfilePathService profilePathService = new();
-            _tempProfilePath = profilePathService.CreateTempProfile(_profilePath);
-
-            InitializeDriver();
-        }
+        public IrkRosskoImageService() { }
 
 
         //----------------------- Реализация метод RunAsync находится в базовом классе ----------------------- //
@@ -44,84 +30,116 @@ namespace DromAutoTrader.ImageServices
         #region Перезаписанные методы базового класса
         protected override void GoTo()
         {
+            Task.Run(async () => await GoToAsync()).Wait();
+        }
+
+        protected async Task GoToAsync(string url = null!)
+        {
+            string searchApiUrl = $"https://searchform.rossko.ru/api/Search/Autocomplete?searchString={Articul}";
+
+            // Создаем экземпляр HttpClientHandler, чтобы управлять куками
+            var handler = new HttpClientHandler();
+            handler.CookieContainer = new System.Net.CookieContainer();
+
+            using HttpClient client = new HttpClient(handler);
             try
             {
-                _driver.Manage().Window.Maximize();
-                _driver.Navigate().GoToUrl(LoginPageUrl);
+                // Устанавливаем заголовки
+                client.DefaultRequestHeaders.Add("accept", "*/*");
+                client.DefaultRequestHeaders.Add("accept-encoding", "gzip, deflate, br");
+                client.DefaultRequestHeaders.Add("access-control-allow-origin", "*");
+                client.DefaultRequestHeaders.Add("authorization-domain", "https://irk.rossko.ru");
+                client.DefaultRequestHeaders.Add("authorization-session", "m-nxPNCgzTDN9WngzVAgfRAdj2B3m2mtvHCh");
+                client.DefaultRequestHeaders.Add("cookie", "_ym_d=1699948795; _ym_uid=1699948795417199734; _ym_isad=2; _ym_visorc=b");
+                client.DefaultRequestHeaders.Add("source", "frontend");
+
+                // Отправка GET-запроса
+                HttpResponseMessage response = await client.GetAsync(searchApiUrl);
+
+                // Проверка успешности запроса
+                if (response.IsSuccessStatusCode)
+                {
+                    // Получение содержимого ответа в виде строки
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    // Парсим JSON для извлечения ссылки
+                    var searchResults = Newtonsoft.Json.JsonConvert.DeserializeObject<List<SearchResult>>(responseBody);
+
+                    // Проверяем, что есть результаты
+                    if (searchResults.Count > 0)
+                    {
+                        string goodsCode = searchResults[0].goodsCode;
+
+                        // Строим URL для второго запроса
+                        string productApiUrl = $"https://productcard.rossko.ru/api/Product/Card/{goodsCode}?CurrencyCode=643&uin=&tariffTimings=true&newCart=true&addressGuid=&deliveryType=000000001&newClaimSystem=true";
+
+                        // Второй запрос по полученной ссылке
+                        HttpResponseMessage productResponse = await client.GetAsync(productApiUrl);
+
+                        if (productResponse.IsSuccessStatusCode)
+                        {
+                            string productResponseBody = await productResponse.Content.ReadAsStringAsync();
+                            _response = await DecodeGzip(productResponse.Content); // Декодирую ответ                            
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Ошибка второго запроса: {productResponse.StatusCode} - {productResponse.ReasonPhrase}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Нет результатов поиска");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Ошибка первого запроса: {response.StatusCode} - {response.ReasonPhrase}");
+                }
             }
-            catch (Exception) { }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка: {ex.Message}");
+            }
+        }     
+
+        // Декодирую ответ от сервера
+        private async Task<string> DecodeGzip(HttpContent content)
+        {
+            using (var stream = await content.ReadAsStreamAsync())
+            using (var gzip = new GZipStream(stream, CompressionMode.Decompress))
+            using (var reader = new StreamReader(gzip, Encoding.UTF8))
+            {
+                return await reader.ReadToEndAsync();
+            }
         }
+
 
         protected override void Authorization() { }
 
-        protected override void SetArticulInSearchInput()
-        {
-            WebDriverWait driverWait = new(_driver, TimeSpan.FromSeconds(10));
-            IWebElement searchInput = null!;
-            try
-            {
-
-                searchInput = driverWait.Until(e => e.FindElement(By.Id("1")));
-                //searchInput.Clear();
-
-                ClearAndEnterText(searchInput, Articul);
-                //Thread.Sleep(200);
-                //searchInput.SendKeys(Articul);
-                Console.WriteLine($"Ввёл Артикул в инпут");
-                searchInput.Submit();
-                Console.WriteLine($"Нажал сабмит на инпуте");
-            }
-            catch (Exception)
-            {
-
-            }
-        }
+        protected override void SetArticulInSearchInput() { }
 
         protected override bool IsNotMatchingArticul()
         {
-            WebDriverWait driverWait = new(_driver, TimeSpan.FromSeconds(5));
-            bool isMatching = false;
+            if (_response == null) return true;
             try
             {
+                // Получение json из ответа
+                JObject jsonResponse = JObject.Parse(_response);
 
-                IWebElement? wrongMessageElement = driverWait.Until(e => e.FindElement(By.CssSelector("div.src-components-SearchNotFound-___styles__notFoundTitle___IWpeT")));
-
-                string? wrongMessage = wrongMessageElement?.Text;
-
-                string? cleanedText = Regex.Unescape(wrongMessage.Trim().Replace("\n", "").Replace("\r", ""));
-                string? comparisonStr = $"Ничего не нашлось";
-
-                if (wrongMessage.Contains(comparisonStr, StringComparison.OrdinalIgnoreCase))
-                {
-                    isMatching = true;
-                }
+                // Извлечение изображений из json
+                JArray imagesArray = jsonResponse["mainPart"]["images"] as JArray;
+                if (imagesArray != null)
+                    return false;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return isMatching;
+                return false;
             }
-            return isMatching;
+
+            return false;
         }
 
-        protected override void OpenSearchedCard()
-        {
-            WebDriverWait driverWait = new(_driver, TimeSpan.FromSeconds(7));
-            try
-            {
-                IWebElement searchCardLink = driverWait.Until(e => e.FindElement(By.ClassName("src-features-search-components-result-item-___index__isLinkFocused___-+EPf")));
-
-
-                Console.WriteLine("Открываю карточку");
-                IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
-                js.ExecuteScript("arguments[0].click();", searchCardLink);
-                Console.WriteLine("Открыл карточку");
-
-            }
-            catch (Exception)
-            {
-
-            }
-        }
+        protected override void OpenSearchedCard() { }
 
         protected override bool IsImagesVisible()
         {
@@ -132,68 +150,54 @@ namespace DromAutoTrader.ImageServices
         {
             // Список изображений которые возвращаем из метода
             List<string> downloadedImages = new List<string>();
-
-            // Временное хранилище изображений
+            // Временый список
             List<string> images = new List<string>();
 
-            // Устанавливаю ожидание
-            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(5));
-
-            // Получаю все картинки thumbs
             try
             {
-                // Находим div элемент с изображением, исключая тот, у которого есть подпись
-                IWebElement imageDiv = wait.Until(e => e.FindElement(By.XPath("//div[contains(@class,'src-features-product-card-components-info-___index__image___KeiQL') and not(contains(., 'Посмотреть на Яндекс Картинках'))]")));
-                string imagePath = imageDiv.GetAttribute("style");
+                // Получение json из ответа
+                JObject jsonResponse = JObject.Parse(_response);
 
-                // Находим позиции, где начинается URL и заканчивается
-                int startIndex = imagePath.IndexOf("https://");
-                int endIndex = imagePath.LastIndexOf("jpg") + 3;
-
-                if (startIndex >= 0 && endIndex > startIndex)
+                // Извлечение изображений из json
+                JArray imagesArray = jsonResponse["mainPart"]["images"] as JArray;
+                if (imagesArray != null)
                 {
-                    string imageUrl = imagePath.Substring(startIndex, endIndex - startIndex);
-
-                    if (!string.IsNullOrEmpty(imageUrl))
-                        images.Add(imageUrl);
+                    foreach (JToken imageToken in imagesArray)
+                    {
+                        string imageUrl = imageToken.ToString();
+                        if (!string.IsNullOrEmpty(imageUrl))
+                            images.Add(imageUrl);
+                    }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                //string asdf = ex.Message;
+                // Обработка ошибок
             }
 
             if (images.Count != 0)
-                downloadedImages = await ImagesProcessAsync(images);
+                downloadedImages = await ImagesProcessAsync(images); // Передача изображений для обработки
 
             return downloadedImages;
         }
 
-        protected override async Task CloseDriverAsync()
-        {
-            try
-            {
-                Console.WriteLine("Перед закрытием драйвера");
-                _driver.Close();
-                _driver.Quit();
-                _driver.Dispose();
-                Console.WriteLine("После закрытия драйвера");
 
-                // Удаляю временную директорию профиля после закрытия браузера
-                ProfilePathService profilePathService = new();
-                await profilePathService.DeleteDirectoryAsync(_tempProfilePath);
-            }
-            catch (Exception)
-            {
-
-            }
-        }
+        protected override async Task CloseDriverAsync() { }
 
         #endregion
 
+        // Класс для десериализации ответа от сервера
+        public class SearchResult
+        {
+            public string? brandName { get; set; }
+            public string? article { get; set; }
+            public string? goodsName { get; set; }
+            public string? goodsLink { get; set; }
+            public string? goodsCode { get; set; }
+        }
+
         #region Специфичные методы класса 
 
-        // TODO вынести этот метод в базовый и сделать для всех
         // Метод создания директории и скачивания изображений
         private async Task<List<string>> ImagesProcessAsync(List<string> images)
         {
@@ -215,40 +219,7 @@ namespace DromAutoTrader.ImageServices
             return downloadedImages;
         }
 
-        // Инициализация драйвера
-        private void InitializeDriver()
-        {
-            UndetectDriver webDriver = new(_tempProfilePath);
-            _driver = webDriver.GetDriver();
-        }
 
-        public void ClearAndEnterText(IWebElement element, string text)
-        {
-            Random random = new Random();
-            // Используем JavaScriptExecutor для выполнения JavaScript-кода
-            IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)((IWrapsDriver)element).WrappedDriver;
-
-            // Очищаем поле ввода с помощью JavaScript
-            jsExecutor.ExecuteScript("arguments[0].value = '';", element);
-            // Установить стиль display элемента в block
-            jsExecutor.ExecuteScript("arguments[0].style.display = 'block';", element);
-            // Вставляем текст по одному символу без изменений
-            foreach (char letter in text)
-            {
-                if (letter == '\b')
-                {
-                    // Если символ является символом backspace, удаляем последний введенный символ
-                    element.SendKeys(Keys.Backspace);
-                }
-                else
-                {
-                    // Вводим символ
-                    element.SendKeys(letter.ToString());
-                }
-
-                Thread.Sleep(random.Next(10, 50));  // Добавляем небольшую паузу между вводом каждого символа
-            }
-        }
         #endregion
 
     }

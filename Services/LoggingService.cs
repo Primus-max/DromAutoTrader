@@ -1,27 +1,33 @@
 ﻿using Serilog;
-using Serilog.Core;
 using Serilog.Events;
 
-public  class LoggingService
+namespace DromAutoTrader.Services
 {
-    public  Logger ConfigureLogger()
+    public class LoggingService
     {
-        // Создаем конфигурацию для логирования
-        var loggerConfiguration = new LoggerConfiguration()
-            .WriteTo.Logger(lc => lc
-                .Filter.ByIncludingOnly(evt => evt.Level == LogEventLevel.Information)
-                .WriteTo.File("logs/info.txt"))
-            .WriteTo.Logger(lc => lc
-                .Filter.ByIncludingOnly(evt => evt.Level == LogEventLevel.Error)
-                .WriteTo.File("logs/error.txt"));
+        private static readonly object lockObject = new object();
 
-        // Создаем логгер
-        var logger = loggerConfiguration.CreateLogger();
+        public Logger ConfigureLogger()
+        {
+            lock (lockObject)
+            {
+                // Создаем конфигурацию для логирования
+                var loggerConfiguration = new LoggerConfiguration()
+                    .WriteTo.Logger(lc => lc
+                        .Filter.ByIncludingOnly(evt => evt.Level == LogEventLevel.Information)
+                        .WriteTo.File("logs/info.txt"))
+                    .WriteTo.Logger(lc => lc
+                        .Filter.ByIncludingOnly(evt => evt.Level == LogEventLevel.Error)
+                        .WriteTo.File("logs/error.txt"));
 
-        // Устанавливаем глобальный логгер
-        Log.Logger = logger;
+                // Создаем логгер
+                var logger = loggerConfiguration.CreateLogger();
 
-        return logger;
+                // Устанавливаем глобальный логгер
+                Log.Logger = logger;
+
+                return logger;
+            }
+        }
     }
-
 }

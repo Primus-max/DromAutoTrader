@@ -1,5 +1,4 @@
-﻿using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
+﻿using OpenQA.Selenium.Chrome;
 using SeleniumUndetectedChromeDriver;
 
 namespace DromAutoTrader.Services
@@ -10,8 +9,12 @@ namespace DromAutoTrader.Services
     class UndetectDriver
     {
         private readonly string _profilePath = string.Empty;
-
-        public UndetectDriver(string profilePath) => _profilePath = profilePath;
+        private readonly Logger _logger;
+        public UndetectDriver(string profilePath) 
+        {
+            _profilePath = profilePath;
+            _logger = new LoggingService().ConfigureLogger();
+        }
 
         /// <summary>
         /// Метод инициализирует экземпляр драйвера и возвращает его
@@ -39,9 +42,9 @@ namespace DromAutoTrader.Services
             {
                 driver = UndetectedChromeDriver.Create(options: options, hideCommandPromptWindow: true, driverExecutablePath: "chromedriver.exe", commandTimeout: TimeSpan.FromSeconds(15));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Console.WriteLine("Проблемы при создании драйевера");
+                _logger.Error($"Ошибка при создании драйвер в методе GetDriver: {ex.Message}");
             }
 
             // Глобальное ожидание

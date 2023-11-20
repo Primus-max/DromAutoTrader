@@ -96,8 +96,7 @@ namespace DromAutoTrader.ImageServices
                         {
                             string? link = linkElement.GetAttribute("href");
 
-                            Task.Run(async () => await GoToAsync(link)).Wait();
-                            // Здесь можно осуществить переход по полученной ссылке и продолжить парсинг следующей страницы
+                            Task.Run(async () => await GoToAsync(link)).Wait(); // Открываю окно с изображением                            
                         }
                     }
                 }
@@ -127,19 +126,22 @@ namespace DromAutoTrader.ImageServices
             try
             {
                 await Task.Delay(500);
-                // Получаем изображение
 
-                var imageBlocks = _document.QuerySelectorAll("img.product__gallery-thumbs-slider-card-image");
+                // Получаем изображение
+                var imageBlocks = _document.QuerySelectorAll("img.product__gallery-main-slider-card-image");
 
                 foreach (var imageBlock in imageBlocks)
                 {
                     if (imageBlock != null)
                     {
                         string? imgUrl = imageBlock.GetAttribute("src");
-                        httpClient.BaseAddress = new Uri(LoginPageUrl);
-                        string? fullUrl = new Uri(httpClient.BaseAddress, imgUrl).AbsoluteUri;
 
-                        images.Add(fullUrl);
+                        if (!string.IsNullOrEmpty(imgUrl))
+                        {
+                            httpClient.BaseAddress = new Uri(LoginPageUrl);
+                            string? fullUrl = new Uri(httpClient.BaseAddress, imgUrl).AbsoluteUri;
+                            images.Add(fullUrl);
+                        }
                     }
                 }
             }
@@ -147,6 +149,7 @@ namespace DromAutoTrader.ImageServices
             {
                 return downloadedImages;
             }
+
 
 
             if (images.Count != 0)

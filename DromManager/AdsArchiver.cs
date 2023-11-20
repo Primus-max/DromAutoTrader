@@ -7,11 +7,9 @@ namespace DromAutoTrader.DromManager
     /// </summary>
     public class AdsArchiver
     {
-        private AppContext _db = null!;
-
         public AdsArchiver()
         {
-            InitializeDatabase();
+            
         }
 
         /// <summary>
@@ -28,8 +26,8 @@ namespace DromAutoTrader.DromManager
         private List<AdPublishingInfo> GetAdsForToday()
         {
             var currentDate = DateTime.Now.Date;
-
-            return _db.AdPublishingInfo
+            using var context = new AppContext();
+            return context.AdPublishingInfo
                 .ToList()
                 .Where(a => DateTime.Parse(a.DatePublished).Date == currentDate)
                 .ToList();
@@ -38,8 +36,8 @@ namespace DromAutoTrader.DromManager
         private List<AdPublishingInfo> GetOutdatedAds()
         {
             var currentDate = DateTime.Now.Date;
-
-            return _db.AdPublishingInfo
+            using var context = new AppContext();
+            return context.AdPublishingInfo
                 .ToList()
                 .Where(a => DateTime.Parse(a.DatePublished).Date != currentDate)
                 .ToList();
@@ -65,31 +63,12 @@ namespace DromAutoTrader.DromManager
                         using var context = new AppContext();
                         context.SaveChanges();
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
+                        string messageError = $"Ошибка при записи IsArchived в объекте публикации, в методе ArchiveOutdatedAds {ex.Message}";
                     }
                 }
             }
         }
-
-        // Метод инициализации базы данных
-        private void InitializeDatabase()
-        {
-            try
-            {
-                // Экземпляр базы данных
-                _db = new AppContext();
-
-                // Загружаю таблицу
-                _db.AdPublishingInfo.Load();
-            }
-            catch (Exception ex)
-            {
-                //MessageBox.Show(ex.ToString());
-                // TODO сделать запись логов
-                //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
-            }
-        }
-
     }
 }

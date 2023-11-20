@@ -1,7 +1,4 @@
 ﻿using DromAutoTrader.Prices;
-using DromAutoTrader.Services;
-using System.IO;
-using System.Text.RegularExpressions;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -22,22 +19,34 @@ namespace DromAutoTrader.ViewModels
 
         public async Task<AdPublishingInfo> Build()
         {
-            if (_channel == null)
+            if (_channel == null || _price == null || _pricePath == null)
                 return new AdPublishingInfo();
 
 
             // Проверяем, что цена в прайсе не меньше чем в таблице накрутки цен
-            decimal minTo = (decimal)(_channel?.PriceIncreases.Min(inc => (decimal)inc.To));
+            decimal minTo = (decimal)(_channel?.PriceIncreases.Min(inc => (decimal)inc.From));
 
             if (_price.PriceBuy < minTo)
                 return null;
+
             List<string> imagesPaths = new List<string>();
             string? namePrice = Path.GetFileName(_pricePath);
-            //var adPublishingInfoCollection = GetAdPublishingInfoCollection();
 
-            // Создаю калькулятор
+            // Создаю калькулятор, считаю цену с накруткой
             CalcPrice calcPrice = new();
             decimal calculatedPrice = calcPrice.Calculate(_price.PriceBuy, _channel?.PriceIncreases);
+
+            // Проверяю, может такое объявление уже есть
+            using var context = new AppContext();
+            var isAdExists = context.AdPublishingInfo
+           .Any(existing => existing.Artikul == _price.Artikul
+                           && existing.Brand == _price.Brand
+                           && existing.InputPrice == _price.PriceBuy
+                           && existing.KatalogName == _price.KatalogName
+                           && existing.OutputPrice == calculatedPrice
+                           );
+
+            if (isAdExists) return null; // Если полное совпадение, то выходим
 
             _adPublishingInfo.PriceName = namePrice;
             _adPublishingInfo.Brand = _price?.Brand; // Имя брэнда
@@ -56,7 +65,7 @@ namespace DromAutoTrader.ViewModels
             // TODO сделать получение только после проверки налаичия элемента в базе
             SelectionImagesPathsService imagesPathsservice = new SelectionImagesPathsService(); // Фабрика для выбора нужного сервиса по поиску изображения
             imagesPaths = await imagesPathsservice.SelectPaths(_price?.Brand, _price?.Artikul); // Получаю путь к изображению
-            _adPublishingInfo.ImagesPaths = imagesPaths; // TODO временное хранение путей в виде List, далее надо обнулить (в базе не хранится)
+            _adPublishingInfo.ImagesPaths = imagesPaths; // Это временное хранение путей не для хранения в базе
             _adPublishingInfo.ImagesPath = string.Join(";", imagesPaths); // Формирую пути в одну строку с разделителем для хранения в базе
 
             return _adPublishingInfo;
@@ -70,15 +79,6 @@ namespace DromAutoTrader.ViewModels
             // Заменяем найденные символы пустой строкой
             string result = Regex.Replace(input, pattern, "");
             return result;
-        }
-
-        // Отдельный метод для получения коллекции AdPublishingInfo
-        public List<AdPublishingInfo> GetAdPublishingInfoCollection()
-        {
-            using (var context = new AppContext())
-            {
-                return context.AdPublishingInfo.ToList();
-            }
         }
     }
 }

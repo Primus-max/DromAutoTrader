@@ -1,14 +1,23 @@
-﻿using DromAutoTrader.ImageServices;
+using DromAutoTrader.ImageServices;
+using DromAutoTrader.ImageServices.Interfaces;
 using DromAutoTrader.Prices;
-using DromAutoTrader.Services;
 using Microsoft.Win32;
-using System.IO;
-using System.Threading;
 
 namespace DromAutoTrader.ViewModels
 {
     internal class ParsingViewModel : BaseViewModel
     {
+        // Словарь с сервисами
+        Dictionary<int, Type> imageServiceTypes = new Dictionary<int, Type>
+        {
+                { 1, typeof(BergImageService) },
+                { 2, typeof(IrkRosskoImageService) },
+                { 3, typeof(LynxautoImageService) },
+                { 4, typeof(LuzarImageService) },
+                { 5, typeof(StarvoltImageService) },
+                { 6, typeof(UnicomImageService) },
+                { 7, typeof(TmpartsImageService) },
+        };
 
         public List<string>? PathsFilePrices { get; private set; }
         public List<string>? Prices { get; private set; }
@@ -29,7 +38,7 @@ namespace DromAutoTrader.ViewModels
 
         private void OnStartParsingCommandExecuted(object sender)
         {
-            Thread thread = new Thread(RunPars);  
+            Thread thread = new Thread(RunPars);
             thread.Start();
         }
         #endregion
@@ -59,7 +68,7 @@ namespace DromAutoTrader.ViewModels
                 // Имя файла
                 string fileName = Path.GetFileNameWithoutExtension(path);
 
-                
+                List<string>? downLoadedImagesPaths = new List<string>();
 
                 foreach (var price in prices)
                 {
@@ -72,24 +81,38 @@ namespace DromAutoTrader.ViewModels
                     bool IsContainsFiles = folderManager.ArticulFolderContainsFiles(brand, articul);
                     if (IsContainsFiles) continue;
 
-                    // TODO здесь запускаю парсинг по разным сервисам
+                    // Прохожу по сервисам, ищу где есть изображение
+                    foreach (var service in imageServiceTypes.Values)
+                    {
+                        if (Activator.CreateInstance(service) is IImageService imageService)
+                        {
+                            // Выполнение RunAsync для найденного сервиса
+                            await imageService.RunAsync(brand, articul);
 
+                            // Получение результатов
+                            downLoadedImagesPaths = imageService.BrandImages;
+                        }
 
-                    BergImageService bergImageService = new();
+                        if (downLoadedImagesPaths is not null || downLoadedImagesPaths?.Count > 0) break; // Если скачали, то выходим
+                    }
+
+                    //BergImageService bergImageService = new();
                     // UnicomImageService unicomImageService = new();
                     //LynxautoImageService lynxautoImageService = new LynxautoImageService();
                     //LuzarImageService LuzarimageService = new LuzarImageService();
                     //StarvoltImageService starvoltImageService = new StarvoltImageService();
-                   // IrkRosskoImageService irkRosskoImageService = new();
+                    //IrkRosskoImageService irkRosskoImageService = new();
                     //MxgroupImageService imageService = new MxgroupImageService();
-                    // TmpartsImageService tmpartsImageService = new TmpartsImageService();
-                    // await bergImageService.RunAsync(brand, articul);
-                    await bergImageService.RunAsync(brand, articul);
+                    //TmpartsImageService tmpartsImageService = new TmpartsImageService();
 
-                    var testImages = bergImageService.BrandImages;
+                    //await tmpartsImageService.RunAsync(brand, articul);
+
+                    //var testImages = tmpartsImageService.BrandImages;
                 }
             }
         }
+
+
 
         // Метод парсинга файла excel
         public PriceList ProcessPrice(string pathToFile)
@@ -103,13 +126,12 @@ namespace DromAutoTrader.ViewModels
             catch (Exception ex)
             {
                 // Вывести сообщение об ошибке с указанием причины
-                MessageBox.Show($"Ошибка при обработке прайса: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-
-                // Перебросить исключение для обработки в вызывающем коде, если это необходимо
-                throw;
+                Console.WriteLine($"Ошибка при обработке прайса: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return new();
             }
         }
 
+        // Открываю окно для выбора файлов (прайсов)
         private void GetSelectedFilePaths()
         {
             List<string> selectedFilePaths = new List<string>();

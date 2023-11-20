@@ -2,9 +2,10 @@
 {
     public class PriceFilter
     {
+        private readonly Logger _logger;
         public PriceFilter()
         {
-
+            _logger = new LoggingService().ConfigureLogger();
         }
 
         public void FilterAndSaveByPrice(AdPublishingInfo adInfo)
@@ -29,16 +30,16 @@
                     }
                     catch (Exception ex)
                     {
-                        string message = $"ОШибка в FilterAndSaveByPrice, не удалось добавить {adInfo.Artikul} || {adInfo.Brand} {ex.Message}";
-                        Console.WriteLine(message);
+                        string message = $"Ошибка в FilterAndSaveByPrice, не удалось добавить {adInfo.Artikul} || {adInfo.Brand} {ex.Message}";
+                        _logger.Error(message);
                     }
                 }
                 else
                 {
                     foreach (var existingAd in existingAds)
                     {
-                        // Проверяю цену, если у нового объявления цена лучше чем у старого, сохраняем новый объект
-                        if (adInfo.InputPrice < existingAd.InputPrice)
+                        // Проверяю цену, если у нового объявления цена лучше чем у старого, сохраняем новый объект или изменилась цена наркутки
+                        if (adInfo.InputPrice < existingAd.InputPrice || existingAd.OutputPrice != adInfo.OutputPrice)
                         {
                             // Обновляю объект в базе
                             existingAd.InputPrice = adInfo.InputPrice;
@@ -53,7 +54,7 @@
                             existingAd.KatalogName = adInfo.KatalogName;
                             existingAd.PriceName = adInfo.PriceName;
                             existingAd.Description = adInfo.Description;
-                            existingAd.PriceBuy = "2"; // Ставлю флаг что это изменённая цена, значит буду это учитывать при публикации объявленй
+                            existingAd.PriceBuy = "2"; // Ставлю флаг что это изменённая цена / или изменилась накрутка, значит буду это учитывать при публикации объявленй
                         }
                     }
                 }
@@ -65,14 +66,14 @@
                 }
                 catch (Exception ex)
                 {
-                    string message = $"ОШибка в FilterAndSaveByPrice {ex.Message}";
-                    Console.WriteLine(message);
+                    string message = $"Ошибка в FilterAndSaveByPrice {ex.Message}";
+                    _logger.Error(message);
                 }
             }
             catch (Exception ex)
             {
-                string message = $"ОШибка в FilterAndSaveByPrice {ex.Message}";
-                Console.WriteLine(message);
+                string message = $"Ошибка в FilterAndSaveByPrice {ex.Message}";
+                _logger.Error(message);
             }
         }
     }

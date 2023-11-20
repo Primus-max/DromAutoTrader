@@ -11,10 +11,12 @@ namespace DromAutoTrader.Prices
     public class PriceProcessor
     {
         private PriceFieldMapper fieldMapper;
+        private readonly Logger _logger;
 
         public PriceProcessor()
         {
             fieldMapper = new PriceFieldMapper();
+            _logger = new LoggingService().ConfigureLogger();
         }
 
         /// <summary>
@@ -32,7 +34,7 @@ namespace DromAutoTrader.Prices
 
                 if (worksheet == null)
                 {
-                    Console.WriteLine("Не удалось получить листы при парсинге прайса");
+                    _logger.Error("Не удалось получить листы при парсинге прайса");
                     return new PriceList();
                 }
 
@@ -64,7 +66,7 @@ namespace DromAutoTrader.Prices
                             }
                             else
                             {
-                                // Обработка ошибки или установка значения по умолчанию.
+                                _logger.Error($"Не удалось получить значение в ячейке прайса при парсинге {filePath}");
                             }
                         }
                     }
