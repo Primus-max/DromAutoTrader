@@ -552,7 +552,7 @@
 
             if (priceChannels == null)
             {
-                MessageBox.Show("Что-то пошло не так, попробуйте выбрать прайс и каналы для него", "Внимание",
+                MessageBox.Show("Что-то пошло не так, нужно сначала нажать на прайс и затем выбрать канал", "Внимание",
                    MessageBoxButton.OK, MessageBoxImage.Warning);
 
                 return;
@@ -599,14 +599,12 @@
         // метод получения брендов для канала с отдельным контекстом, чтобы EF не залупался
         public List<Brand?> GetBrandsForChannel(int channelId)
         {
-            using (var context = new AppContext())
-            {
-                return context.BrandChannelMappings
-                    .Where(mapping => mapping.ChannelId == channelId)
-                    .Include(mapping => mapping.Brand.ImageServices)
-                    .Select(mapping => mapping.Brand)
-                    .ToList();
-            }
+            using var context = new AppContext();
+            return context.BrandChannelMappings
+                .Where(mapping => mapping.ChannelId == channelId)
+                .Include(mapping => mapping.Brand.ImageServices)
+                .Select(mapping => mapping.Brand)
+                .ToList();
         }
 
         // Асинхронный метод публикации объявления        
@@ -758,8 +756,16 @@
         // Метод поиска каналов для выбранного прайса
         private PriceChannelMapping GetChannelsForPrice(string path)
         {
-            string fileName = System.IO.Path.GetFileNameWithoutExtension(path);
-            PriceChannelMapping? priceChannels = PriceChannelMappings?.FirstOrDefault(mapping => mapping?.Price.Name == fileName);
+            PriceChannelMapping? priceChannels = null!;
+            try
+            {
+                string fileName = System.IO.Path.GetFileNameWithoutExtension(path);
+                priceChannels = PriceChannelMappings?.FirstOrDefault(mapping => mapping?.Price.Name == fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Ошибка при получении канала связанного с прайсом в методе GetChannelsForPrice: {ex.Message}");
+            }
 
             return priceChannels;
         }

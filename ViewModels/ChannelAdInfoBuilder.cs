@@ -19,7 +19,7 @@ namespace DromAutoTrader.ViewModels
 
         public async Task<AdPublishingInfo> Build()
         {
-            if (_channel == null)
+            if (_channel == null || _price == null || _pricePath == null)
                 return new AdPublishingInfo();
 
 
@@ -86,10 +86,8 @@ namespace DromAutoTrader.ViewModels
         // Отдельный метод для получения коллекции AdPublishingInfo
         public List<AdPublishingInfo> GetAdPublishingInfoCollection()
         {
-            using (var context = new AppContext())
-            {
-                return context.AdPublishingInfo.ToList();
-            }
+            using var context = new AppContext();
+            return context.AdPublishingInfo.ToList();
         }
     }
 }
