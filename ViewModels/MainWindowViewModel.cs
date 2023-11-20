@@ -438,14 +438,7 @@ namespace DromAutoTrader.ViewModels
 
         // Метод запускающий всю работу
         public async Task RunAllWork()
-        {
-            using var con = new AppContext();
-            var ads = con.AdPublishingInfo.Where(a => a.DromeId == null).ToList();
-
-
-            con.AdPublishingInfo.RemoveRange(ads);
-            con.SaveChanges();
-
+        {           
             // Получаю, обрабатываю, записываю в базу прайсы
             await ParsingPricesAsync();
 
@@ -675,7 +668,7 @@ namespace DromAutoTrader.ViewModels
                         // Информирую о прогрессе
                         PostingProgressItem postingProgressItem = new PostingProgressItem
                         {
-                            ProcessName = $"Создаю объекты для публикации",
+                            ProcessName = $"Публикация объявления на дром",
                             PriceName = adInfo.PriceName,
                             TotalStages = channelAdInfos.Count,
                             ChannelName = adInfo.AdDescription,
