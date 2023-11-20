@@ -1,5 +1,5 @@
 ﻿namespace DromAutoTrader.ViewModels
-{    
+{
     class MainWindowViewModel : BaseViewModel
     {
         #region ПРИВАТНЫЕ ПОЛЯ
@@ -74,13 +74,11 @@
             get => _priceChannelMappings;
             set => Set(ref _priceChannelMappings, value);
         }
-
         public ObservableCollection<AdPublishingInfo> AdPublishingInfos
         {
             get => _adPublishingInfos;
             set => Set(ref _adPublishingInfos, value);
         }
-
         public ObservableCollection<PostingProgressItem> PostingProgressItems
         {
             get => _postingProgressItems;
@@ -427,40 +425,19 @@
             #endregion
             #endregion
 
-            _logger = new LoggingService().ConfigureLogger();
+            #region Обработчики
 
-            // Метод отслеживающий прогресс
-            _progressReporter = new Progress<PostingProgressItem>(reportItem =>
-            {
-                Application.Current?.Dispatcher.Invoke(() =>
-                {
-                    var existingItem = PostingProgressItems.FirstOrDefault(item => item.PriceName == reportItem.PriceName);
-                    if (existingItem != null)
-                    {
-                        // Обновить существующий объект в коллекции
-                        existingItem.ProcessName = reportItem.ProcessName;
-                        existingItem.CurrentStage = reportItem.CurrentStage;
-                        existingItem.TotalStages = reportItem.TotalStages;
-                        existingItem.MaxValue = reportItem.MaxValue;
-                        existingItem.DatePublished = reportItem.DatePublished;
-                        existingItem.GetFileButton = reportItem.GetFileButton;
-                        existingItem.PriceExportPath = reportItem.PriceExportPath;
-                    }
-                    else
-                    {
-                        // Если объект не существует, добавьте его в коллекцию
-                        PostingProgressItems.Add(reportItem);
-                    }
-                });
-            });
+            #endregion
 
+            _logger = new LoggingService().ConfigureLogger();           
         }
-
+                
         #region МЕТОДЫ
 
         // Метод запускающий всю работу
         public async Task RunAllWork()
-        {     
+        {
+
             // Получаю, обрабатываю, записываю в базу прайсы
             await ParsingPricesAsync();
 
@@ -499,27 +476,27 @@
                 {
                     ProcessName = $"Начал обработку прайса",
                     MaxValue = PathsFilePrices.Count,
-                    PriceName = priceName
-                };
+                    PriceName = priceName,                  
+                };               
 
-                _progressReporter.Report(postingProgressItem);
+                // Информирую об изменении
+                 EventAggregator.RaisePostingProgressItemUpdated(this, postingProgressItem);
 
                 Task task = Task.Run(async () =>
                 {
-                    Console.WriteLine($"Начал парсинг прайса {priceName}");
 
                     // Парсинг прайсов и обработка данных
                     PriceList prices = await ProcessPriceAsync(path);
 
-                    Console.WriteLine($"Закончил парсинг прайса {priceName}");
+                    var postingProgressItem = new PostingProgressItem
+                    {
+                        ProcessName = $"Распарсил прайс",
+                        TotalStages = prices.Count,
+                        PriceName = priceName,
+                    };
 
-                    postingProgressItem.ProcessName = "Получил прайс";
-                    postingProgressItem.TotalStages = prices.Count;
-
-                    // Обновление прогресса
-                    postingProgressItem.CurrentStage++;
-                    // Отправьте обновленный элемент прогресса в IProgress.Report
-                    _progressReporter.Report(postingProgressItem);
+                    // Информирую об изменении
+                    EventAggregator.RaisePostingProgressItemUpdated(this, postingProgressItem);
 
                     if (prices == null)
                     {
@@ -559,9 +536,11 @@
             }
 
             string priceName = Path.GetFileName(path);
-
+           
             foreach (var price in prices)
             {
+                elCount++; // Считаю добавленные элементы
+
                 List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
                 foreach (var priceChannelMapping in priceChannels.SelectedChannels)
                 {
@@ -583,6 +562,18 @@
                     // Строю объект для публикации
                     var adInfo = await builder.Build();
                     if (adInfo == null) break;
+
+                    postingProgressItem = new PostingProgressItem
+                    {
+                        ProcessName = $"Создаю объекты для публикации",
+                        PriceName = priceName,
+                        TotalStages = prices.Count,
+                        ChannelName = priceChannelMapping.Name,
+                        CurrentStage = elCount,                         
+                    };
+
+                    // Информирую об изменении
+                    EventAggregator.RaisePostingProgressItemUpdated(this, postingProgressItem);
 
                     // Фильтр цен перед сохранением объекта публикации в базе
                     PriceFilter priceFilter = new();

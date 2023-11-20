@@ -178,7 +178,7 @@
                                     <DataGridTemplateColumn Header="Канал">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding ChannelName}" />
+                                                <TextBlock x:Name="ChannelTextBlock" Text="{Binding ChannelName}" />
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
@@ -199,7 +199,8 @@
                                     <DataGridTemplateColumn Header="Процесс">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <ProgressBar Maximum="13" Value="{Binding CurrentStage}" />
+                                                <TextBlock Text="{Binding CurrentStage}" />
+                                                <!--<ProgressBar Maximum="13" Value="{Binding CurrentStage}" />-->
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
@@ -236,8 +237,8 @@
                     </DockPanel>
                 </TabItem>
 
-                <TabItem Header="Каналы">                    
-                        <Frame Name="ChannelFrame" NavigationUIVisibility="Hidden" />                           
+                <TabItem Header="Каналы">
+                    <Frame Name="ChannelFrame" NavigationUIVisibility="Hidden" />
                 </TabItem>
                 <TabItem Header="Брэнды">
                     <DockPanel>
