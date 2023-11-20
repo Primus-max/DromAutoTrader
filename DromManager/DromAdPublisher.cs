@@ -112,6 +112,9 @@ namespace DromAutoTrader.DromManager
             // Цена для публикации
             PriceInput(adPublishingInfo?.OutputPrice?.ToString());
 
+            // Проверяю заполненность полей
+            CheckAndFillRequiredFields();
+
             isPublited = ClickPublishButton();
 
             // Если объявление разместил, то записываю Id

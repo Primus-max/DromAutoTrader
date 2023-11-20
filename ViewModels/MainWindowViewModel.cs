@@ -439,6 +439,12 @@ namespace DromAutoTrader.ViewModels
         // Метод запускающий всю работу
         public async Task RunAllWork()
         {
+            using var con = new AppContext();
+            var ads = con.AdPublishingInfo.Where(a => a.DromeId == null).ToList();
+
+
+            con.AdPublishingInfo.RemoveRange(ads);
+            con.SaveChanges();
 
             // Получаю, обрабатываю, записываю в базу прайсы
             await ParsingPricesAsync();
