@@ -1,4 +1,6 @@
-﻿namespace DromAutoTrader.ViewModels
+﻿using DromAutoTrader.Prices;
+
+namespace DromAutoTrader.ViewModels
 {
     class MainWindowViewModel : BaseViewModel
     {
@@ -602,16 +604,7 @@
         public async Task ProcessPublishingAdsAtDrom()
         {
             using var context = new AppContext();
-            var adInfos = context.AdPublishingInfo.ToList(); // Загрузка всех объявлений
-
-            PostingProgressItem postingProgressItem = new();
-
-            // Возвращаемся в основной поток для обновления элементов интерфейса
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                PostingProgressItems.Add(postingProgressItem);
-            });
-
+            var adInfos = context.AdPublishingInfo.ToList(); // Загрузка всех объявлений            
 
             var selectedChannels = SelectedChannels.Select(channel => channel.Name).ToList();
 
@@ -641,9 +634,12 @@
         private async Task ProcessChannelAdsAsync(DromAdPublisher dromAdPublisher, List<AdPublishingInfo> channelAdInfos)
         {
             using var context = new AppContext();
+            int countProgress = 0;
 
             foreach (var adInfo in channelAdInfos)
             {
+                countProgress++;
+
                 if (adInfo.IsArchived == true) continue; // Если объявление в архиве
                 if (adInfo.PriceBuy == "1") continue; // Если уже публиковал
                 if (adInfo.Artikul == null || adInfo.Brand == null) continue; // Если бренд или артикул пустые
@@ -655,12 +651,6 @@
                                      && existing.OutputPrice == adInfo.OutputPrice
                                     // ... (остальные свойства)
                                     );
-
-
-
-                PostingProgressItem postingProgressItem = new();
-                postingProgressItem.TotalStages = channelAdInfos.Count;
-                postingProgressItem.ProcessName = "Публикация объявлений на Drom.ru";
 
 
                 bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo);
@@ -675,6 +665,19 @@
                     {
                         existingAdInfo.PriceBuy = "1";
                         existingAdInfo.DatePublished = DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss");
+
+                        // Информирую о прогрессе
+                        PostingProgressItem postingProgressItem = new PostingProgressItem
+                        {
+                            ProcessName = $"Создаю объекты для публикации",
+                            PriceName = adInfo.PriceName,
+                            TotalStages = channelAdInfos.Count,
+                            ChannelName = adInfo.AdDescription,
+                            CurrentStage = countProgress,                             
+                        };
+
+                        // Информирую об изменении
+                        EventAggregator.RaisePostingProgressItemUpdated(this, postingProgressItem);
                     }
 
                     try
