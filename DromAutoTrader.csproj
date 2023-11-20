@@ -28,6 +28,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.11" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="NPOI" Version="2.6.2" />
+    <PackageReference Include="RestSharp" Version="110.2.0" />
     <PackageReference Include="Sdl.MultiSelectComboBox" Version="1.0.73" />
     <PackageReference Include="Selenium.Support" Version="4.15.0" />
     <PackageReference Include="Selenium.UndetectedChromeDriver" Version="1.1.1" />

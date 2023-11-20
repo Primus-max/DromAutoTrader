@@ -1,4 +1,4 @@
-﻿namespace DromAutoTrader.ImageServices
+namespace DromAutoTrader.ImageServices
 {
     /// <summary>
     /// Класс для получения изображений деталей брэндов с сайта https://berg.ru/ 

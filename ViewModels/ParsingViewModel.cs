@@ -1,4 +1,4 @@
-﻿using DromAutoTrader.ImageServices;
+using DromAutoTrader.ImageServices;
 using DromAutoTrader.ImageServices.Interfaces;
 using DromAutoTrader.Prices;
 using Microsoft.Win32;

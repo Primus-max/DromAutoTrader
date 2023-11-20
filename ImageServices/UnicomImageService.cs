@@ -1,4 +1,4 @@
-﻿namespace DromAutoTrader.ImageServices
+namespace DromAutoTrader.ImageServices
 {
     public class UnicomImageService : ImageServiceBase
     {
