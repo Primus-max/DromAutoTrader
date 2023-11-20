@@ -17,9 +17,7 @@
         public override string ServiceName => "https://berg.ru";
         #endregion
 
-        #region Приватный поля      
-
-        private string _tempProfilePath = string.Empty;
+        #region Приватные поля             
         private IHtmlDocument _document = null!;
         #endregion        
 
