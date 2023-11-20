@@ -30,14 +30,15 @@ namespace DromAutoTrader.DromManager
         {
             bool isPublited = false;
             if (adPublishingInfo == null) return isPublited;
+
             // Глобально ожидание
             _wait = new(_driver, TimeSpan.FromSeconds(20));
 
-
-            if(adPublishingInfo.PriceBuy == "2")
+            // Если установлен этот флаг, значит нужно обновить объявление. Убираем в архив, добавляем новое
+            if (adPublishingInfo.PriceBuy == "2")
             {
-                // Здесь логика удаления в архив или просто изменение цены
-              
+                isPublited = await EditAdInfo(adPublishingInfo);
+                return isPublited; // Выхожу после редактирования. Дальше нам не надо
             }
 
             await Task.Delay(200);
@@ -90,10 +91,90 @@ namespace DromAutoTrader.DromManager
 
             isPublited = ClickPublishButton();
 
-            //await adsPower.CloseBrowser(_channelName);
-            //_driver.Quit();
+            // Если объявление разместил, то записываю Id
+            if (isPublited)
+                WriteDromeId(adPublishingInfo);
 
             return isPublited;
+        }
+
+        // Объединяющтй метод для редактирования
+        private async Task<bool> EditAdInfo(AdPublishingInfo adPublishingInfo)
+        {
+            bool isPublited = false;
+
+            OpenEditePage(adPublishingInfo);
+
+            await Task.Delay(200);
+            CloseAllTabsExceptCurrent();
+
+            await Task.Delay(200);
+            // Цена для публикации
+            PriceInput(adPublishingInfo?.OutputPrice?.ToString());
+
+            isPublited = ClickPublishButton();
+
+            // Если объявление разместил, то записываю Id
+            if (isPublited)
+            {
+                WriteDromeId(adPublishingInfo);
+            }
+
+            return isPublited;
+        }
+
+        // Метод записи DromeId
+        private void WriteDromeId(AdPublishingInfo adPublishingInfo)
+        {
+            using var context = new AppContext();
+            var existingAdInfo = context.AdPublishingInfo.Find(adPublishingInfo.Id);
+
+            string postedAdUrl = _driver.Url;
+            int dromeId = GetDromeId(postedAdUrl);
+            adPublishingInfo.DromeId = dromeId;
+
+            try
+            {
+                context.SaveChanges();
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
+        // Открываю ссылку для редактирования объявления
+        private void OpenEditePage(AdPublishingInfo adPublishing)
+        {
+            string editeUrl = "";
+            string fullUrl = editeUrl + adPublishing.DromeId.ToString();
+
+            try
+            {
+                _driver.Navigate().GoToUrl(fullUrl);
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        // Получаю ID из ссылки
+        private int GetDromeId(string url)
+        {
+            // Используем регулярное выражение для поиска числовых значений после последнего "/"
+            Match match = Regex.Match(url, @"/(\d+).html");
+
+            if (match.Success)
+            {
+                // Преобразуем найденное значение в int
+                if (int.TryParse(match.Groups[1].Value, out int id))
+                {
+                    return id;
+                }
+            }
+
+            // Если не удалось извлечь ID, возвращаем значение по умолчанию (например, -1)
+            return -1;
         }
 
         // Метод открытия страницы с размещением объявления
@@ -109,7 +190,7 @@ namespace DromAutoTrader.DromManager
                 //MessageBox.Show($"ОШибка {ex.ToString()} в методе OpenGoodsPage");
             }
         }
-            
+
 
         // Метод установки размера экрана
         public void SetWindowSize()
@@ -156,21 +237,6 @@ namespace DromAutoTrader.DromManager
                 //MessageBox.Show("Ошибка при вводе текста в поле 'subject': " + ex.Message);
             }
         }
-
-        // Метод нажатия Enter
-        //public void PressEnterKey()
-        //{
-        //    //try
-        //    //{
-        //    //    // Нажатие клавиши Enter
-        //    //    IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));
-        //    //    subjectInput.SendKeys(Keys.Enter);
-        //    //}
-        //    //catch (Exception)
-        //    //{
-        //    //    //MessageBox.Show("Ошибка при нажатии клавиши Enter: " + ex.Message);
-        //    //}
-        //}
 
         // Метод открытия разделов
         public void ClickDirControlVariant()
@@ -382,31 +448,31 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод ввода текста в Input, сначала отчищаем, потом вводим
-        private static void ClearAndEnterText(IWebElement element, string text)
-        {
-            Random random = new Random();
+        //private static void ClearAndEnterText(IWebElement element, string text)
+        //{
+        //    Random random = new Random();
 
-            element.Clear(); // Очищаем элемент перед вводом текста
+        //    element.Clear(); // Очищаем элемент перед вводом текста
 
-            foreach (char letter in text)
-            {
-                if (letter == '\b')
-                {
-                    // Если символ является символом backspace, удаляем следующий символ
-                    element.SendKeys(Keys.Delete);
-                }
-                else
-                {
-                    // Вводим символ
-                    element.SendKeys(letter.ToString());
-                }
+        //    foreach (char letter in text)
+        //    {
+        //        if (letter == '\b')
+        //        {
+        //            // Если символ является символом backspace, удаляем следующий символ
+        //            element.SendKeys(Keys.Delete);
+        //        }
+        //        else
+        //        {
+        //            // Вводим символ
+        //            element.SendKeys(letter.ToString());
+        //        }
 
-                Thread.Sleep(random.Next(10, 20));  // Добавляем небольшую паузу между вводом каждого символа
-            }
+        //        Thread.Sleep(random.Next(10, 20));  // Добавляем небольшую паузу между вводом каждого символа
+        //    }
 
-            element.Submit();
-            Thread.Sleep(random.Next(100, 200));
-        }
+        //    element.Submit();
+        //    Thread.Sleep(random.Next(100, 200));
+        //}
 
         // Закрываю все кладки кроме текущей
         private void CloseAllTabsExceptCurrent()
@@ -479,6 +545,7 @@ namespace DromAutoTrader.DromManager
 
         }
 
+      
         // Инициализация драйвера       
         private async Task InitializeDriver(string channelName)
         {

@@ -1,5 +1,5 @@
 ﻿using DromAutoTrader.Data;
-using DromAutoTrader.Prices;
+using DromAutoTrader.Models;
 using DromAutoTrader.ViewModels;
 using DromAutoTrader.Views;
 using DromAutoTrader.Views.Pages;
@@ -14,13 +14,10 @@ namespace DromAutoTrader
     /// </summary>
     public partial class MainWindow : Window
     {
-        //public Frame ChannelFrameInstance
-        //{
-        //    get { return ChannelFrame; }
-        //}
+        
         private MainWindowViewModel _mainViewModel = null!;
         private bool isPriceSelected = false;
-        private AppContext _db = null!;
+        private ObservableCollection<PostingProgressItem> _postingProgressItems = null!;
 
         public MainWindow()
         {
@@ -35,18 +32,49 @@ namespace DromAutoTrader
             var viewModel = new MainWindowViewModel();
             _mainViewModel = viewModel;
             DataContext = _mainViewModel;
+            _postingProgressItems = new ObservableCollection<PostingProgressItem>();
 
             // Передаю Frame черерз локатор
             LocatorService.Current.ChannelFrame = ChannelFrame;
 
             #region Подписка на события
             Loaded += MainWindow_Loaded;
+            EventAggregator.PostingProgressItemUpdated += HandlePostingProgressItemUpdated; // Подписываюсь на изменение прогресса
+
             #endregion
 
             // Включаю модификацию базы данных для работы в многопоточном режиме
             using var context = new AppContext();
             // Выполним SQL-команду для настройки режима WAL
             context.Database.ExecuteSqlRaw("PRAGMA journal_mode = WAL;");
+        }
+
+        private void HandlePostingProgressItemUpdated(object sender, PostingProgressItem progressItem)
+        {
+            Application.Current?.Dispatcher.Invoke(() =>
+            {
+                // Найти существующий элемент в коллекции
+                var existingItem = _postingProgressItems.FirstOrDefault(item => item.PriceName == progressItem.PriceName);
+
+                if (existingItem != null)
+                {
+                    // Обновить свойства существующего элемента
+                    existingItem.ProcessName = progressItem.ProcessName;
+                    existingItem.CurrentStage = progressItem.CurrentStage;
+                    existingItem.ChannelName = progressItem.ChannelName;
+                    existingItem.CurrentStage= progressItem.CurrentStage;
+                    existingItem.TotalStages = progressItem.TotalStages;
+                }
+                else
+                {
+                    // Если элемент не найден, добавить его в коллекцию
+                    _postingProgressItems.Add(progressItem);
+                }
+                ProcessPostingDataGrid.ItemsSource = null;
+                // Установить источник данных для DataGrid
+                ProcessPostingDataGrid.ItemsSource = _postingProgressItems;
+                UpdateLayout();
+            });
         }
 
 

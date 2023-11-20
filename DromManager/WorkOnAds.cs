@@ -1,12 +1,5 @@
-﻿using DromAutoTrader.AdsPowerManager;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
-using System.Collections.Specialized;
-using System.Threading;
+﻿using System.Collections.Specialized;
 using System.Web;
-using System;
-using System.Net.Http;
-using System.Net;
 
 namespace DromAutoTrader.DromManager
 {
@@ -23,6 +16,39 @@ namespace DromAutoTrader.DromManager
 
         }
 
+        /// <summary>
+        /// Метод перемещения объявления в архив (по одному)
+        /// </summary>
+        /// <param name="channelName"></param>
+        /// <param name="adPublishings"></param>
+        /// <returns></returns>
+        public async Task  RemoveAdToArchiveByOne(string channelName, AdPublishingInfo adPublishings)
+        {
+            if(string.IsNullOrEmpty(channelName) || adPublishings.Brand == null || adPublishings.Artikul == null)
+
+            await InitializeDriver(channelName);
+            _wait = new(_driver, TimeSpan.FromSeconds(10));
+           
+                // Формирую поисковую строку
+               // string serachString = BuildEditUrl(adPublishings?.DromeId?.ToString());
+
+                // Перехожу на поисковую страницу по артикулу
+               // GoSearchByParamString(serachString);
+
+                // Размер окна
+                SetWindowSize();
+
+                // Выбираю все элементы
+                GetInputSelectAll();
+
+                // Убираю в архив
+                RemoveToArchive();
+
+                // Подтеверждаю, что убираю в архив
+                SubmitBtn();
+        }
+
+      
         /// <summary>
         /// Метод для перемещения объявлений в архив всех объявлений
         /// </summary>
@@ -43,7 +69,7 @@ namespace DromAutoTrader.DromManager
 
         elseElementsExists:
             do
-            {    
+            {
                 isPaginationExists = HasNextPage();
 
                 // Запоминаю последнюю страницу перед переходом в карточку ставок
@@ -65,105 +91,6 @@ namespace DromAutoTrader.DromManager
 
             CloseDriver();
         }
-
-        // Проверяю, удалилсь все объявления или нет
-        private bool IsElementsExists()
-        {
-            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(7));
-            try
-            {
-                var counterElementParent = wait.Until(e => e.FindElements(By.CssSelector("small.micro-counter")))[0];
-                //IWebElement counter = counterElementParent.FindElement(By.TagName("small"));
-
-                if (int.TryParse(counterElementParent.Text, out int count))
-                {
-                    return count > 0;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-            return false;
-        }
-
-        // Удаляю объявления на каждой странице
-        private void RemoveAdsOnCurrentPage()
-        {
-            List<string> bulletinIds = GetIdsFromElements();
-
-            
-                string deleteUrl = BuildDeleteUrl(bulletinIds);
-
-                try
-                {
-                    _driver.Navigate().GoToUrl(deleteUrl);
-                }
-                catch (Exception)
-                {
-                    // Обработка ошибок при навигации
-                }
-
-                SubmitBtn(); // Ваш метод для удаления на текущей странице
-            
-        }
-
-        // Получаю все элементы на странице
-        private List<string> GetIdsFromElements()
-        {
-            List<string> bulletinIds = new List<string>();
-            WebDriverWait driverWait = new WebDriverWait(_driver, TimeSpan.FromSeconds(7));
-            try
-            {
-                // Находим все элементы с классом "imageCell bull-item__image-cell"
-                var elements = driverWait.Until(e => e.FindElements(By.CssSelector("div.imageCell.bull-item__image-cell")));
-
-                foreach (var element in elements)
-                {
-                    // Извлекаем значение атрибута "data-bulletin-id" и добавляем его в список
-                    string bulletinId = element.GetAttribute("data-bulletin-id");
-                    if (!string.IsNullOrEmpty(bulletinId))
-                    {
-                        bulletinIds.Add(bulletinId);
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                // Обработка ошибок при поиске элементов
-            }
-
-            return bulletinIds;
-        }
-
-
-        // Строю строку запроса для удаления
-        public static string BuildDeleteUrl(List<string> bulletinIds)
-        {
-            string baseUrl = "https://baza.drom.ru/bulletin/service-configure";
-
-            var queryParams = new List<string>();
-
-            foreach (var id in bulletinIds)
-            {
-                queryParams.Add($"bulletin%5B{id}%5D=on");
-            }
-
-            // Добавляем остальные параметры, которые не зависят от ID
-            queryParams.Add("applier%5BdeleteBulletin%5D=deleteBulletin");
-            queryParams.Add("return_to=%2Fpersonal%2Factual%2Fbulletins");
-            queryParams.Add("from=personal.actual");
-
-            string queryString = string.Join("&", queryParams);
-
-            return $"{baseUrl}?{queryString}";
-        }
-
-        
 
         /// <summary>
         /// Метод перемещения объявлений в архив по одному
@@ -269,6 +196,102 @@ namespace DromAutoTrader.DromManager
             // Отображаем MessageBox с информацией
             MessageBox.Show(resultMessage, "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
+        // Проверяю, удалилсь все объявления или нет
+        private bool IsElementsExists()
+        {
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(7));
+            try
+            {
+                var counterElementParent = wait.Until(e => e.FindElements(By.CssSelector("small.micro-counter")))[0];
+                //IWebElement counter = counterElementParent.FindElement(By.TagName("small"));
+
+                if (int.TryParse(counterElementParent.Text, out int count))
+                {
+                    return count > 0;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return false;
+        }
+
+        // Удаляю объявления на каждой странице
+        private void RemoveAdsOnCurrentPage()
+        {
+            List<string> bulletinIds = GetIdsFromElements();
+
+
+            string deleteUrl = BuildDeleteUrl(bulletinIds);
+
+            try
+            {
+                _driver.Navigate().GoToUrl(deleteUrl);
+            }
+            catch (Exception)
+            {
+                // Обработка ошибок при навигации
+            }
+
+            SubmitBtn(); // Ваш метод для удаления на текущей странице
+
+        }
+
+        // Получаю все элементы на странице
+        private List<string> GetIdsFromElements()
+        {
+            List<string> bulletinIds = new List<string>();
+            WebDriverWait driverWait = new WebDriverWait(_driver, TimeSpan.FromSeconds(7));
+            try
+            {
+                // Находим все элементы с классом "imageCell bull-item__image-cell"
+                var elements = driverWait.Until(e => e.FindElements(By.CssSelector("div.imageCell.bull-item__image-cell")));
+
+                foreach (var element in elements)
+                {
+                    // Извлекаем значение атрибута "data-bulletin-id" и добавляем его в список
+                    string bulletinId = element.GetAttribute("data-bulletin-id");
+                    if (!string.IsNullOrEmpty(bulletinId))
+                    {
+                        bulletinIds.Add(bulletinId);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Обработка ошибок при поиске элементов
+            }
+
+            return bulletinIds;
+        }
+
+        // Строю строку запроса для удаления
+        public static string BuildDeleteUrl(List<string> bulletinIds)
+        {
+            string baseUrl = "https://baza.drom.ru/bulletin/service-configure";
+
+            var queryParams = new List<string>();
+
+            foreach (var id in bulletinIds)
+            {
+                queryParams.Add($"bulletin%5B{id}%5D=on");
+            }
+
+            // Добавляем остальные параметры, которые не зависят от ID
+            queryParams.Add("applier%5BdeleteBulletin%5D=deleteBulletin");
+            queryParams.Add("return_to=%2Fpersonal%2Factual%2Fbulletins");
+            queryParams.Add("from=personal.actual");
+
+            string queryString = string.Join("&", queryParams);
+
+            return $"{baseUrl}?{queryString}";
+        }     
 
         // Метод проверки того, что запчасть найдена
         private bool IsPartExistsForRates()
