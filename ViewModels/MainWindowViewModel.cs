@@ -816,17 +816,34 @@
             });
 
             var timeoutTask = Task.Delay(TimeSpan.FromSeconds(120)); // Время ожидания задачи
+            try
+            {
+                if (await Task.WhenAny(processTask, timeoutTask) == processTask)
+                {
+                    return await processTask;
+                }
+                else
+                {
+                    // Проверяем состояние задачи после await
+                    if (processTask.IsFaulted)
+                    {
+                        // Здесь можно выполнить логгирование ошибки
+                        _logger.Error($"Ошибка в процессе обработки прайса: {processTask.Exception}");
+                    }
 
-            if (await Task.WhenAny(processTask, timeoutTask) == processTask)
-            {
-                return await processTask;
+                    // В этом случае прошло слишком много времени
+                    _logger.Error("Обработка прайса заняла слишком много времени. Пожалуйста, попробуйте еще раз.");
+
+                    return null; // или выберите другое значение по умолчанию
+                }
             }
-            else
+            catch (Exception ex)
             {
-                // В этом случае прошло слишком много времени
-                MessageBox.Show("Обработка прайса заняла слишком много времени. Пожалуйста, попробуйте еще раз.", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+                // Обработка исключения, которое может возникнуть вне зависимости от processTask и timeoutTask
+                _logger.Error($"Произошло исключение: {ex}");
                 return null; // или выберите другое значение по умолчанию
             }
+
         }
         #endregion
 
