@@ -28,11 +28,11 @@ namespace DromAutoTrader.ViewModels
 
             if (_price.PriceBuy < minTo)
                 return null;
+
             List<string> imagesPaths = new List<string>();
             string? namePrice = Path.GetFileName(_pricePath);
-            //var adPublishingInfoCollection = GetAdPublishingInfoCollection();
 
-            // Создаю калькулятор
+            // Создаю калькулятор, считаю цену с накруткой
             CalcPrice calcPrice = new();
             decimal calculatedPrice = calcPrice.Calculate(_price.PriceBuy, _channel?.PriceIncreases);
 
@@ -47,8 +47,6 @@ namespace DromAutoTrader.ViewModels
                            );
 
             if (isAdExists) return null; // Если полное совпадение, то выходим
-           
-
 
             _adPublishingInfo.PriceName = namePrice;
             _adPublishingInfo.Brand = _price?.Brand; // Имя брэнда
@@ -67,7 +65,7 @@ namespace DromAutoTrader.ViewModels
             // TODO сделать получение только после проверки налаичия элемента в базе
             SelectionImagesPathsService imagesPathsservice = new SelectionImagesPathsService(); // Фабрика для выбора нужного сервиса по поиску изображения
             imagesPaths = await imagesPathsservice.SelectPaths(_price?.Brand, _price?.Artikul); // Получаю путь к изображению
-            _adPublishingInfo.ImagesPaths = imagesPaths; // TODO временное хранение путей в виде List, далее надо обнулить (в базе не хранится)
+            _adPublishingInfo.ImagesPaths = imagesPaths; // Это временное хранение путей не для хранения в базе
             _adPublishingInfo.ImagesPath = string.Join(";", imagesPaths); // Формирую пути в одну строку с разделителем для хранения в базе
 
             return _adPublishingInfo;
@@ -81,13 +79,6 @@ namespace DromAutoTrader.ViewModels
             // Заменяем найденные символы пустой строкой
             string result = Regex.Replace(input, pattern, "");
             return result;
-        }
-
-        // Отдельный метод для получения коллекции AdPublishingInfo
-        public List<AdPublishingInfo> GetAdPublishingInfoCollection()
-        {
-            using var context = new AppContext();
-            return context.AdPublishingInfo.ToList();
         }
     }
 }

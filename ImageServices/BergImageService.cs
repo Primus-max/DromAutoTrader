@@ -81,11 +81,7 @@
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                // Обработка исключения, например, логирование
-                Console.WriteLine($"Произошло исключение: {ex.Message}");
-            }
+            catch (Exception) { }
         }
 
 
@@ -271,14 +267,6 @@
 
             return newUrl;
         }
-
-        // Инициализация драйвера
-        private void InitializeDriver()
-        {
-            UndetectDriver webDriver = new(_tempProfilePath);
-            _driver = webDriver.GetDriver();
-        }
-
         #endregion
     }
 }
