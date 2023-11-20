@@ -2,9 +2,10 @@
 {
     public class PriceFilter
     {
+        private readonly Logger _logger;
         public PriceFilter()
         {
-
+            _logger = new LoggingService().ConfigureLogger();
         }
 
         public void FilterAndSaveByPrice(AdPublishingInfo adInfo)
@@ -29,8 +30,8 @@
                     }
                     catch (Exception ex)
                     {
-                        string message = $"ОШибка в FilterAndSaveByPrice, не удалось добавить {adInfo.Artikul} || {adInfo.Brand} {ex.Message}";
-                        Console.WriteLine(message);
+                        string message = $"Ошибка в FilterAndSaveByPrice, не удалось добавить {adInfo.Artikul} || {adInfo.Brand} {ex.Message}";
+                        _logger.Error(message);
                     }
                 }
                 else
@@ -65,14 +66,14 @@
                 }
                 catch (Exception ex)
                 {
-                    string message = $"ОШибка в FilterAndSaveByPrice {ex.Message}";
-                    Console.WriteLine(message);
+                    string message = $"Ошибка в FilterAndSaveByPrice {ex.Message}";
+                    _logger.Error(message);
                 }
             }
             catch (Exception ex)
             {
-                string message = $"ОШибка в FilterAndSaveByPrice {ex.Message}";
-                Console.WriteLine(message);
+                string message = $"Ошибка в FilterAndSaveByPrice {ex.Message}";
+                _logger.Error(message);
             }
         }
     }
