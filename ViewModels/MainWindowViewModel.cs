@@ -490,7 +490,7 @@ namespace DromAutoTrader.ViewModels
             Console.WriteLine("Прайс создал, убираю в архив");
             await RemoveAtArchive(); // Убираю в архив
 
-            DeleteOutdatedAdsAtDb(); // Убираю старые объявления
+            //DeleteOutdatedAdsAtDb(); // Убираю старые объявления
         }
 
         // Метод получения и парсинга прайсов
@@ -570,8 +570,6 @@ namespace DromAutoTrader.ViewModels
 
             foreach (var price in prices)
             {
-
-
                 List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
                 foreach (var priceChannelMapping in priceChannels.SelectedChannels)
                 {
@@ -586,18 +584,7 @@ namespace DromAutoTrader.ViewModels
                         break; // Если не нашли совпадение, выходим из цикла
                     }
 
-
-                    // Проверяю, может такое объявление уже есть
-                    using var context = new AppContext();
-                    var isAdExists = context.AdPublishingInfo
-                   .Any(existing => existing.Artikul == price.Artikul
-                                   && existing.Brand == price.Brand
-                                   && existing.InputPrice == price.PriceBuy
-                                    && existing.KatalogName == price.KatalogName
-                                   // ... (остальные свойства)
-                                   );
-
-                    if (isAdExists) continue;
+                    
 
                     // Конструктор строителя объекта для публикации
                     var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
@@ -701,12 +688,12 @@ namespace DromAutoTrader.ViewModels
                 {
                     Console.WriteLine($"Публикация {adInfo.Artikul} || {adInfo.Brand} || канал: {adInfo.AdDescription}");
 
-
                     var existingAdInfo = context.AdPublishingInfo.Find(adInfo.Id);
 
                     if (existingAdInfo != null)
                     {
                         existingAdInfo.PriceBuy = "1";
+                        existingAdInfo.DatePublished = DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss");
                     }
 
                     try
@@ -740,10 +727,11 @@ namespace DromAutoTrader.ViewModels
         // Метод для перещения публикаций в архив
         private async Task RemoveAtArchive()
         {
+            // Получаю все объекты публикаций
             using var context = new AppContext();
             List<AdPublishingInfo> adPublishings = context.AdPublishingInfo.ToList();
-            WorkOnAds remover = new();
 
+            WorkOnAds remover = new();
             await remover.RemoveByFlag(SelectedChannel?.Name, adPublishings);
         }
 
@@ -751,11 +739,12 @@ namespace DromAutoTrader.ViewModels
         private void DeleteOutdatedAdsAtDb()
         {
             List<AdPublishingInfo> adsPublishedOutDateNow = GetOutdatedAds();
+            using var context = new AppContext();
 
             try
             {
-                _db.AdPublishingInfo.RemoveRange(adsPublishedOutDateNow);
-                _db.SaveChanges();
+                context.AdPublishingInfo.RemoveRange(adsPublishedOutDateNow);
+                context.SaveChanges();
             }
             catch (Exception)
             {

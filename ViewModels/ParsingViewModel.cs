@@ -82,19 +82,19 @@ namespace DromAutoTrader.ViewModels
                     if (IsContainsFiles) continue;
 
                     // Прохожу по сервисам, ищу где есть изображение
-                    //foreach (var service in imageServiceTypes.Values)
-                    //{
-                    //    if (Activator.CreateInstance(service) is IImageService imageService)
-                    //    {
-                    //        // Выполнение RunAsync для найденного сервиса
-                    //        await imageService.RunAsync(brand, articul);
+                    foreach (var service in imageServiceTypes.Values)
+                    {
+                        if (Activator.CreateInstance(service) is IImageService imageService)
+                        {
+                            // Выполнение RunAsync для найденного сервиса
+                            await imageService.RunAsync(brand, articul);
 
-                    //        // Получение результатов
-                    //        downLoadedImagesPaths = imageService.BrandImages;
-                    //    }
+                            // Получение результатов
+                            downLoadedImagesPaths = imageService.BrandImages;
+                        }
 
-                    //    if(downLoadedImagesPaths is not null || downLoadedImagesPaths?.Count > 0) break; // Если скачали, то выходим
-                    //}
+                        if (downLoadedImagesPaths is not null || downLoadedImagesPaths?.Count > 0) break; // Если скачали, то выходим
+                    }
 
                     //BergImageService bergImageService = new();
                     // UnicomImageService unicomImageService = new();
@@ -102,12 +102,12 @@ namespace DromAutoTrader.ViewModels
                     //LuzarImageService LuzarimageService = new LuzarImageService();
                     //StarvoltImageService starvoltImageService = new StarvoltImageService();
                     //IrkRosskoImageService irkRosskoImageService = new();
-                    MxgroupImageService imageService = new MxgroupImageService();
-                    // TmpartsImageService tmpartsImageService = new TmpartsImageService();
-                    // await bergImageService.RunAsync(brand, articul);
-                     await imageService.RunAsync(brand, articul);
+                    //MxgroupImageService imageService = new MxgroupImageService();
+                    //TmpartsImageService tmpartsImageService = new TmpartsImageService();
 
-                     var testImages = imageService.BrandImages;
+                    //await tmpartsImageService.RunAsync(brand, articul);
+
+                    //var testImages = tmpartsImageService.BrandImages;
                 }
             }
         }

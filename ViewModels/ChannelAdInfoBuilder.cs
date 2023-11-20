@@ -1,7 +1,4 @@
 ﻿using DromAutoTrader.Prices;
-using DromAutoTrader.Services;
-using System.IO;
-using System.Text.RegularExpressions;
 
 namespace DromAutoTrader.ViewModels
 {
@@ -38,6 +35,18 @@ namespace DromAutoTrader.ViewModels
             // Создаю калькулятор
             CalcPrice calcPrice = new();
             decimal calculatedPrice = calcPrice.Calculate(_price.PriceBuy, _channel?.PriceIncreases);
+
+            // Проверяю, может такое объявление уже есть
+            using var context = new AppContext();
+            var isAdExists = context.AdPublishingInfo
+           .Any(existing => existing.Artikul == _price.Artikul
+                           && existing.Brand == _price.Brand
+                           && existing.InputPrice == _price.PriceBuy
+                           && existing.KatalogName == _price.KatalogName
+                           && existing.OutputPrice == calculatedPrice
+                           );
+
+            if (isAdExists) return new(); // Возвращаю пустой объект публикации
 
             _adPublishingInfo.PriceName = namePrice;
             _adPublishingInfo.Brand = _price?.Brand; // Имя брэнда

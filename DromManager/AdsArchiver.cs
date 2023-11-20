@@ -11,7 +11,7 @@ namespace DromAutoTrader.DromManager
 
         public AdsArchiver()
         {
-            InitializeDatabase();
+            //InitializeDatabase();
         }
 
         /// <summary>
@@ -28,8 +28,8 @@ namespace DromAutoTrader.DromManager
         private List<AdPublishingInfo> GetAdsForToday()
         {
             var currentDate = DateTime.Now.Date;
-
-            return _db.AdPublishingInfo
+            using var context = new AppContext();
+            return context.AdPublishingInfo
                 .ToList()
                 .Where(a => DateTime.Parse(a.DatePublished).Date == currentDate)
                 .ToList();
@@ -38,8 +38,8 @@ namespace DromAutoTrader.DromManager
         private List<AdPublishingInfo> GetOutdatedAds()
         {
             var currentDate = DateTime.Now.Date;
-
-            return _db.AdPublishingInfo
+            using var context = new AppContext();
+            return context.AdPublishingInfo
                 .ToList()
                 .Where(a => DateTime.Parse(a.DatePublished).Date != currentDate)
                 .ToList();
