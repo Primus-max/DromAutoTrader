@@ -210,7 +210,7 @@
                                                 <TextBlock Text="{Binding TotalStages}" />
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>                                    
+                                    </DataGridTemplateColumn>
                                     <DataGridTemplateColumn Header="Получить файл">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
