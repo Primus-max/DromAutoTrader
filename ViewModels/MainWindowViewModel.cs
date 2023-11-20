@@ -1,16 +1,5 @@
-﻿using DromAutoTrader.DromManager;
-using DromAutoTrader.Infrastacture.Commands;
-using DromAutoTrader.Prices;
-using Microsoft.Win32;
-using Serilog.Core;
-using System.Text;
-
-namespace DromAutoTrader.ViewModels
-{
-    // TODO изменить тип данных в TablePriceOfIncrease на decimal
-    // TODO сделать появления 2 пункта в загрузке прайсов если в списке есть прайсы
-    // TODO решить своевременную загрузку брендов, создать отдельную кнопку для получения, потому что при пустой базе, чтобы получить 
-    // прайсы, соответственно бренды из них, надо выбрать каналы. Это кольцевая зависимость.
+﻿namespace DromAutoTrader.ViewModels
+{    
     class MainWindowViewModel : BaseViewModel
     {
         #region ПРИВАТНЫЕ ПОЛЯ
@@ -438,6 +427,8 @@ namespace DromAutoTrader.ViewModels
             #endregion
             #endregion
 
+            _logger = new LoggingService().ConfigureLogger();
+
             // Метод отслеживающий прогресс
             _progressReporter = new Progress<PostingProgressItem>(reportItem =>
             {
@@ -500,6 +491,8 @@ namespace DromAutoTrader.ViewModels
 
             foreach (var path in PathsFilePrices)
             {
+                if (string.IsNullOrEmpty(path)) continue;
+
                 string priceName = Path.GetFileName(path);
 
                 var postingProgressItem = new PostingProgressItem
@@ -536,7 +529,6 @@ namespace DromAutoTrader.ViewModels
                     // Передаю полученный прайс для записи в БД, 
                     if (_isModeRunAllWork)
                         await BuildingAdsAsync(prices, path, postingProgressItem);
-
 
 
                     //  Добавляю бренды в базу. Флаг регулирует в каком режиме находится метод,
@@ -818,9 +810,7 @@ namespace DromAutoTrader.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    // Сообщение об ошибке с указанием причины
-                    MessageBox.Show($"Ошибка при обработке прайса: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-
+                    _logger.Error($"Ошибка при обработке прайса: {ex.Message}");
                     return null;
                 }
             });

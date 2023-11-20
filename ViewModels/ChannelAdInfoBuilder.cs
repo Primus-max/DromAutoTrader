@@ -24,7 +24,7 @@ namespace DromAutoTrader.ViewModels
 
 
             // Проверяем, что цена в прайсе не меньше чем в таблице накрутки цен
-            decimal minTo = (decimal)(_channel?.PriceIncreases.Min(inc => (decimal)inc.To));
+            decimal minTo = (decimal)(_channel?.PriceIncreases.Min(inc => (decimal)inc.From));
 
             if (_price.PriceBuy < minTo)
                 return null;
@@ -46,7 +46,9 @@ namespace DromAutoTrader.ViewModels
                            && existing.OutputPrice == calculatedPrice
                            );
 
-            if (isAdExists) return new(); // Возвращаю пустой объект публикации
+            if (isAdExists) return null; // Если полное совпадение, то выходим
+           
+
 
             _adPublishingInfo.PriceName = namePrice;
             _adPublishingInfo.Brand = _price?.Brand; // Имя брэнда
