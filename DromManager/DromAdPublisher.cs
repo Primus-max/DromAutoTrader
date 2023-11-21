@@ -32,7 +32,7 @@ namespace DromAutoTrader.DromManager
             if (adPublishingInfo == null) return isPublited;
 
             // Глобально ожидание
-            _wait = new(_driver, TimeSpan.FromSeconds(20));
+            _wait = new(_driver, TimeSpan.FromSeconds(10));
 
             // Если установлен этот флаг, значит нужно обновить объявление. Убираем в архив, добавляем новое
             if (adPublishingInfo.PriceBuy == "2")
