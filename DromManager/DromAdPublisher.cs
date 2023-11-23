@@ -34,6 +34,54 @@ namespace DromAutoTrader.DromManager
             // Глобально ожидание
             _wait = new(_driver, TimeSpan.FromSeconds(10));
 
+
+
+
+
+            using var context = new AppContext();
+            var adInfos = context.AdPublishingInfo.ToList();
+
+            foreach (var adInfo in adInfos)
+            {
+                if (adInfo.DromeId == null || adInfo.DromeId == 0)
+                {
+                    string url = $"https://baza.drom.ru/personal/actual/bulletins?find={adInfo.Artikul}";
+                    try
+                    {
+                        _driver.Navigate().GoToUrl(url);
+                    }
+                    catch (Exception)
+                    {
+                    }
+
+                    int idElmet = ExtractId();
+
+                    adInfo.DromeId = idElmet;
+
+                    try
+                    {
+                        context.Update(adInfo);
+                        context.SaveChanges();
+                    }
+                    catch (Exception)
+                    {
+
+                    }
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
             // Если установлен этот флаг, значит нужно обновить объявление. Убираем в архив, добавляем новое
             if (adPublishingInfo.PriceBuy == "2")
             {
@@ -97,6 +145,54 @@ namespace DromAutoTrader.DromManager
 
             return isPublited;
         }
+
+
+
+
+        public int ExtractId()
+        {
+            try
+            {
+                var findedElement = _driver.FindElements(By.CssSelector("div.bull-item.bull-item_inline"))[0];
+                var checkbox = findedElement.FindElement(By.CssSelector("input[type='checkbox']"));
+
+                // Получаем значение атрибута "name" из элемента checkbox
+                var nameAttributeValue = checkbox.GetAttribute("name");
+
+                // Используем регулярное выражение для извлечения числовой части из строки
+                var match = Regex.Match(nameAttributeValue, @"\[(\d+)\]");
+
+                if (match.Success)
+                {
+                    // Преобразуем значение, найденное в регулярном выражении, в int
+                    return int.Parse(match.Groups[1].Value);
+                }
+                else
+                {
+                    // Если не удалось найти значение, возвращаем 0 или выбрасываем исключение
+                    throw new InvalidOperationException("Не удалось извлечь значение id.");
+                }
+            }
+            catch (Exception)
+            {
+                // Обработка исключений
+                throw;
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // Объединяющтй метод для редактирования
         private async Task<bool> EditAdInfo(AdPublishingInfo adPublishingInfo)
