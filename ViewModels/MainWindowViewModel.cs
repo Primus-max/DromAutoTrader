@@ -636,9 +636,7 @@ namespace DromAutoTrader.ViewModels
             int countProgress = 0;
 
             foreach (var adInfo in channelAdInfos)
-            {
-                countProgress++;
-
+            {               
                 if (adInfo.IsArchived == true) continue; // Если объявление в архиве
                 if (adInfo.PriceBuy == "1") continue; // Если уже публиковал
                 if (adInfo.Artikul == null || adInfo.Brand == null) continue; // Если бренд или артикул пустые
@@ -672,7 +670,7 @@ namespace DromAutoTrader.ViewModels
                             PriceName = adInfo.PriceName,
                             TotalStages = channelAdInfos.Count,
                             ChannelName = adInfo.AdDescription,
-                            CurrentStage = countProgress,                             
+                            CurrentStage = countProgress++,                             
                         };
 
                         // Информирую об изменении
