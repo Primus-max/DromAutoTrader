@@ -38,12 +38,19 @@
                 {
                     foreach (var existingAd in existingAds)
                     {
-                        // Проверяю цену, если у нового объявления цена лучше чем у старого, сохраняем новый объект или изменилась цена наркутки
-                        if (adInfo.InputPrice < existingAd.InputPrice || adInfo.OutputPrice < existingAd.OutputPrice)
+                        if (adInfo.InputPrice != existingAd.InputPrice || adInfo.OutputPrice != existingAd.OutputPrice)
                         {
-                            // Обновляю объект в базе
-                            existingAd.InputPrice = adInfo.InputPrice;
-                            existingAd.OutputPrice = adInfo.OutputPrice;
+                            // Обновляем объект в базе только в тех случаях, где произошли изменения
+                            if (adInfo.InputPrice != existingAd.InputPrice)
+                            {
+                                existingAd.InputPrice = adInfo.InputPrice;
+                            }
+
+                            if (adInfo.OutputPrice != existingAd.OutputPrice)
+                            {
+                                existingAd.OutputPrice = adInfo.OutputPrice;
+                            }
+
                             existingAd.Brand = adInfo.Brand;
                             existingAd.Artikul = adInfo.Artikul;
                             existingAd.DatePublished = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -54,8 +61,10 @@
                             existingAd.KatalogName = adInfo.KatalogName;
                             existingAd.PriceName = adInfo.PriceName;
                             existingAd.Description = adInfo.Description;
-                            existingAd.PriceBuy = "2"; // Ставлю флаг что это изменённая цена / или изменилась накрутка, значит буду это учитывать при публикации объявленй
+                            existingAd.PriceBuy = "2"; // Ставлю флаг, что это изменённая цена / или изменилась накрутка, значит буду это учитывать при публикации объявлений
                         }
+
+
                     }
                 }
 
