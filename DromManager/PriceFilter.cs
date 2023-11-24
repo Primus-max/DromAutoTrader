@@ -39,7 +39,7 @@
                     foreach (var existingAd in existingAds)
                     {
                         // Проверяю цену, если у нового объявления цена лучше чем у старого, сохраняем новый объект или изменилась цена наркутки
-                        if (adInfo.InputPrice < existingAd.InputPrice || existingAd.OutputPrice != adInfo.OutputPrice)
+                        if (adInfo.InputPrice < existingAd.InputPrice || adInfo.OutputPrice < existingAd.OutputPrice)
                         {
                             // Обновляю объект в базе
                             existingAd.InputPrice = adInfo.InputPrice;
