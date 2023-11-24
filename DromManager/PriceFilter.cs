@@ -38,19 +38,26 @@
                 {
                     foreach (var existingAd in existingAds)
                     {
-                        if (adInfo.InputPrice != existingAd.InputPrice || adInfo.OutputPrice != existingAd.OutputPrice)
+                        bool inputPriceChanged = adInfo.InputPrice < existingAd.InputPrice;
+                        bool outputPriceChanged = adInfo.OutputPrice != existingAd.OutputPrice;
+
+                        if (inputPriceChanged || (outputPriceChanged && adInfo.OutputPrice < existingAd.OutputPrice))
                         {
-                            // Обновляем объект в базе только в тех случаях, где произошли изменения
-                            if (adInfo.InputPrice != existingAd.InputPrice)
+                            // Обновляем объект в базе только если изменилась InputPrice или OutputPrice стала меньше
+                            if (inputPriceChanged)
                             {
                                 existingAd.InputPrice = adInfo.InputPrice;
                             }
 
-                            if (adInfo.OutputPrice != existingAd.OutputPrice)
+                            if (outputPriceChanged && adInfo.OutputPrice < existingAd.OutputPrice)
                             {
                                 existingAd.OutputPrice = adInfo.OutputPrice;
                             }
 
+                            // Устанавливаем флаг изменения цены или накрутки
+                            existingAd.PriceBuy = "2";
+
+                            // Общие обновления, которые применяются только при изменении цены или накрутки
                             existingAd.Brand = adInfo.Brand;
                             existingAd.Artikul = adInfo.Artikul;
                             existingAd.DatePublished = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -61,10 +68,7 @@
                             existingAd.KatalogName = adInfo.KatalogName;
                             existingAd.PriceName = adInfo.PriceName;
                             existingAd.Description = adInfo.Description;
-                            existingAd.PriceBuy = "2"; // Ставлю флаг, что это изменённая цена / или изменилась накрутка, значит буду это учитывать при публикации объявлений
                         }
-
-
                     }
                 }
 
