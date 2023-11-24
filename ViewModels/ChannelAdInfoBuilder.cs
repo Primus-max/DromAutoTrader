@@ -43,7 +43,6 @@
 
             if (existingAd != null)
             {
-                // Если объявление уже существует, обновляем его данные
                 existingAd.Brand = _price?.Brand;
                 existingAd.Artikul = RemoveNonAlphanumeric(_price?.Artikul);
                 existingAd.Description = _channel.Description;
