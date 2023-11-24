@@ -1,6 +1,4 @@
-﻿using DromAutoTrader.Prices;
-
-namespace DromAutoTrader.ViewModels
+﻿namespace DromAutoTrader.ViewModels
 {
     public class ChannelAdInfoBuilder
     {
@@ -22,7 +20,6 @@ namespace DromAutoTrader.ViewModels
             if (_channel == null || _price == null || _pricePath == null)
                 return new AdPublishingInfo();
 
-
             // Проверяем, что цена в прайсе не меньше чем в таблице накрутки цен
             decimal minTo = (decimal)(_channel?.PriceIncreases.Min(inc => (decimal)inc.From));
 
@@ -38,38 +35,69 @@ namespace DromAutoTrader.ViewModels
 
             // Проверяю, может такое объявление уже есть
             using var context = new AppContext();
-            var isAdExists = context.AdPublishingInfo
-           .Any(existing => existing.Artikul == _price.Artikul
-                           && existing.Brand == _price.Brand
-                           && existing.InputPrice == _price.PriceBuy
-                           && existing.KatalogName == _price.KatalogName
-                           && existing.OutputPrice == calculatedPrice
-                           );
+            AdPublishingInfo existingAd = context.AdPublishingInfo.FirstOrDefault(ad => ad.Artikul == _price.Artikul);
+            if (existingAd.DromeId == null) return null;
 
-            if (isAdExists) return null; // Если полное совпадение, то выходим
+            if (existingAd.InputPrice != _price.PriceBuy || existingAd.OutputPrice != calculatedPrice)
+                existingAd.PriceBuy = "2";
 
-            _adPublishingInfo.PriceName = namePrice;
-            _adPublishingInfo.Brand = _price?.Brand; // Имя брэнда
-            _adPublishingInfo.Artikul = RemoveNonAlphanumeric(_price?.Artikul); // Артикул
-            _adPublishingInfo.Description = _channel.Description; // Описание товара (из прайса) Пока нигде не потребовалось
-            _adPublishingInfo.KatalogName = _price?.KatalogName; // Это попадает в заголовок объявления
-            _adPublishingInfo.InputPrice = _price.PriceBuy; // Прайс на деталь от поставщика
-            _adPublishingInfo.OutputPrice = (decimal)Math.Round(calculatedPrice, 0); // Округляю полученную цену и записываю
-            _adPublishingInfo.AdDescription = _channel.Name; // Имя канала в котором опубликовал
-            _adPublishingInfo.Count = _price.Count; // Количество запчастей у поставщика // TODO изменить при парсинге, иногда приходит 10-100 (от и до, в этом случае мы получаем 0)
+            if (existingAd != null)
+            {
+                existingAd.Brand = _price?.Brand;
+                existingAd.Artikul = RemoveNonAlphanumeric(_price?.Artikul);
+                existingAd.Description = _channel.Description;
+                existingAd.KatalogName = _price?.KatalogName;
+                existingAd.InputPrice = _price.PriceBuy;
+                existingAd.OutputPrice = (decimal)Math.Round(calculatedPrice, 0);
+                existingAd.AdDescription = _channel.Name;
+                existingAd.Count = _price.Count;
+                existingAd.DatePublished = DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss");
 
-            // Создаю дату регистрации объявления
-            // // TODO(Делать только посе публикации объявления) Дата формирования объявления
-            _adPublishingInfo.DatePublished = DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss");
+                // Обновляем пути изображений
+                SelectionImagesPathsService imagesPathsservice = new SelectionImagesPathsService();
+                imagesPaths = await imagesPathsservice.SelectPaths(_price?.Brand, _price?.Artikul);
 
-            // TODO сделать получение только после проверки налаичия элемента в базе
-            SelectionImagesPathsService imagesPathsservice = new SelectionImagesPathsService(); // Фабрика для выбора нужного сервиса по поиску изображения
-            imagesPaths = await imagesPathsservice.SelectPaths(_price?.Brand, _price?.Artikul); // Получаю путь к изображению
-            _adPublishingInfo.ImagesPaths = imagesPaths; // Это временное хранение путей не для хранения в базе
-            _adPublishingInfo.ImagesPath = string.Join(";", imagesPaths); // Формирую пути в одну строку с разделителем для хранения в базе
+                existingAd.ImagesPaths = imagesPaths;
 
-            return _adPublishingInfo;
+                existingAd.ImagesPath = string.Empty;
+                existingAd.ImagesPath = string.Join(";", imagesPaths);
+
+                // Сохраняем изменения в базе данных
+                context.SaveChanges();
+
+                return existingAd;
+            }
+            else
+            {
+                // Если объявление не существует, создаем новое
+                AdPublishingInfo newAd = new AdPublishingInfo
+                {
+                    PriceName = namePrice,
+                    Brand = _price?.Brand,
+                    Artikul = RemoveNonAlphanumeric(_price?.Artikul),
+                    Description = _channel.Description,
+                    KatalogName = _price?.KatalogName,
+                    InputPrice = _price.PriceBuy,
+                    OutputPrice = (decimal)Math.Round(calculatedPrice, 0),
+                    AdDescription = _channel.Name,
+                    Count = _price.Count,
+                    DatePublished = DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss")
+                };
+
+                // Получаем пути изображений
+                SelectionImagesPathsService imagesPathsservice = new SelectionImagesPathsService();
+                imagesPaths = await imagesPathsservice.SelectPaths(_price?.Brand, _price?.Artikul);
+                newAd.ImagesPaths = imagesPaths;
+                newAd.ImagesPath = string.Join(";", imagesPaths);
+
+                // Добавляем новое объявление в базу данных
+                context.AdPublishingInfo.Add(newAd);
+                context.SaveChanges();
+
+                return newAd;
+            }
         }
+
 
         // Убираю лишние символы из арткула
         public static string RemoveNonAlphanumeric(string input)
