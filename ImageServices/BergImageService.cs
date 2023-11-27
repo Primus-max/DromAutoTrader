@@ -227,7 +227,7 @@ namespace DromAutoTrader.ImageServices
                 var cookieContainer = new System.Net.CookieContainer();
 
                 // Устанавливаем куки (замените значения на актуальные)
-                cookieContainer.Add(new Uri(ServiceName), new System.Net.Cookie("BERG_SESSID", "b39b60eadfac0d2fc91d7f8acf45687e"));
+                cookieContainer.Add(new Uri(ServiceName), new System.Net.Cookie("BERG_SESSID", "102e578f3a6db842f99e06d521d165e7"));
 
                 // Создаем объект HttpClientHandler и передаем ему контейнер с куками
                 var handler = new HttpClientHandler { CookieContainer = cookieContainer };

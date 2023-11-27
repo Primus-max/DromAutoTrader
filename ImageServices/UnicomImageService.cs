@@ -39,7 +39,7 @@ namespace DromAutoTrader.ImageServices
         protected async Task GoToAsync()
         {
             string baseUrl = "https://uniqom.ru/search/api/query";
-            string rememberMeCookie = "QXBwXFNlY3VyaXR5XFVzZXI6UVhWMGIwSmxjM1F3TXpoQVoyMWhhV3d1WTI5dDoxNzMxODQzNDIzOjE3YmNjMWY3ZGE3NTViYjc1YTdjMjBjZTlhYjc1NzdkZDllYjkwZTYzZmRhNmFlZjJmNTM5NDdjN2I1NmM0YWM";
+            string rememberMeCookie = "QXBwXFNlY3VyaXR5XFVzZXI6UVhWMGIwSmxjM1F3TXpoQVoyMWhhV3d1WTI5dDoxNzMyNjI2NTYwOjU2NzFmNThlOWIyNDBkY2ViYWIyNzBkYjg3NjJhOWRmY2UzZDU2NTYyMmQyMzRkNGY3YzgyNDdhZDdkODQ5NDY%3D";
 
             using HttpClient client = new();
             client.BaseAddress = new Uri(baseUrl);
