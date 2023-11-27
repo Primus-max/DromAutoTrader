@@ -38,12 +38,36 @@
                 {
                     foreach (var existingAd in existingAds)
                     {
-                        // Проверяю цену, если у нового объявления цена лучше чем у старого, сохраняем новый объект или изменилась цена наркутки
-                        if (adInfo.InputPrice < existingAd.InputPrice || existingAd.OutputPrice != adInfo.OutputPrice)
+                        // Получаю даты публикаций
+                        DateTime adInfoDatePublished = DateTime.Parse(adInfo.DatePublished);
+                        DateTime existingAdDatePublished = DateTime.Parse(existingAd.DatePublished);
+
+                        // Проверяю, что даты публикации равны
+                        bool areDatesEqual = adInfoDatePublished.Date == existingAdDatePublished.Date;
+                        // Проверяю условие для изменения InputPrice
+                        bool inputPriceChanged = areDatesEqual && adInfo.InputPrice < existingAd.InputPrice;
+
+                        bool outputPriceChanged = adInfo.OutputPrice != existingAd.OutputPrice; // Если исходящая цена изменилась. Это может быть по двум причинам  
+                                                                                                // 1. Изменилась входящая цена, 2. ИЗменилась сумма накрутки     
+                                                                                                // Нам надо поймать если только была повышена сумма накрутки
+
+                        if (inputPriceChanged || outputPriceChanged )
                         {
-                            // Обновляю объект в базе
-                            existingAd.InputPrice = adInfo.InputPrice;
-                            existingAd.OutputPrice = adInfo.OutputPrice;
+                            // Обновляем объект в базе только если изменилась InputPrice или OutputPrice стала меньше
+                            if (inputPriceChanged)
+                            {
+                                existingAd.InputPrice = adInfo.InputPrice;
+                            }
+
+                            if (outputPriceChanged)
+                            {
+                                existingAd.OutputPrice = adInfo.OutputPrice;
+                            }
+
+                            // Устанавливаем флаг изменения цены или накрутки для дальнейшего реагирования
+                            existingAd.PriceBuy = "2";
+
+                            // Общие обновления, которые применяются только при изменении цены или накрутки
                             existingAd.Brand = adInfo.Brand;
                             existingAd.Artikul = adInfo.Artikul;
                             existingAd.DatePublished = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -54,7 +78,6 @@
                             existingAd.KatalogName = adInfo.KatalogName;
                             existingAd.PriceName = adInfo.PriceName;
                             existingAd.Description = adInfo.Description;
-                            existingAd.PriceBuy = "2"; // Ставлю флаг что это изменённая цена / или изменилась накрутка, значит буду это учитывать при публикации объявленй
                         }
                     }
                 }
