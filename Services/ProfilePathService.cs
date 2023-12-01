@@ -67,31 +67,43 @@ namespace DromAutoTrader.Services
             {
                 foreach (string directory in Directory.GetDirectories(path))
                 {
-                    await DeleteDirectoryAsync(directory); // Рекурсивно удаляем поддиректории асинхронно
+                    await DeleteDirectoryAsync(directory);
                 }
 
                 foreach (string file in Directory.GetFiles(path))
                 {
-                    try
-                    {
-                        File.Delete(file); // Попытка удаления файла
-                    }
-                    catch (IOException)
-                    {
-                        // Файл занят другим процессом, можно добавить логику повторного удаления
-                        await Task.Delay(500); // Подождать 1 секунду и повторить попытку
-                        File.Delete(file); // Повторная попытка удаления файла
-                    }
+                    await DeleteFileAsync(file);
                 }
 
-                Directory.Delete(path, true); // Удаляем саму директорию
+                Directory.Delete(path, true);
             }
             catch (Exception ex)
             {
-                // Обработка ошибок удаления
                 Console.WriteLine($"Ошибка при удалении директории: {ex.Message}");
             }
         }
+
+        private async Task DeleteFileAsync(string filePath)
+        {
+            const int maxAttempts = 5;
+            int attempts = 0;
+
+            while (attempts < maxAttempts)
+            {
+                try
+                {
+                    await Task.Run(() => File.Delete(filePath));
+                    return;
+                }
+                catch (IOException)
+                {
+                    // Файл занят другим процессом, ожидаем перед повторной попыткой
+                    await Task.Delay(500);
+                    attempts++;
+                }
+            }
+        }
+
 
     }
 

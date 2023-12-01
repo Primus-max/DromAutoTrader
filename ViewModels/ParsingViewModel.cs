@@ -82,30 +82,30 @@ namespace DromAutoTrader.ViewModels
                     if (IsContainsFiles) continue;
 
                     // Прохожу по сервисам, ищу где есть изображение
-                    //foreach (var service in imageServiceTypes.Values)
-                    //{
-                    //    if (Activator.CreateInstance(service) is IImageService imageService)
-                    //    {
-                    //        // Выполнение RunAsync для найденного сервиса
-                    //        await imageService.RunAsync(brand, articul);
+                    foreach (var service in imageServiceTypes.Values)
+                    {
+                        if (Activator.CreateInstance(service) is IImageService imageService)
+                        {
+                            // Выполнение RunAsync для найденного сервиса
+                            await imageService.RunAsync(brand, articul);
 
-                    //        // Получение результатов
-                    //        downLoadedImagesPaths = imageService.BrandImages;
-                    //    }
+                            // Получение результатов
+                            downLoadedImagesPaths = imageService.BrandImages;
+                        }
 
-                    //    if (downLoadedImagesPaths is not null || downLoadedImagesPaths?.Count > 0) break; // Если скачали, то выходим
-                    //}
+                        if (downLoadedImagesPaths is not null || downLoadedImagesPaths?.Count > 0) break; // Если скачали, то выходим
+                    }
 
                     //BergImageService bergImageService = new();
                     // UnicomImageService unicomImageService = new();
                     //LynxautoImageService lynxautoImageService = new LynxautoImageService();
                     //LuzarImageService LuzarimageService = new LuzarImageService();
-                    StarvoltImageService starvoltImageService = new StarvoltImageService();
+                    //StarvoltImageService starvoltImageService = new StarvoltImageService();
                     //IrkRosskoImageService irkRosskoImageService = new();
                     //MxgroupImageService imageService = new MxgroupImageService();
                     //TmpartsImageService tmpartsImageService = new TmpartsImageService();
 
-                    await starvoltImageService.RunAsync(brand, "LSt08L4");
+                   //await imageService.RunAsync(brand, "LSt08L4");
 
                     //var testImages = tmpartsImageService.BrandImages;
                 }
