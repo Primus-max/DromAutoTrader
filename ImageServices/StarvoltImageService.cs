@@ -1,14 +1,4 @@
-﻿using AngleSharp;
-using AngleSharp.Dom;
-using AngleSharp.Html.Dom;
-using AngleSharp.Html.Parser;
-using DromAutoTrader.ImageServices.Base;
-using DromAutoTrader.Services;
-using System.Net.Http;
-using System.Text.RegularExpressions;
-using System.Threading;
-
-namespace DromAutoTrader.ImageServices
+﻿namespace DromAutoTrader.ImageServices
 {
     public class StarvoltImageService : ImageServiceBase
     {
@@ -78,39 +68,48 @@ namespace DromAutoTrader.ImageServices
 
         protected override void OpenSearchedCard()
         {
+
+        }
+
+
+        protected override bool IsImagesVisible()
+        {
             try
             {
-                // Находим div с классом "module-spisok-product"
-                var productDiv = _document.QuerySelector(".catalog__main-products-list");
+                // Находим div с классом "catalog__main-products-card"
+                var productDiv = _document.QuerySelector(".catalog__main-products-card");
 
                 if (productDiv != null)
                 {
-                    // Находим первый элемент li внутри div
-                    var firstLi = productDiv.QuerySelector("li");
+                    // Находим первый элемент picture внутри div
+                    var pictureElement = productDiv.QuerySelector("picture");
 
-                    if (firstLi != null)
+                    if (pictureElement != null)
                     {
-                        // Извлекаем ссылку из тега a
-                        var linkElement = firstLi.QuerySelector("a");
-                        if (linkElement != null)
-                        {
-                            string? link = linkElement.GetAttribute("href");
+                        // Находим тег source внутри picture
+                        var sourceElement = pictureElement.QuerySelector("source");
 
-                            Task.Run(async () => await GoToAsync(link)).Wait(); // Открываю окно с изображением                            
+                        if (sourceElement != null)
+                        {
+                            // Извлекаем относительный путь из атрибута srcset
+                            string? relativePath = sourceElement.GetAttribute("srcset");
+
+                            // Преобразуем относительный путь в абсолютный                           
+                            string absoluteUrl = new Uri(new Uri(ServiceName), relativePath).ToString();
+
+                            if (!string.IsNullOrEmpty(absoluteUrl))
+                            {
+                                return true;
+                            }
                         }
                     }
                 }
             }
             catch (Exception)
             {
-
-                throw;
+                return false;
             }
-        }
-
-        protected override bool IsImagesVisible()
-        {
-            return true;
+            return false;
         }
 
         protected override async Task<List<string>> GetImagesAsync()
@@ -123,24 +122,36 @@ namespace DromAutoTrader.ImageServices
 
             using HttpClient httpClient = new();
 
+            await Task.Delay(500);
+
+            // Получаем изображение
             try
             {
-                await Task.Delay(500);
+                // Находим div с классом "catalog__main-products-card"
+                var productDiv = _document.QuerySelector(".catalog__main-products-card");
 
-                // Получаем изображение
-                var imageBlocks = _document.QuerySelectorAll("img.product__gallery-main-slider-card-image");
-
-                foreach (var imageBlock in imageBlocks)
+                if (productDiv != null)
                 {
-                    if (imageBlock != null)
-                    {
-                        string? imgUrl = imageBlock.GetAttribute("src");
+                    // Находим первый элемент picture внутри div
+                    var pictureElement = productDiv.QuerySelector("picture");
 
-                        if (!string.IsNullOrEmpty(imgUrl))
+                    if (pictureElement != null)
+                    {
+                        // Находим тег source внутри picture
+                        var sourceElement = pictureElement.QuerySelector("source");
+
+                        if (sourceElement != null)
                         {
-                            httpClient.BaseAddress = new Uri(LoginPageUrl);
-                            string? fullUrl = new Uri(httpClient.BaseAddress, imgUrl).AbsoluteUri;
-                            images.Add(fullUrl);
+                            // Извлекаем относительный путь из атрибута srcset
+                            string? relativePath = sourceElement.GetAttribute("srcset");
+
+                            // Преобразуем относительный путь в абсолютный                           
+                            string absoluteUrl = new Uri(new Uri(ServiceName), relativePath).ToString();
+
+                            if (!string.IsNullOrEmpty(absoluteUrl))
+                            {
+                                images.Add(absoluteUrl);
+                            }
                         }
                     }
                 }
@@ -149,8 +160,6 @@ namespace DromAutoTrader.ImageServices
             {
                 return downloadedImages;
             }
-
-
 
             if (images.Count != 0)
                 downloadedImages = await ImagesProcessAsync(images);
