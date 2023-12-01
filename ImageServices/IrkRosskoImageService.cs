@@ -66,7 +66,7 @@ namespace DromAutoTrader.ImageServices
                     var searchResults = Newtonsoft.Json.JsonConvert.DeserializeObject<List<SearchResult>>(responseBody);
 
                     // Проверяем, что есть результаты
-                    if (searchResults.Count > 0)
+                    if (searchResults?.Count > 0)
                     {
                         string goodsCode = searchResults[0].goodsCode;
 
