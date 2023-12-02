@@ -169,17 +169,30 @@ namespace DromAutoTrader.ImageServices
             {
                 _driver.Close();
                 _driver.Quit();
-                _driver.Dispose();
-
-                await Task.Delay(2000);
-                // Удаляю временную директорию профиля после закрытия браузера
-                ProfilePathService profilePathService = new();
-                await profilePathService.DeleteDirectoryAsync(_tempProfilePath);
             }
             catch (Exception)
             {
+                // Обработка ошибок при закрытии браузера
             }
+            finally
+            {
+                try
+                {
+                    _driver.Dispose();
+                }
+                catch (Exception)
+                {
+                    // Обработка ошибок при освобождении ресурсов
+                }
+            }
+
+            await Task.Delay(2000);
+
+            // Удаляю временную директорию профиля после закрытия браузера
+            ProfilePathService profilePathService = new();
+            await profilePathService.DeleteDirectoryAsync(_tempProfilePath);
         }
+
         #endregion
 
         #region Специфичные методы класса   
