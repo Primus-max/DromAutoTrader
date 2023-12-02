@@ -171,6 +171,7 @@ namespace DromAutoTrader.ImageServices
                 _driver.Quit();
                 _driver.Dispose();
 
+                await Task.Delay(2000);
                 // Удаляю временную директорию профиля после закрытия браузера
                 ProfilePathService profilePathService = new();
                 await profilePathService.DeleteDirectoryAsync(_tempProfilePath);

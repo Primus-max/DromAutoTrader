@@ -105,7 +105,7 @@ namespace DromAutoTrader.ViewModels
                     //MxgroupImageService imageService = new MxgroupImageService();
                     //TmpartsImageService tmpartsImageService = new TmpartsImageService();
 
-                   //await imageService.RunAsync(brand, "LSt08L4");
+                   //await imageService.RunAsync(brand, articul);
 
                     //var testImages = tmpartsImageService.BrandImages;
                 }
