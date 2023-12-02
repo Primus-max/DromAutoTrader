@@ -61,50 +61,59 @@ namespace DromAutoTrader.Services
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public async Task DeleteDirectoryAsync(string path)
-        {
-            try
+      
+            public async Task DeleteDirectoryAsync(string path)
             {
-                foreach (string directory in Directory.GetDirectories(path))
+                try
                 {
-                    await DeleteDirectoryAsync(directory);
+                    await DeleteDirectoryRecursiveAsync(path);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Ошибка при удалении директории: {ex.Message}");
+                }
+            }
+
+            private async Task DeleteDirectoryRecursiveAsync(string path)
+            {
+                foreach (var directory in Directory.GetDirectories(path))
+                {
+                    await DeleteDirectoryRecursiveAsync(directory);
                 }
 
-                foreach (string file in Directory.GetFiles(path))
+                foreach (var file in Directory.GetFiles(path))
                 {
                     await DeleteFileAsync(file);
                 }
 
-                Directory.Delete(path, true);
+                await Task.Run(() => Directory.Delete(path, true));
             }
-            catch (Exception ex)
+
+            private async Task DeleteFileAsync(string filePath)
             {
-                Console.WriteLine($"Ошибка при удалении директории: {ex.Message}");
-            }
-        }
+                const int maxAttempts = 5;
+                int attempts = 0;
 
-        private async Task DeleteFileAsync(string filePath)
-        {
-            const int maxAttempts = 5;
-            int attempts = 0;
-
-            while (attempts < maxAttempts)
-            {
-                try
+                while (attempts < maxAttempts)
                 {
-                    await Task.Run(() => File.Delete(filePath));
-                    return;
-                }
-                catch (IOException)
-                {
-                    // Файл занят другим процессом, ожидаем перед повторной попыткой
-                    await Task.Delay(500);
-                    attempts++;
+                    try
+                    {
+                        await Task.Run(() => File.Delete(filePath));
+                        return;
+                    }
+                    catch (IOException)
+                    {
+                        await Task.Delay(500);
+                        attempts++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Ошибка при удалении файла {filePath}: {ex.Message}");
+                        return;
+                    }
                 }
             }
-        }
-
-
+        
     }
 
 }
