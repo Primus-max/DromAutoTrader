@@ -1,10 +1,4 @@
-﻿using DromAutoTrader.ImageServices.Base;
-using DromAutoTrader.Services;
-using OpenQA.Selenium;
-using System.IO;
-using System.Threading;
-
-namespace DromAutoTrader.ImageServices
+﻿namespace DromAutoTrader.ImageServices
 {
     internal class TmpartsImageService : ImageServiceBase
     {
