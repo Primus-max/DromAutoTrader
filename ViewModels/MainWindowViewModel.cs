@@ -540,7 +540,7 @@ namespace DromAutoTrader.ViewModels
            
             foreach (var price in prices)
             {
-                elCount++; // Считаю добавленные элементы
+                elCount++;
 
                 List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
                 foreach (var priceChannelMapping in priceChannels.SelectedChannels)
@@ -555,8 +555,6 @@ namespace DromAutoTrader.ViewModels
                     {
                         break; // Если не нашли совпадение, выходим из цикла
                     }
-
-                    
 
                     // Конструктор строителя объекта для публикации
                     var builder = new ChannelAdInfoBuilder(price, priceChannelMapping, path);
@@ -578,8 +576,7 @@ namespace DromAutoTrader.ViewModels
 
                     // Фильтр цен перед сохранением объекта публикации в базе
                     PriceFilter priceFilter = new();
-                    priceFilter.FilterAndSaveByPrice(adInfo);
-                    elCount++;
+                    priceFilter.FilterAndSaveByPrice(adInfo);                   
 
                     Console.WriteLine($"Добавил {adInfo.Artikul} || {adInfo.Brand} из прайса {priceName} для канала {priceChannelMapping.Name}");
                 }
@@ -602,16 +599,21 @@ namespace DromAutoTrader.ViewModels
         // Асинхронный метод публикации объявления        
         public async Task ProcessPublishingAdsAtDrom()
         {
+            if (SelectedPrice is null) return;
+            if (SelectedChannels is null || SelectedChannels.Count == 0) return;
+
             using var context = new AppContext();
             var adInfos = context.AdPublishingInfo.ToList(); // Загрузка всех объявлений            
 
             var selectedChannels = SelectedChannels.Select(channel => channel.Name).ToList();
+           
 
             var tasks = new List<Task>();
 
             foreach (var selectedChannel in selectedChannels)
             {
-                var channelAdInfos = adInfos.Where(adInfo => adInfo.AdDescription == selectedChannel).ToList();
+                // Беру только для выбранного канала и выбранный прайс
+                var channelAdInfos = adInfos.Where(adInfo => adInfo.AdDescription == selectedChannel && adInfo.PriceName.Contains(SelectedPrice?.Name) && adInfo.IsArchived == false).ToList();
 
                 DromAdPublisher dromAdPublisher = new(selectedChannel);
 
@@ -625,9 +627,9 @@ namespace DromAutoTrader.ViewModels
             BrowserManager browser = new();
             foreach (var channel in channelsForClose)
             {
-                await browser.CloseBrowser(channel.Name);
+                await browser.CloseBrowser(channel?.Name);
             }
-        }
+        } 
 
         // Метод публикации объявлений
         private async Task ProcessChannelAdsAsync(DromAdPublisher dromAdPublisher, List<AdPublishingInfo> channelAdInfos)

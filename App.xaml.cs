@@ -1,48 +1,25 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using System.IO;
-
-namespace DromAutoTrader
+﻿namespace DromAutoTrader
 {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
     public partial class App : Application
     {
-        public IServiceProvider ServiceProvider { get; private set; }
-        // В вашем классе App
-      
-
-
-        protected override void OnStartup(StartupEventArgs e)
+        public App()
         {
-            base.OnStartup(e);
+            // Подписываемся на событие DispatcherUnhandledException при инициализации приложения
+            this.DispatcherUnhandledException += App_DispatcherUnhandledException;
+        }
 
-           // var services = new ServiceCollection();
+        private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            // Обработка необработанного исключения, например, логирование
+            Console.WriteLine($"Unhandled Exception: {e.Exception.Message}");
 
-            // Здесь вы можете добавить ваши сервисы в контейнер DI
-            //services.AddTransient<AppContext>();
+            // Помечаем исключение как обработанное (если не пометить, приложение может завершиться)
+            e.Handled = true;
 
-            //services.AddDbContext<AppContext>(options =>
-            // {
-            //     var config = new ConfigurationBuilder()
-            //         .SetBasePath(Directory.GetCurrentDirectory())
-            //         .AddJsonFile("appsettings.json")
-            //         .Build();
-
-            //     var connectionString = config.GetConnectionString("DefaultConnection");
-
-            //     options.UseSqlite(connectionString);
-            // });
-
-            // И другие сервисы...
-
-            // Постройте ServiceProvider на основе сервисов, добавленных в контейнер
-           // ServiceProvider = services.BuildServiceProvider();
-
-            // Запустите ваше главное окно или другие части приложения
-            //var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-            //mainWindow.Show();
+            // Можете добавить дополнительные действия, например, запись в журнал ошибок или отправку уведомления
         }
     }
 }

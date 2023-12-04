@@ -1,5 +1,3 @@
-using DromAutoTrader.Prices;
-
 namespace DromAutoTrader.ViewModels
 {
     public class ChannelAdInfoBuilder
@@ -27,7 +25,11 @@ namespace DromAutoTrader.ViewModels
             decimal minTo = (decimal)(_channel?.PriceIncreases.Min(inc => (decimal)inc.From));
 
             if (_price.PriceBuy < minTo)
-                return null;
+                return null!;
+
+            // Иногда в прайсе Тисс к артикулу подписывают это, значит пропускаем
+            if (_price.Artikul.Contains("ПоврежУпак"))
+                return null!;
 
             List<string> imagesPaths = new List<string>();
             string? namePrice = Path.GetFileName(_pricePath);
@@ -36,18 +38,21 @@ namespace DromAutoTrader.ViewModels
             CalcPrice calcPrice = new();
             decimal calculatedPrice = calcPrice.Calculate(_price.PriceBuy, _channel?.PriceIncreases);
 
-            // Проверяю, может такое объявление уже есть
-            using var context = new AppContext();
-            var isAdExists = context.AdPublishingInfo
-           .Any(existing => existing.Artikul == _price.Artikul
-                           && existing.Brand == _price.Brand
-                           && existing.InputPrice == _price.PriceBuy
-                           && existing.KatalogName == _price.KatalogName
-                           && existing.OutputPrice == calculatedPrice
-                           );
+            // Проверяю  на полное совпадение
+            try
+            {
+                using var context = new AppContext();
+                var isAdExists = context.AdPublishingInfo
+               .Any(existing => existing.Artikul == _price.Artikul
+                               && existing.Brand.ToLower() == _price.Brand.ToLower()
+                               && existing.InputPrice == _price.PriceBuy                              
+                               && existing.OutputPrice == (decimal)Math.Round(calculatedPrice, 0)                               
+                               );
 
-            if (isAdExists) 
-                return null; // Если полное совпадение, то выходим
+                if (isAdExists)
+                    return null; // Если полное совпадение, то выходим
+            }
+            catch (Exception) { }
 
             _adPublishingInfo.PriceName = namePrice;
             _adPublishingInfo.Brand = _price?.Brand; // Имя брэнда
@@ -58,7 +63,7 @@ namespace DromAutoTrader.ViewModels
             _adPublishingInfo.OutputPrice = (decimal)Math.Round(calculatedPrice, 0); // Округляю полученную цену и записываю
             _adPublishingInfo.AdDescription = _channel.Name; // Имя канала в котором опубликовал
             _adPublishingInfo.Count = _price.Count; // Количество запчастей у поставщика // TODO изменить при парсинге, иногда приходит 10-100 (от и до, в этом случае мы получаем 0)
-
+            _adPublishingInfo.IsArchived = false;
             // Создаю дату регистрации объявления
             // // TODO(Делать только посе публикации объявления) Дата формирования объявления
             _adPublishingInfo.DatePublished = DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss");
