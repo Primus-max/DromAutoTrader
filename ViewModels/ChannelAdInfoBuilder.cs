@@ -46,7 +46,8 @@ namespace DromAutoTrader.ViewModels
                            && existing.OutputPrice == calculatedPrice
                            );
 
-            if (isAdExists) return null; // Если полное совпадение, то выходим
+            if (isAdExists) 
+                return null; // Если полное совпадение, то выходим
 
             _adPublishingInfo.PriceName = namePrice;
             _adPublishingInfo.Brand = _price?.Brand; // Имя брэнда

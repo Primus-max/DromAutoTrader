@@ -7,9 +7,7 @@ namespace DromAutoTrader.Services
     /// Класс для получения путей к изображениям 
     /// </summary>
     public class SelectionImagesPathsService
-
     {
-        private AppContext _db = null!;
         // Словарь хранит соответствия между ImageService (выбранные для брэнда) и классы для парсинга этих сервисов
         Dictionary<int, Type> imageServiceTypes = new Dictionary<int, Type>
         {
@@ -23,7 +21,7 @@ namespace DromAutoTrader.Services
         };
         public SelectionImagesPathsService()
         {
-            InitializeDatabase();
+            
         }
 
         /// <summary>
@@ -72,16 +70,14 @@ namespace DromAutoTrader.Services
         {
             try
             {
-                using (var context = new AppContext())
-                {
-                    // Пытаемся получить Brand по имени
-                    var brand = context.Brands.FirstOrDefault(b => b.Name == brandName);
+                using var context = new AppContext();
+                // Пытаемся получить Brand по имени
+                var brand = context.Brands.FirstOrDefault(b => b.Name == brandName);
 
-                    if (brand != null)
-                    {
-                        // Если Brand найден, возвращаем значение DefaultImage
-                        return brand.DefaultImage;
-                    }
+                if (brand != null)
+                {
+                    // Если Brand найден, возвращаем значение DefaultImage
+                    return brand.DefaultImage;
                 }
             }
             catch (Exception ex)
@@ -99,7 +95,7 @@ namespace DromAutoTrader.Services
         private List<string> SelectLocalPaths(string Brand, string Articul)
         {
             List<string> imagePaths = new List<string>();
-            string baseDirectory = "brand_images"; // Замените на реальный путь
+            string baseDirectory = "brand_images"; 
 
             if (Directory.Exists(baseDirectory))
             {
@@ -122,24 +118,22 @@ namespace DromAutoTrader.Services
             List<int> imageServiceIds = new List<int>();
             try
             {
-                using (var context = new AppContext())
+                using var context = new AppContext();
+                // 1. Получаем BrandId по имени бренда
+                var brandId = context.Brands
+                    .Where(b => b.Name == brandName)
+                    .Select(b => b.Id)
+                    .FirstOrDefault();
+
+                if (brandId != 0)
                 {
-                    // 1. Получаем BrandId по имени бренда
-                    var brandId = context.Brands
-                        .Where(b => b.Name == brandName)
-                        .Select(b => b.Id)
-                        .FirstOrDefault();
+                    // 2. Получаем ImageServiceId, принадлежащие бренду
+                    imageServiceIds = context.BrandImageServiceMappings
+                        .Where(mapping => mapping.BrandId == brandId)
+                        .Select(mapping => mapping.ImageServiceId ?? 0) // Преобразуем Nullable<int> в int
+                        .ToList();
 
-                    if (brandId != 0)
-                    {
-                        // 2. Получаем ImageServiceId, принадлежащие бренду
-                        imageServiceIds = context.BrandImageServiceMappings
-                            .Where(mapping => mapping.BrandId == brandId)
-                            .Select(mapping => mapping.ImageServiceId ?? 0) // Преобразуем Nullable<int> в int
-                            .ToList();
-
-                        return imageServiceIds;
-                    }
+                    return imageServiceIds;
                 }
             }
             catch (Exception ex)
@@ -175,30 +169,7 @@ namespace DromAutoTrader.Services
             return downLoadedImagesPaths;
         }
 
-        private void InitializeDatabase()
-        {
-            try
-            {
-                _db = new AppContext();
-                _db.Channels
-                    .Include(c => c.PriceIncreases)
-                    .Include(c => c.Brands)
-                    .Load();
-                _db.Brands
-                    .Include(b => b.ImageServices)
-                    .Load();
-                _db.BrandImageServiceMappings
-
-                    .Load();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Не удалось получить данные из базы в методе SelectionImagesPathsService {ex.ToString()}");
-                // Добавьте логирование ошибки для более детального анализа
-                // Вместо вывода сообщения в консоль, рекомендуется использовать библиотеки логирования, такие как Serilog, NLog, или другие.
-                // Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
-            }
-        }
+       
 
     }
 }
