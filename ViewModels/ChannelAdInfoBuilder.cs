@@ -1,4 +1,4 @@
-﻿using DromAutoTrader.Prices;
+using DromAutoTrader.Prices;
 
 namespace DromAutoTrader.ViewModels
 {

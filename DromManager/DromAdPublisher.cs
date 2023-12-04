@@ -1,3 +1,5 @@
+using DromAutoTrader.Models;
+
 namespace DromAutoTrader.DromManager
 {
     /// <summary>
@@ -34,29 +36,32 @@ namespace DromAutoTrader.DromManager
             // Глобально ожидание
             _wait = new(_driver, TimeSpan.FromSeconds(10));
 
+            if(adPublishingInfo.DromeId != null)
+            {
+               isPublited =  await UploadImages(adPublishingInfo);
+            }
             // Если установлен этот флаг, значит нужно обновить объявление. Убираем в архив, добавляем новое
             if (adPublishingInfo.PriceBuy == "2")
             {
                 isPublited = await EditAdInfo(adPublishingInfo);
                 return isPublited; // Выхожу после редактирования. Дальше нам не надо
             }
+            return isPublited;
+            
+        }
 
-            await Task.Delay(200);
-            OpenGoodsPage();
 
-            await Task.Delay(200);
-            SetWindowSize();
+        // Выгружаю только фото
+        private async Task<bool> UploadImages(AdPublishingInfo adPublishingInfo)
+        {
+            bool isPublited = false;
+            OpenEditePage(adPublishingInfo);
 
             await Task.Delay(200);
             CloseAllTabsExceptCurrent();
-            await Task.Delay(200);
-            // Устанавливаю заголовок объявления
-            TitleInput(adPublishingInfo.KatalogName);
-            await Task.Delay(1000);
 
-            ClickDirControlVariant();
             await Task.Delay(200);
-            ClickBulletinTypeVariant();
+
             List<string> ImagesPaths = adPublishingInfo.ImagesPath.Split(";").ToList();
 
             // Вставляю изображение
@@ -67,35 +72,19 @@ namespace DromAutoTrader.DromManager
                 InsertImage(absolutePath);
             }
 
-            await Task.Delay(200);
-            // Бренд для публикации
-            BrandInput(adPublishingInfo?.Brand);
-
-            await Task.Delay(200);
-            // Артикул для публикации
-            ArticulInput(adPublishingInfo?.Artikul);
-            await Task.Delay(200);
-            // Цена для публикации
-            PriceInput(adPublishingInfo?.OutputPrice?.ToString());
-            await Task.Delay(200);
-            DescriptionTextInput(adPublishingInfo?.Description);
-            await Task.Delay(200);
-            // Кнопка наличие или под заказ
-            GoodPresentState();
-            await Task.Delay(200);
             // Проверяю заполненность полей
             CheckAndFillRequiredFields();
-
-            // Публикую
-            await Task.Delay(200);
 
             isPublited = ClickPublishButton();
 
             // Если объявление разместил, то записываю Id
             if (isPublited)
+            {
                 WriteDromeId(adPublishingInfo);
+            }
 
             return isPublited;
+
         }
 
         // Объединяющтй метод для редактирования
