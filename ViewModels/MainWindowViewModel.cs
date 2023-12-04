@@ -627,7 +627,7 @@ namespace DromAutoTrader.ViewModels
             {
                 await browser.CloseBrowser(channel.Name);
             }
-        }
+        } 
 
         // Метод публикации объявлений
         private async Task ProcessChannelAdsAsync(DromAdPublisher dromAdPublisher, List<AdPublishingInfo> channelAdInfos)
