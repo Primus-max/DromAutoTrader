@@ -1,4 +1,4 @@
-﻿namespace DromAutoTrader.ViewModels
+namespace DromAutoTrader.ViewModels
 {
     public class ChannelAdInfoBuilder
     {
