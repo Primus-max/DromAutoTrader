@@ -64,30 +64,37 @@ VerticalAlignment="Bottom"
 FontSize="14"
 Foreground="#939393"
 Text="Текст сообщения о продаже:" />-->
-                                    <StackPanel>
-                                        <CheckBox
-                                            x:Name="MaterialDesignOutlinedTextBoxTextCountComboBox"
-                                            Width="0"
-                                            Height="0"
-                                            IsChecked="True" />
-                                        <TextBox
-                                            Width="350"
-                                            MinHeight="100"
-                                            HorizontalAlignment="Left"
-                                            VerticalAlignment="Top"
-                                            materialDesign:HintAssist.Foreground="#939393"
-                                            materialDesign:HintAssist.HelperTextFontSize="16"
-                                            materialDesign:HintAssist.Hint="Текст объявления"
-                                            materialDesign:TextFieldAssist.CharacterCounterVisibility="{Binding Path=IsChecked, ElementName=MaterialDesignOutlinedTextBoxTextCountComboBox, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                            materialDesign:TextFieldAssist.HasClearButton="True"
-                                            FontSize="18"
-                                            Foreground="White"
-                                            MaxLength="1000"
-                                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                            Text="{Binding DescriptionChannel}"
-                                            TextWrapping="Wrap"
-                                            VerticalScrollBarVisibility="Auto" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <StackPanel>
+                                            <CheckBox
+                                                x:Name="MaterialDesignOutlinedTextBoxTextCountComboBox"
+                                                Width="0"
+                                                Height="0"
+                                                IsChecked="True" />
+                                            <TextBox
+                                                Width="350"
+                                                MinHeight="100"
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Top"
+                                                materialDesign:HintAssist.Foreground="#939393"
+                                                materialDesign:HintAssist.HelperTextFontSize="16"
+                                                materialDesign:HintAssist.Hint="Текст объявления"
+                                                materialDesign:TextFieldAssist.CharacterCounterVisibility="{Binding Path=IsChecked, ElementName=MaterialDesignOutlinedTextBoxTextCountComboBox, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                materialDesign:TextFieldAssist.HasClearButton="True"
+                                                FontSize="18"
+                                                Foreground="White"
+                                                MaxLength="1000"
+                                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                                Text="{Binding DescriptionChannel}"
+                                                TextWrapping="Wrap"
+                                                VerticalScrollBarVisibility="Auto" />
+                                        </StackPanel>
+
+                                        <StackPanel>
+                                            
+                                        </StackPanel>
                                     </StackPanel>
+
 
                                     <!--  Выбор брэндов для канала  -->
                                     <StackPanel Margin="0,30,0,0" Orientation="Horizontal">
