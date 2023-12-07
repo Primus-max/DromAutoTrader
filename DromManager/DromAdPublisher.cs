@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using Org.BouncyCastle.Crypto;
 using System.Net;
 
 public class DromAdPublisher
@@ -34,7 +35,17 @@ public class DromAdPublisher
 
     public async Task<long> Run(AdPublishingInfo adPublishingInfo)
     {
-        long dromId = await SavebulletinAsync(adPublishingInfo);
+        if (adPublishingInfo == null) return 0;
+
+        // Если флаг для обновления, обновляем и выходим
+        if (adPublishingInfo.Status == "Updating") 
+        {
+            await UdateBulletinAsync(adPublishingInfo);
+            return 0;
+        }
+
+        // Иначе публикуем
+        long dromId = await SavebulletinAsync(adPublishingInfo);        
 
         return dromId;
     }
@@ -89,28 +100,35 @@ public class DromAdPublisher
         // Преобразовываем Payload в нужный формат
         var formattedPayload = $"changeDescription={System.Text.Json.JsonSerializer.Serialize(payload)}";
 
-        // Отправка POST-запроса с использованием StringContent
-        var content = new StringContent(formattedPayload, Encoding.UTF8, "application/x-www-form-urlencoded");
-        var response = _httpClient.PostAsync("https://baza.drom.ru/api/1.0/save/bulletin", content).Result;
-
-        // Обработка ответа
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var responseContent = response.Content.ReadAsStringAsync().Result;
-            DromResponse responseObj = JsonConvert.DeserializeObject<DromResponse>(responseContent);
+            // Отправка POST-запроса с использованием StringContent
+            var content = new StringContent(formattedPayload, Encoding.UTF8, "application/x-www-form-urlencoded");
+            var response = _httpClient.PostAsync("https://baza.drom.ru/api/1.0/save/bulletin", content).Result;
 
-            if (responseObj == null) return 0;
+            // Обработка ответа
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+                DromResponse responseObj = JsonConvert.DeserializeObject<DromResponse>(responseContent);
 
-           
-            if (responseObj.Id == 0) return 0;
+                if (responseObj == null) return 0;
+                if (responseObj.Id == 0) return 0;
 
-            // Получаю id дрома на это объявление
-            adPublishingInfo.DromeId = responseObj.Id;
-            return await PublishAdAsync(adPublishingInfo);
+                // Получаю id дрома на это объявление
+                adPublishingInfo.DromeId = responseObj.Id;
+                return await PublishAdAsync(adPublishingInfo);
+            }
+            else
+            {
+                _logMessage = $"Не удалось добавить объявление, {adPublishingInfo?.Id}";
+                _logger.Error(_logMessage);
+                return 0;
+            }
         }
-        else
+        catch (Exception ex)
         {
-            _logMessage = $"Не удалось добавить объявление, {adPublishingInfo?.Id}";
+            _logMessage = $"Не удалось добавить объявление, {adPublishingInfo?.Id} по причине: {ex.Message}";
             _logger.Error(_logMessage);
             return 0;
         }
@@ -127,31 +145,40 @@ public class DromAdPublisher
 
         foreach (var image in adPublishingInfo?.ImagesPaths)
         {
-            using var content = new MultipartFormDataContent();
-            var fileBytes = File.ReadAllBytes(image); // Предполагается, что в вашем классе Image есть свойство Path
-            content.Add(new ByteArrayContent(fileBytes), "up[]", "image.jpg");
-
-            var request = new HttpRequestMessage(HttpMethod.Post, apiUrl)
+            try
             {
-                Content = content
-            };
+                using var content = new MultipartFormDataContent();
+                var fileBytes = File.ReadAllBytes(image); // Предполагается, что в вашем классе Image есть свойство Path
+                content.Add(new ByteArrayContent(fileBytes), "up[]", "image.jpg");
 
-            var response = await _httpClient.SendAsync(request);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var decode = JsonConvert.DeserializeObject<dynamic>(responseContent);
-                var imageId = (long?)decode.id;
-
-                if (imageId.HasValue)
+                var request = new HttpRequestMessage(HttpMethod.Post, apiUrl)
                 {
-                    ids.Add(imageId.Value);
+                    Content = content
+                };
+
+                var response = await _httpClient.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var decode = JsonConvert.DeserializeObject<dynamic>(responseContent);
+                    var imageId = (long?)decode.id;
+
+                    if (imageId.HasValue)
+                    {
+                        ids.Add(imageId.Value);
+                    }
+                }
+                else
+                {
+                    return null!;
                 }
             }
-            else
+            catch (Exception ex)
             {
-                return null!;
+                _logMessage = $"Не удалось загрузить изображение, {adPublishingInfo?.Id} по причине: {ex.Message}";
+                _logger.Error(_logMessage);
+                return ids;
             }
         }
 
@@ -166,24 +193,95 @@ public class DromAdPublisher
 
         var apiUrl = $"https://baza.drom.ru/bulletin/{adPublishingInfo.DromeId}/draft/publish";
 
-        var request = new HttpRequestMessage(HttpMethod.Get, apiUrl);
-        //request.Headers.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-
-        var response = await _httpClient.SendAsync(request);
-
-        if (response.IsSuccessStatusCode)
+        try
         {
-            return adPublishingInfo.DromeId;
+            var request = new HttpRequestMessage(HttpMethod.Get, apiUrl);
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return adPublishingInfo.DromeId;
+            }
+            else
+            {
+                _logMessage = $"Не удалось опубликовать объявление, {adPublishingInfo.Id}";
+                _logger.Error(_logMessage);
+                return 0;
+            }
         }
-        else
+        catch (Exception ex)
         {
-            _logMessage = $"Не удалось опубликовать объявление, {adPublishingInfo.Id}";
+            _logMessage = $"Не удалось опубликовать объявление, {adPublishingInfo?.Id} по причине: {ex.Message}";
             _logger.Error(_logMessage);
             return 0;
         }
     }
 
+    // Метод обновления объявления
+    private async Task UdateBulletinAsync(AdPublishingInfo adPublishingInfo)
+    {
+        string url = $"https://baza.drom.ru/bulletin/{adPublishingInfo.DromeId}/edit";
 
+        if (adPublishingInfo == null)
+            return;
+
+
+        var Fields = new Dictionary<string, object>
+        {
+            { "subject", adPublishingInfo?.KatalogName }, // Заголовок
+            { "condition", "new" },
+            { "autoPartsOemNumber", adPublishingInfo?.Artikul }, // Артикул
+            { "autoPartsAuthenticity", "original" },
+            { "manufacturer", adPublishingInfo?.Brand }, // Бренд
+            { "text", adPublishingInfo?.Description }, // Описание
+            { "goodPresentState", "present"}, // В наличии
+            {  "cityId", 340},
+        };
+
+        var imeageIds = await UploadImagesAsync(adPublishingInfo); // Загружаю изображения, получаю их ID
+        var Images = new Images()
+        {
+            isShowCompanyLogo = false,
+            images = imeageIds,
+            masterImageId = imeageIds.FirstOrDefault(),
+        };
+
+        var contacts = new
+        {
+            contactInfo = _channelName == "AutoBot38" ? "+7 950 077-76-98" : "+7 914 905-70-76",
+            email = "",
+            is_email_hidden = false
+        };
+
+        var payload = new PayLoad
+        {
+            AddingType = "bulletin",
+            DirectoryId = 14,
+            Fields = Fields,
+            images = Images
+        };
+
+
+        Fields.Add("price", new List<object> { adPublishingInfo?.OutputPrice, "RUB" });
+        Fields.Add("contacts", contacts);
+
+        // Преобразовываем Payload в нужный формат
+        var formattedPayload = $"changeDescription={System.Text.Json.JsonSerializer.Serialize(payload)}";
+
+        try
+        {
+            // Отправка POST-запроса с использованием StringContent
+            var content = new StringContent(formattedPayload, Encoding.UTF8, "application/x-www-form-urlencoded");
+            var response = _httpClient.PostAsync(url, content).Result;
+        }
+        catch (Exception ex)
+        {
+            _logMessage = $"Не удалось обновить объявление {adPublishingInfo.DromeId}, причина {ex.Message}";
+            _logger.Error(_logMessage);
+            return;
+        }
+    }
 
 
     // Метод перехода по ссылке и сохранения куки

@@ -640,7 +640,7 @@ namespace DromAutoTrader.ViewModels
             foreach (var adInfo in channelAdInfos)
             {               
                 if (adInfo.IsArchived == true) continue; // Если объявление в архиве
-                if (adInfo.PriceBuy == "1") continue; // Если уже публиковал
+                if (adInfo.Status == "Published") continue; // Если уже публиковал
                 if (adInfo.Artikul == null || adInfo.Brand == null) continue; // Если бренд или артикул пустые
 
                 var isAdExists = context.AdPublishingInfo
@@ -662,7 +662,7 @@ namespace DromAutoTrader.ViewModels
 
                     if (existingAdInfo != null)
                     {
-                        existingAdInfo.PriceBuy = "1";
+                        existingAdInfo.Status = "Published";
                         existingAdInfo.DromeId = dromId;
                         existingAdInfo.DatePublished = DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss");
 

@@ -38,7 +38,7 @@ namespace DromAutoTrader.Prices
                     var price = prices[i];
 
                     if (price.IsArchived == true) continue; // Если объявление в архиве
-                    if(price.PriceBuy != "1") continue; // Если не было размещено
+                    if(price.Status != "Published") continue; // Если не было размещено
 
                     worksheet.Cells[i + 2, 1].Value = price.AdDescription;
                     worksheet.Cells[i + 2, 2].Value = price.Brand;
