@@ -1,5 +1,4 @@
 using Newtonsoft.Json;
-using Org.BouncyCastle.Crypto;
 using System.Net;
 
 public class DromAdPublisher
@@ -38,14 +37,17 @@ public class DromAdPublisher
         if (adPublishingInfo == null) return 0;
 
         // Если флаг для обновления, обновляем и выходим
-        if (adPublishingInfo.Status == "Updating") 
+        if (adPublishingInfo.Status == "Updating")
         {
             await UdateBulletinAsync(adPublishingInfo);
             return 0;
         }
 
+        // На всякий случай делаю рандом
+        Random random = new Random();
+        await Task.Delay(random.Next(700, 2300));
         // Иначе публикуем
-        long dromId = await SavebulletinAsync(adPublishingInfo);        
+        long dromId = await SavebulletinAsync(adPublishingInfo);
 
         return dromId;
     }
@@ -57,6 +59,7 @@ public class DromAdPublisher
         if (adPublishingInfo == null)
             return 0;
 
+        long dromId = 0;
 
         var Fields = new Dictionary<string, object>
         {
@@ -68,8 +71,13 @@ public class DromAdPublisher
             { "text", adPublishingInfo?.Description }, // Описание
             { "goodPresentState", "present"}, // В наличии
             {  "cityId", 340},
+            { "guarantee", "Принимаем товар в оригинальной упаковке и без следов установки к обмену и возврату в течение 7 дней со дня покупки"},
+            { "delivery.comment", "Наша компания осуществляет доставку по городу Иркутск совершенно бесплатно, оплата производится после получения товара на руки!, Оплата наличными,, безналичный расчет, или переводом на карту СБЕР ВТБ"},
+
+
         };
 
+        // Изображения
         var imeageIds = await UploadImagesAsync(adPublishingInfo); // Загружаю изображения, получаю их ID
         var Images = new Images()
         {
@@ -78,6 +86,7 @@ public class DromAdPublisher
             masterImageId = imeageIds.FirstOrDefault(),
         };
 
+        // Контакты
         var contacts = new
         {
             contactInfo = _channelName == "AutoBot38" ? "+7 950 077-76-98" : "+7 914 905-70-76",
@@ -85,6 +94,7 @@ public class DromAdPublisher
             is_email_hidden = false
         };
 
+        // Объект для отправки
         var payload = new PayLoad
         {
             AddingType = "bulletin",
@@ -93,9 +103,12 @@ public class DromAdPublisher
             images = Images
         };
 
-
+        // Дополнительный поля
         Fields.Add("price", new List<object> { adPublishingInfo?.OutputPrice, "RUB" });
         Fields.Add("contacts", contacts);
+        string side = adPublishingInfo.KatalogName.Contains("лев") ? "left" : "right";
+        Fields.Add("name", side);
+
 
         // Преобразовываем Payload в нужный формат
         var formattedPayload = $"changeDescription={System.Text.Json.JsonSerializer.Serialize(payload)}";
@@ -112,26 +125,32 @@ public class DromAdPublisher
                 var responseContent = response.Content.ReadAsStringAsync().Result;
                 DromResponse responseObj = JsonConvert.DeserializeObject<DromResponse>(responseContent);
 
-                if (responseObj == null) return 0;
-                if (responseObj.Id == 0) return 0;
+                if (responseObj == null) return dromId;
+                if (responseObj.Id == 0) return dromId;
 
                 // Получаю id дрома на это объявление
                 adPublishingInfo.DromeId = responseObj.Id;
-                return await PublishAdAsync(adPublishingInfo);
+
+                if (responseObj.isDraft == true)
+                {
+                    dromId =  await PublishAdAsync(adPublishingInfo);
+                    return dromId;
+                }  
             }
             else
             {
                 _logMessage = $"Не удалось добавить объявление, {adPublishingInfo?.Id}";
                 _logger.Error(_logMessage);
-                return 0;
+                return dromId;
             }
         }
         catch (Exception ex)
         {
             _logMessage = $"Не удалось добавить объявление, {adPublishingInfo?.Id} по причине: {ex.Message}";
             _logger.Error(_logMessage);
-            return 0;
+            return dromId;
         }
+        return dromId;
     }
 
     // Выгрузка изображений
@@ -143,7 +162,10 @@ public class DromAdPublisher
         var ids = new List<long>();
         var apiUrl = "https://baza.drom.ru/upload-image-jquery";
 
-        foreach (var image in adPublishingInfo?.ImagesPaths)
+        List<string> images = adPublishingInfo?.ImagesPath?.Split(";").ToList();
+        if (images.Count == 0) return ids;
+
+        foreach (var image in images)
         {
             try
             {
@@ -162,7 +184,7 @@ public class DromAdPublisher
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
                     var decode = JsonConvert.DeserializeObject<dynamic>(responseContent);
-                    var imageId = (long?)decode.id;
+                    var imageId = (long?)decode?.id;
 
                     if (imageId.HasValue)
                     {
@@ -171,7 +193,9 @@ public class DromAdPublisher
                 }
                 else
                 {
-                    return null!;
+                    _logMessage = $"Не удалось загрузить изображение, {adPublishingInfo?.Id} ";
+                    _logger.Error(_logMessage);
+                    return ids;
                 }
             }
             catch (Exception ex)
