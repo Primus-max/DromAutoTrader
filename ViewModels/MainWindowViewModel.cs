@@ -652,9 +652,9 @@ namespace DromAutoTrader.ViewModels
                                     );
 
 
-                bool isPublished = await dromAdPublisher.PublishAdAsync(adInfo);
+                long dromId = await dromAdPublisher.Run(adInfo);
 
-                if (isPublished)
+                if (dromId > 0)
                 {
                     Console.WriteLine($"Публикация {adInfo.Artikul} || {adInfo.Brand} || канал: {adInfo.AdDescription}");
 
@@ -663,6 +663,7 @@ namespace DromAutoTrader.ViewModels
                     if (existingAdInfo != null)
                     {
                         existingAdInfo.PriceBuy = "1";
+                        existingAdInfo.DromeId = dromId;
                         existingAdInfo.DatePublished = DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss");
 
                         // Информирую о прогрессе
@@ -687,7 +688,7 @@ namespace DromAutoTrader.ViewModels
                     catch (Exception ex)
                     {
                         // Обработка ошибок при добавлении в базу данных
-                        Console.WriteLine($"ОШибка {ex.ToString()} в методе ProcessChannelAdsAsync");
+                        _logger.Error($"ОШибка {ex.ToString()} в методе ProcessChannelAdsAsync");
                     }
                 }
 
