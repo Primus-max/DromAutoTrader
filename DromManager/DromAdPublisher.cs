@@ -45,7 +45,7 @@ public class DromAdPublisher
 
         // На всякий случай делаю рандом
         Random random = new Random();
-        await Task.Delay(random.Next(700, 2300));
+        await Task.Delay(random.Next(4000, 12000));
         // Иначе публикуем
         long dromId = await SavebulletinAsync(adPublishingInfo);
 
@@ -89,7 +89,7 @@ public class DromAdPublisher
         // Контакты
         var contacts = new
         {
-            contactInfo = _channelName == "AutoBot38" ? "+7 950 077-76-98" : "+7 914 905-70-76",
+            contactInfo = "+7 914 905-70-76",
             email = "",
             is_email_hidden = false
         };
@@ -273,8 +273,9 @@ public class DromAdPublisher
 
         var contacts = new
         {
-            contactInfo = _channelName == "AutoBot38" ? "+7 950 077-76-98" : "+7 914 905-70-76",
-            email = "",
+            //contactInfo = _channelName == "AutoBot38" ? "+7 950 077-76-98" : "+7 914 905-70-76",
+            contactInfo =  "+79144848459",
+            email = "hironero11@yandex.ru",
             is_email_hidden = false
         };
 

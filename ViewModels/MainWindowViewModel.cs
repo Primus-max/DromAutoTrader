@@ -540,6 +540,8 @@ namespace DromAutoTrader.ViewModels
            
             foreach (var price in prices)
             {
+                if (string.IsNullOrEmpty(price.Artikul) && string.IsNullOrEmpty(price.Brand)) continue;
+
                 elCount++;
 
                 List<AdPublishingInfo> adPublishingInfoList = new List<AdPublishingInfo>();
