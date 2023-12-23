@@ -1,3 +1,5 @@
+using NPOI.SS.Util;
+
 namespace DromAutoTrader.DromManager
 {
     /// <summary>
@@ -26,19 +28,21 @@ namespace DromAutoTrader.DromManager
         /// Метод точка входа для размещения объявления на Drom
         /// </summary>
         /// <param name="adTitle"></param>
-        public async Task<bool> PublishAdAsync(AdPublishingInfo adPublishingInfo)
+        public async Task<long> PublishAdAsync(AdPublishingInfo adPublishingInfo)
         {
-            bool isPublited = false;
-            if (adPublishingInfo == null) return isPublited;
+            bool isPublished = false;
+            if (adPublishingInfo == null) return 0;
 
+            long dromId = 0;
+            
             // Глобально ожидание
             _wait = new(_driver, TimeSpan.FromSeconds(10));
 
             // Если установлен этот флаг, значит нужно обновить объявление. Убираем в архив, добавляем новое
-            if (adPublishingInfo.Status == "")
+            if (adPublishingInfo.Status == "Updating")
             {
-                isPublited = await EditAdInfo(adPublishingInfo);
-                return isPublited; // Выхожу после редактирования. Дальше нам не надо
+                await EditAdInfo(adPublishingInfo);
+                return 0; // Выхожу после редактирования. Дальше нам не надо
             }
 
             await Task.Delay(200);
@@ -89,13 +93,13 @@ namespace DromAutoTrader.DromManager
             // Публикую
             await Task.Delay(200);
 
-            isPublited = ClickPublishButton();
+            isPublished = ClickPublishButton();
 
             // Если объявление разместил, то записываю Id
-            if (isPublited)
-                WriteDromeId(adPublishingInfo);
+            if (isPublished)
+                dromId =  WriteDromeId(adPublishingInfo);
 
-            return isPublited;
+            return dromId;
         }
 
         // Объединяющтй метод для редактирования
@@ -127,23 +131,15 @@ namespace DromAutoTrader.DromManager
         }
 
         // Метод записи DromeId
-        private void WriteDromeId(AdPublishingInfo adPublishingInfo)
+        private long WriteDromeId(AdPublishingInfo adPublishingInfo)
         {
             using var context = new AppContext();
             var existingAdInfo = context.AdPublishingInfo.Find(adPublishingInfo.Id);
 
             string postedAdUrl = _driver.Url;
-            int dromeId = GetDromeId(postedAdUrl);
-            adPublishingInfo.DromeId = dromeId;
+            long dromeId = GetDromeId(postedAdUrl);           
 
-            try
-            {
-                context.SaveChanges();
-            }
-            catch (Exception)
-            {
-
-            }
+            return dromeId;
         }
 
         // Открываю ссылку для редактирования объявления
@@ -162,7 +158,7 @@ namespace DromAutoTrader.DromManager
         }
 
         // Получаю ID из ссылки
-        private int GetDromeId(string url)
+        private long GetDromeId(string url)
         {
             // Используем регулярное выражение для поиска числовых значений после последнего "/"
             Match match = Regex.Match(url, @"/(\d+).html");
@@ -170,7 +166,7 @@ namespace DromAutoTrader.DromManager
             if (match.Success)
             {
                 // Преобразуем найденное значение в int
-                if (int.TryParse(match.Groups[1].Value, out int id))
+                if (long.TryParse(match.Groups[1].Value, out long id))
                 {
                     return id;
                 }
