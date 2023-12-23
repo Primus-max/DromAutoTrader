@@ -654,7 +654,7 @@ namespace DromAutoTrader.ViewModels
                                     );
 
 
-                long dromId = await dromAdPublisher.Run(adInfo);
+                long dromId = await dromAdPublisher.PublishAdAsync(adInfo);
 
                 if (dromId > 0)
                 {
