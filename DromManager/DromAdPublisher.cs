@@ -1,353 +1,570 @@
-using Newtonsoft.Json;
-using System.Net;
-
-public class DromAdPublisher
+namespace DromAutoTrader.DromManager
 {
-    private string gooodsUrl = "https://baza.drom.ru/adding?type=goods";
-    private CookieContainer _cookieContainer = new CookieContainer();
-    private readonly HttpClientHandler _handler;
-    private readonly HttpClient _httpClient;
-    private IWebDriver _driver = null!;
-    private BrowserManager adsPower = null!;
-    private List<Profile> profiles = null!;
-    private WebDriverWait _wait = null!;
-    private readonly string? _channelName = null!;
-    private readonly Logger _logger;
-    private string _logMessage;
-
-    public DromAdPublisher(string channelName)
+    /// <summary>
+    /// Класс для публикации объявлений на Drom
+    /// </summary>
+    public class DromAdPublisher
     {
-        _channelName = channelName;
-        adsPower = new BrowserManager();
+        private string gooodsUrl = new("https://baza.drom.ru/adding?type=goods");
+        private string archivedUrl = new("https://baza.drom.ru/personal/archived/bulletins");
+        private IWebDriver _driver = null!;
+        private BrowserManager adsPower = null!;
+        private List<Profile> profiles = null!;
+        private WebDriverWait _wait = null!;
+        private readonly string? _channelName = null!;
 
-        _logger = new LoggingService().ConfigureLogger();
-
-        // Инициализация драйвера Chrome
-        InitializeDriver(channelName).GetAwaiter().GetResult();
-
-        // Открываю страницу, сохраняю куки
-        NavigateToGoodsUrlAsync();
-        string cookieName = "boobs";
-        string cookieValue = "5706beeb16aa0c41fe30c7b3f4472058326085e9e9bf549dc04585b1200b78a6u5f1514";
-        string domain = ".drom.ru"; // Замените на соответствующий домен
-
-        // Создайте объект Cookie с указанным именем и значением
-        System.Net.Cookie cookie = new System.Net.Cookie(cookieName, cookieValue, "/", domain);
-
-        // Добавьте куки к заголовкам запроса
-        _httpClient = new HttpClient();
-        _httpClient.DefaultRequestHeaders.Add("Cookie", $"{cookie.Name}={cookie.Value}");
-
-        // Теперь вы можете использовать httpClient для выполнения запросов
-
-    }
-
-    public async Task<long> Run(AdPublishingInfo adPublishingInfo)
-    {
-        if (adPublishingInfo == null) return 0;
-
-        // Если флаг для обновления, обновляем и выходим
-        //if (adPublishingInfo.Status == "Updating")
-        //{
-        //    await UdateBulletinAsync(adPublishingInfo);
-        //    return 0;
-        //}
-
-        // На всякий случай делаю рандом
-        Random random = new Random();
-        await Task.Delay(random.Next(4000, 12000));
-        // Иначе публикуем
-        long dromId = await SavebulletinAsync(adPublishingInfo);
-
-        return dromId;
-    }
-
-
-    // Создаю и добавляю объявление
-    private async Task<long> SavebulletinAsync(AdPublishingInfo adPublishingInfo)
-    {
-        if (adPublishingInfo == null)
-            return 0;
-
-        long dromId = 0;
-
-        var Fields = new Dictionary<string, object>
+        public DromAdPublisher(string channelName)
         {
-            { "subject", adPublishingInfo?.KatalogName }, // Заголовок
-            { "condition", "new" },
-            { "autoPartsOemNumber", adPublishingInfo?.Artikul }, // Артикул
-            { "autoPartsAuthenticity", "original" },
-            { "manufacturer", adPublishingInfo?.Brand }, // Бренд
-            { "text", adPublishingInfo?.Description }, // Описание
-            { "goodPresentState", "present"}, // В наличии
-            {  "cityId", 340},
-            { "guarantee", "Принимаем товар в оригинальной упаковке и без следов установки к обмену и возврату в течение 7 дней со дня покупки"},
-            { "delivery.comment", "Доставка курьером по городу при заказе от 1500р. Оплата за товар производится только после получения товара."},
+            _channelName = channelName;
+            adsPower = new BrowserManager();
 
+            // Инициализация драйвера Chrome
+            InitializeDriver(channelName).GetAwaiter().GetResult();
+        }
 
-        };
-
-        // Изображения
-        var imeageIds = await UploadImagesAsync(adPublishingInfo); // Загружаю изображения, получаю их ID
-        var Images = new Images()
+        /// <summary>
+        /// Метод точка входа для размещения объявления на Drom
+        /// </summary>
+        /// <param name="adTitle"></param>
+        public async Task<bool> PublishAdAsync(AdPublishingInfo adPublishingInfo)
         {
-            isShowCompanyLogo = false,
-            images = imeageIds,
-            masterImageId = imeageIds.FirstOrDefault(),
-        };
+            bool isPublited = false;
+            if (adPublishingInfo == null) return isPublited;
 
-        // Контакты
-        var contacts = new
-        {
-            contactInfo = "+7 914 516-92-22",
-            email = "",
-            is_email_hidden = false
-        };
+            // Глобально ожидание
+            _wait = new(_driver, TimeSpan.FromSeconds(10));
 
-        // Объект для отправки
-        var payload = new PayLoad
-        {
-            AddingType = "bulletin",
-            DirectoryId = 14,
-            Fields = Fields,
-            images = Images
-        };
-
-        // Дополнительный поля
-        Fields.Add("price", new List<object> { adPublishingInfo?.OutputPrice, "RUB" });
-        Fields.Add("contacts", contacts);
-        string side = adPublishingInfo.KatalogName.Contains("лев") ? "left" : "right";
-        Fields.Add("name", side);
-
-
-        // Преобразовываем Payload в нужный формат
-        var formattedPayload = $"changeDescription={System.Text.Json.JsonSerializer.Serialize(payload)}";
-
-        try
-        {
-            // Отправка POST-запроса с использованием StringContent
-            var content = new StringContent(formattedPayload, Encoding.UTF8, "application/x-www-form-urlencoded");
-            var response = _httpClient.PostAsync("https://baza.drom.ru/api/1.0/save/bulletin", content).Result;
-
-            // Обработка ответа
-            if (response.IsSuccessStatusCode)
+            // Если установлен этот флаг, значит нужно обновить объявление. Убираем в архив, добавляем новое
+            if (adPublishingInfo.Status == "")
             {
-                var responseContent = response.Content.ReadAsStringAsync().Result;
-                DromResponse responseObj = JsonConvert.DeserializeObject<DromResponse>(responseContent);
+                isPublited = await EditAdInfo(adPublishingInfo);
+                return isPublited; // Выхожу после редактирования. Дальше нам не надо
+            }
 
-                if (responseObj == null) return dromId;
-                if (responseObj.Id == 0) return dromId;
+            await Task.Delay(200);
+            OpenGoodsPage();
 
-                // Получаю id дрома на это объявление
-                adPublishingInfo.DromeId = responseObj.Id;
+            await Task.Delay(200);
+            SetWindowSize();
 
-                if (responseObj.isDraft == true)
+            await Task.Delay(200);
+            CloseAllTabsExceptCurrent();
+            await Task.Delay(200);
+            // Устанавливаю заголовок объявления
+            TitleInput(adPublishingInfo.KatalogName);
+            await Task.Delay(1000);
+
+            ClickDirControlVariant();
+            await Task.Delay(200);
+            ClickBulletinTypeVariant();
+            List<string> ImagesPaths = adPublishingInfo.ImagesPath.Split(";").ToList();
+
+            // Вставляю изображение
+            foreach (var imagePath in ImagesPaths)
+            {
+                await Task.Delay(200);
+                string absolutePath = Path.Combine(Environment.CurrentDirectory, imagePath);
+                InsertImage(absolutePath);
+            }
+
+            await Task.Delay(200);
+            // Бренд для публикации
+            BrandInput(adPublishingInfo?.Brand);
+
+            await Task.Delay(200);
+            // Артикул для публикации
+            ArticulInput(adPublishingInfo?.Artikul);
+            await Task.Delay(200);
+            // Цена для публикации
+            PriceInput(adPublishingInfo?.OutputPrice?.ToString());
+            await Task.Delay(200);
+            DescriptionTextInput(adPublishingInfo?.Description);
+            await Task.Delay(200);
+            // Кнопка наличие или под заказ
+            GoodPresentState();
+            await Task.Delay(200);
+            // Проверяю заполненность полей
+            CheckAndFillRequiredFields();
+
+            // Публикую
+            await Task.Delay(200);
+
+            isPublited = ClickPublishButton();
+
+            // Если объявление разместил, то записываю Id
+            if (isPublited)
+                WriteDromeId(adPublishingInfo);
+
+            return isPublited;
+        }
+
+        // Объединяющтй метод для редактирования
+        private async Task<bool> EditAdInfo(AdPublishingInfo adPublishingInfo)
+        {
+            bool isPublited = false;
+
+            OpenEditePage(adPublishingInfo);
+
+            await Task.Delay(200);
+            CloseAllTabsExceptCurrent();
+
+            await Task.Delay(200);
+            // Цена для публикации
+            PriceInput(adPublishingInfo?.OutputPrice?.ToString());
+
+            // Проверяю заполненность полей
+            CheckAndFillRequiredFields();
+
+            isPublited = ClickPublishButton();
+
+            // Если объявление разместил, то записываю Id
+            if (isPublited)
+            {
+                WriteDromeId(adPublishingInfo);
+            }
+
+            return isPublited;
+        }
+
+        // Метод записи DromeId
+        private void WriteDromeId(AdPublishingInfo adPublishingInfo)
+        {
+            using var context = new AppContext();
+            var existingAdInfo = context.AdPublishingInfo.Find(adPublishingInfo.Id);
+
+            string postedAdUrl = _driver.Url;
+            int dromeId = GetDromeId(postedAdUrl);
+            adPublishingInfo.DromeId = dromeId;
+
+            try
+            {
+                context.SaveChanges();
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
+        // Открываю ссылку для редактирования объявления
+        private void OpenEditePage(AdPublishingInfo adPublishing)
+        {
+            string editeUrl = "";
+            string fullUrl = editeUrl + adPublishing.DromeId.ToString();
+
+            try
+            {
+                _driver.Navigate().GoToUrl(fullUrl);
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        // Получаю ID из ссылки
+        private int GetDromeId(string url)
+        {
+            // Используем регулярное выражение для поиска числовых значений после последнего "/"
+            Match match = Regex.Match(url, @"/(\d+).html");
+
+            if (match.Success)
+            {
+                // Преобразуем найденное значение в int
+                if (int.TryParse(match.Groups[1].Value, out int id))
                 {
-                    dromId =  await PublishAdAsync(adPublishingInfo);
-                    return dromId;
-                }  
+                    return id;
+                }
             }
-            else
-            {
-                _logMessage = $"Не удалось добавить объявление, {adPublishingInfo?.Id}";
-                _logger.Error(_logMessage);
-                return dromId;
-            }
+
+            // Если не удалось извлечь ID, возвращаем значение по умолчанию (например, -1)
+            return -1;
         }
-        catch (Exception ex)
-        {
-            _logMessage = $"Не удалось добавить объявление, {adPublishingInfo?.Id} по причине: {ex.Message}";
-            _logger.Error(_logMessage);
-            return dromId;
-        }
-        return dromId;
-    }
 
-    // Выгрузка изображений
-    public async Task<List<long>> UploadImagesAsync(AdPublishingInfo adPublishingInfo)
-    {
-        if (adPublishingInfo == null || adPublishingInfo?.ImagesPaths?.Count == 0)
-            return null!;
-
-        var ids = new List<long>();
-        var apiUrl = "https://baza.drom.ru/upload-image-jquery";
-
-        List<string> images = adPublishingInfo?.ImagesPath?.Split(";").ToList();
-        if (images.Count == 0) return ids;
-
-        foreach (var image in images)
+        // Метод открытия страницы с размещением объявления
+        public void OpenGoodsPage()
         {
             try
             {
-                using var content = new MultipartFormDataContent();
-                var fileBytes = File.ReadAllBytes(image); // Предполагается, что в вашем классе Image есть свойство Path
-                content.Add(new ByteArrayContent(fileBytes), "up[]", "image.jpg");
+                // Открытие URL
+                _driver.Navigate().GoToUrl(gooodsUrl);
+            }
+            catch (Exception)
+            {
+                //MessageBox.Show($"ОШибка {ex.ToString()} в методе OpenGoodsPage");
+            }
+        }
 
-                var request = new HttpRequestMessage(HttpMethod.Post, apiUrl)
+
+        // Метод установки размера экрана
+        public void SetWindowSize()
+        {
+            try
+            {
+                // Установка размера окна браузера
+                _driver.Manage().Window.Maximize();
+            }
+            catch (Exception)
+            {
+                //MessageBox.Show("Ошибка при установке размера окна: " + ex.Message);
+            }
+        }
+
+        // Метод скроллинга
+        public void ScrollToElement(IWebElement element)
+        {
+            try
+            {
+                // Прокрутка страницы к указанному элементу
+                ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].scrollIntoView(true);", element);
+            }
+            catch (Exception)
+            {
+                // MessageBox.Show("Ошибка при прокрутке к элементу: " + ex.Message);
+            }
+        }
+
+        // Метод получение input заголовка и ввода текста
+        public void TitleInput(string text)
+        {
+            try
+            {
+                // Ввод текста в поле ввода
+                IWebElement subjectInput = _wait.Until(e => e.FindElement(By.Name("subject")));
+
+                subjectInput.Clear();
+                subjectInput.SendKeys(text);
+                //ClearAndEnterText(subjectInput, text);
+            }
+            catch (Exception)
+            {
+                //MessageBox.Show("Ошибка при вводе текста в поле 'subject': " + ex.Message);
+            }
+        }
+
+        // Метод открытия разделов
+        public void ClickDirControlVariant()
+        {
+            try
+            {
+                // Нахождение и клик по элементу по CSS селектору
+                IWebElement dirControlVariant = _wait.Until(e => e.FindElement(By.CssSelector("label.button.dir_control__variant[data-action='accept-dir'][data-value='14']")));
+                ScrollToElement(dirControlVariant);
+
+                dirControlVariant.Click();
+            }
+            catch (Exception)
+            {
+                //MessageBox.Show("Ошибка при клике на элемент 'dir_control__variant': " + ex.Message);
+            }
+        }
+
+        // Метод выбора раздела
+        public void ClickBulletinTypeVariant()
+        {
+            try
+            {
+                // Нахождение и клик по элементу по CSS селектору
+                IWebElement bulletinTypeVariant = _wait.Until(e => e.FindElement(By.CssSelector(".choice-w-caption__variant:nth-child(1) .bulletin-type__variant-title")));
+                ScrollToElement(bulletinTypeVariant);
+
+                bulletinTypeVariant.Click();
+            }
+            catch (Exception)
+            {
+                //MessageBox.Show("Ошибка при клике на элемент 'bulletin-type__variant-title': " + ex.Message);
+            }
+        }
+
+        // Метод вставки картинок
+        public void InsertImage(string imgPath)
+        {
+            try
+            {
+                // Найти элемент <input type="file>
+                IWebElement fileInput = _wait.Until(e => e.FindElement(By.Name("up[]")));
+
+                ScrollToElement(fileInput);
+
+                // Вставить путь к изображению в элемент
+                fileInput.SendKeys(imgPath);
+            }
+            catch (Exception)
+            {
+                //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
+            }
+        }
+
+        // Метод получения инпута и вставки имени брэнда
+        public void BrandInput(string brandName)
+        {
+            try
+            {
+                // Найти элемент <input type="file>
+                IWebElement brandNameInput = _wait.Until(e => e.FindElement(By.Name("manufacturer")));
+
+                if (string.IsNullOrEmpty(brandNameInput.Text))
                 {
-                    Content = content
-                };
 
-                var response = await _httpClient.SendAsync(request);
+                    ScrollToElement(brandNameInput);
 
-                if (response.IsSuccessStatusCode)
+                    brandNameInput.Clear();
+                    brandNameInput.SendKeys(brandName);
+                    // Вставить путь к изображению в элемент
+                    //ClearAndEnterText(brandNameInput, brandName);
+                }
+
+            }
+            catch (Exception)
+            {
+                //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
+            }
+        }
+
+        // Метод получения инпута и вставки номера 
+        public void ArticulInput(string articulName)
+        {
+            try
+            {
+                // Найти элемент <input type="file>
+                IWebElement articulNameInput = _wait.Until(e => e.FindElement(By.Name("autoPartsOemNumber")));
+
+                if (string.IsNullOrEmpty(articulNameInput.Text))
                 {
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    var decode = JsonConvert.DeserializeObject<dynamic>(responseContent);
-                    var imageId = (long?)decode?.id;
 
-                    if (imageId.HasValue)
+                    ScrollToElement(articulNameInput);
+
+                    articulNameInput.Clear();
+                    articulNameInput.SendKeys(articulName);
+                    //ClearAndEnterText(articulNameInput, articulName);
+                }
+
+            }
+            catch (Exception)
+            {
+                //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
+            }
+        }
+
+        // Метод получения инпута и вставки цены 
+        public void PriceInput(string price)
+        {
+            try
+            {
+                // Найти элемент <input type="file>
+                IWebElement priceInput = _wait.Until(e => e.FindElement(By.Name("price")));
+
+                ScrollToElement(priceInput);
+
+                priceInput.Clear();
+                priceInput.SendKeys(price);
+                //ClearAndEnterText(priceInput, price);
+
+            }
+            catch (Exception)
+            {
+                //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
+            }
+        }
+
+        // Метод получения кнопки выбора состояния (новое или б/у)
+        public void Сondition()
+        {
+            try
+            {
+                IWebElement stateButton = _wait.Until(e => e.FindElement(By.XPath("//label[text()='Новый']")));
+
+                // Выполнить клик на элементе с использованием JavaScript
+                IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)_driver;
+                jsExecutor.ExecuteScript("arguments[0].click();", stateButton);
+            }
+            catch (Exception)
+            {
+                //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
+            }
+        }
+
+        // Метод получения инпута и вставки описания 
+        public void DescriptionTextInput(string description)
+        {
+            try
+            {
+                // Найти элемент <input type="file>
+                IWebElement descriptionTextInput = _wait.Until(e => e.FindElement(By.Name("text")));
+
+                ScrollToElement(descriptionTextInput);
+
+
+                descriptionTextInput.Clear();
+                descriptionTextInput.SendKeys(description);
+                //ClearAndEnterText(descriptionTextInput, description);
+            }
+            catch (Exception)
+            {
+                //MessageBox.Show($"ОШибка {ex.ToString()} в методе DescriptionTextInput");
+            }
+        }
+
+        // Метод получения кнопки наличия или под заказ
+        public void GoodPresentState()
+        {
+            try
+            {
+
+                IWebElement presentPartBtn = _wait.Until(e => e.FindElement(By.XPath("//label[text()='В наличии']")));
+
+                // Выполнить клик на элементе с использованием JavaScript
+                IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)_driver;
+                jsExecutor.ExecuteScript("arguments[0].click();", presentPartBtn);
+            }
+            catch (Exception)
+            {
+                //MessageBox.Show("Произошла ошибка при вставке изображения: " + ex.Message);
+            }
+        }
+
+        // Метод публицкации объявления
+        public bool ClickPublishButton()
+        {
+            WebDriverWait wait = new(_driver, TimeSpan.FromSeconds(5));
+            try
+            {
+                // Нахождение и клик по элементу по ID
+                IWebElement bulletinPublicationFree = wait.Until(e => e.FindElement(By.Id("bulletin_publication_free")));
+
+                ScrollToElement(bulletinPublicationFree);
+
+
+                // Выполнить клик на элементе с использованием JavaScript
+                IJavaScriptExecutor jsExecutor = (IJavaScriptExecutor)_driver;
+                jsExecutor.ExecuteScript("arguments[0].click();", bulletinPublicationFree);
+                //bulletinPublicationFree.Click();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                //TODO добавить логирование
+                //MessageBox.Show("Ошибка при клике на кнопку 'Опубликовать': " + ex.Message);
+                CheckAndFillRequiredFields(); // Если попали сюда, надо проверить, все ли поля заполнены
+                return false;
+            }
+        }
+
+        // Метод ввода текста в Input, сначала отчищаем, потом вводим
+        //private static void ClearAndEnterText(IWebElement element, string text)
+        //{
+        //    Random random = new Random();
+
+        //    element.Clear(); // Очищаем элемент перед вводом текста
+
+        //    foreach (char letter in text)
+        //    {
+        //        if (letter == '\b')
+        //        {
+        //            // Если символ является символом backspace, удаляем следующий символ
+        //            element.SendKeys(Keys.Delete);
+        //        }
+        //        else
+        //        {
+        //            // Вводим символ
+        //            element.SendKeys(letter.ToString());
+        //        }
+
+        //        Thread.Sleep(random.Next(10, 20));  // Добавляем небольшую паузу между вводом каждого символа
+        //    }
+
+        //    element.Submit();
+        //    Thread.Sleep(random.Next(100, 200));
+        //}
+
+        // Закрываю все кладки кроме текущей
+        private void CloseAllTabsExceptCurrent()
+        {
+            string currentWindowHandle = _driver.CurrentWindowHandle;
+
+            foreach (string windowHandle in _driver.WindowHandles)
+            {
+                if (windowHandle != currentWindowHandle)
+                {
+                    _driver.SwitchTo().Window(windowHandle);
+                    _driver.Close();
+                }
+                Thread.Sleep(200);
+            }
+
+            // Вернуться на исходную вкладку
+            _driver.SwitchTo().Window(currentWindowHandle);
+        }
+
+        // Метод проверки на валидность заполненной формы
+        public void CheckAndFillRequiredFields()
+        {
+            IList<IWebElement> liElements = null!;
+
+            try
+            {
+                //liElements = _driver.FindElements(By.CssSelector("ul.bulletin_adding__completeness_watcher__fields li"));
+                liElements = _wait.Until(e => e.FindElements(By.CssSelector("ul.bulletin_adding__completeness_watcher__fields li")));
+            }
+            catch (Exception)
+            {
+                return;
+            }
+
+            foreach (IWebElement liElement in liElements)
+            {
+                string dataRequired = string.Empty;
+                string dataName = string.Empty;
+
+                try
+                {
+                    dataRequired = liElement.GetAttribute("data-required");
+                }
+                catch (Exception) { }
+
+                try
+                {
+                    dataName = liElement.GetAttribute("data-name");
+                }
+                catch (Exception) { }
+
+                if (dataRequired == "1")
+                {
+                    // Вызываем соответствующий метод заполнения поля на основе data-name
+                    switch (dataName)
                     {
-                        ids.Add(imageId.Value);
+                        case "condition":
+                            Сondition();
+                            Thread.Sleep(500);
+                            break;
+                        case "goodPresentState":
+                            GoodPresentState();
+                            Thread.Sleep(500);
+                            break;
+                            // Добавьте другие case для других полей
                     }
                 }
-                else
+            }
+
+        }
+
+
+        // Инициализация драйвера       
+        private async Task InitializeDriver(string channelName)
+        {
+            try
+            {
+                List<Profile> profiles = await ProfileManager.GetProfiles();
+
+                foreach (Profile profile in profiles)
                 {
-                    _logMessage = $"Не удалось загрузить изображение, {adPublishingInfo?.Id} ";
-                    _logger.Error(_logMessage);
-                    return ids;
+                    if (profile.Name != channelName || profile == null) continue;
+
+                    _driver = await adsPower.InitializeDriver(profile.UserId);
                 }
             }
-            catch (Exception ex)
-            {
-                _logMessage = $"Не удалось загрузить изображение, {adPublishingInfo?.Id} по причине: {ex.Message}";
-                _logger.Error(_logMessage);
-                return ids;
-            }
+            catch (Exception) { }
         }
-
-        return ids;
-    }
-
-    // Публикация
-    public async Task<long> PublishAdAsync(AdPublishingInfo adPublishingInfo)
-    {
-        if (adPublishingInfo.DromeId <= 0 || adPublishingInfo == null)
-            return 0;
-
-        var apiUrl = $"https://baza.drom.ru/bulletin/{adPublishingInfo.DromeId}/draft/publish";
-
-        try
-        {
-            var request = new HttpRequestMessage(HttpMethod.Get, apiUrl);
-
-            var response = await _httpClient.SendAsync(request);
-
-            if (response.IsSuccessStatusCode)
-            {
-                return adPublishingInfo.DromeId;
-            }
-            else
-            {
-                _logMessage = $"Не удалось опубликовать объявление, {adPublishingInfo.Id}";
-                _logger.Error(_logMessage);
-                return 0;
-            }
-        }
-        catch (Exception ex)
-        {
-            _logMessage = $"Не удалось опубликовать объявление, {adPublishingInfo?.Id} по причине: {ex.Message}";
-            _logger.Error(_logMessage);
-            return 0;
-        }
-    }
-
-    // Метод обновления объявления
-    private async Task UdateBulletinAsync(AdPublishingInfo adPublishingInfo)
-    {
-        string url = $"https://baza.drom.ru/bulletin/{adPublishingInfo.DromeId}/edit";
-
-        if (adPublishingInfo == null)
-            return;
-
-
-        var Fields = new Dictionary<string, object>
-        {
-            { "subject", adPublishingInfo?.KatalogName }, // Заголовок
-            { "condition", "new" },
-            { "autoPartsOemNumber", adPublishingInfo?.Artikul }, // Артикул
-            { "autoPartsAuthenticity", "original" },
-            { "manufacturer", adPublishingInfo?.Brand }, // Бренд
-            { "text", adPublishingInfo?.Description }, // Описание
-            { "goodPresentState", "present"}, // В наличии
-            {  "cityId", 340},
-        };
-
-        var imeageIds = await UploadImagesAsync(adPublishingInfo); // Загружаю изображения, получаю их ID
-        var Images = new Images()
-        {
-            isShowCompanyLogo = false,
-            images = imeageIds,
-            masterImageId = imeageIds.FirstOrDefault(),
-        };
-
-        var contacts = new
-        {
-            //contactInfo = _channelName == "AutoBot38" ? "+7 950 077-76-98" : "+7 914 905-70-76",
-            contactInfo =  "+79144848459",
-            email = "hironero11@yandex.ru",
-            is_email_hidden = false
-        };
-
-        var payload = new PayLoad
-        {
-            AddingType = "bulletin",
-            DirectoryId = 14,
-            Fields = Fields,
-            images = Images
-        };
-
-
-        Fields.Add("price", new List<object> { adPublishingInfo?.OutputPrice, "RUB" });
-        Fields.Add("contacts", contacts);
-
-        // Преобразовываем Payload в нужный формат
-        var formattedPayload = $"changeDescription={System.Text.Json.JsonSerializer.Serialize(payload)}";
-
-        try
-        {
-            // Отправка POST-запроса с использованием StringContent
-            var content = new StringContent(formattedPayload, Encoding.UTF8, "application/x-www-form-urlencoded");
-            var response = _httpClient.PostAsync(url, content).Result;
-        }
-        catch (Exception ex)
-        {
-            _logMessage = $"Не удалось обновить объявление {adPublishingInfo.DromeId}, причина {ex.Message}";
-            _logger.Error(_logMessage);
-            return;
-        }
-    }
-
-
-    // Метод перехода по ссылке и сохранения куки
-    private void NavigateToGoodsUrlAsync()
-    {
-        if (_driver != null)
-        {
-            _driver.Navigate().GoToUrl(gooodsUrl);
-            // Сохранение cookies в CookieContainer
-            var allCookies = _driver.Manage().Cookies.AllCookies;
-            foreach (var cookie in allCookies)
-            {
-                _cookieContainer.Add(new System.Net.Cookie(cookie.Name, cookie.Value, cookie.Path, cookie.Domain));
-            }
-        }
-    }
-
-    // Инициализация драейвера
-    private async Task InitializeDriver(string channelName)
-    {
-        try
-        {
-            profiles = await ProfileManager.GetProfiles();
-
-            foreach (Profile profile in profiles)
-            {
-                if (profile.Name != channelName || profile == null) continue;
-
-                _driver = await adsPower.InitializeDriver(profile.UserId);
-            }
-        }
-        catch (Exception) { }
     }
 }
+
