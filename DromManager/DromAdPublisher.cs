@@ -27,9 +27,19 @@ public class DromAdPublisher
 
         // Открываю страницу, сохраняю куки
         NavigateToGoodsUrlAsync();
+        string cookieName = "boobs";
+        string cookieValue = "5706beeb16aa0c41fe30c7b3f4472058326085e9e9bf549dc04585b1200b78a6u5f1514";
+        string domain = ".drom.ru"; // Замените на соответствующий домен
 
-        _handler = new HttpClientHandler { CookieContainer = _cookieContainer };
-        _httpClient = new HttpClient(_handler);
+        // Создайте объект Cookie с указанным именем и значением
+        System.Net.Cookie cookie = new System.Net.Cookie(cookieName, cookieValue, "/", domain);
+
+        // Добавьте куки к заголовкам запроса
+        _httpClient = new HttpClient();
+        _httpClient.DefaultRequestHeaders.Add("Cookie", $"{cookie.Name}={cookie.Value}");
+
+        // Теперь вы можете использовать httpClient для выполнения запросов
+
     }
 
     public async Task<long> Run(AdPublishingInfo adPublishingInfo)
@@ -37,11 +47,11 @@ public class DromAdPublisher
         if (adPublishingInfo == null) return 0;
 
         // Если флаг для обновления, обновляем и выходим
-        if (adPublishingInfo.Status == "Updating")
-        {
-            await UdateBulletinAsync(adPublishingInfo);
-            return 0;
-        }
+        //if (adPublishingInfo.Status == "Updating")
+        //{
+        //    await UdateBulletinAsync(adPublishingInfo);
+        //    return 0;
+        //}
 
         // На всякий случай делаю рандом
         Random random = new Random();
@@ -72,7 +82,7 @@ public class DromAdPublisher
             { "goodPresentState", "present"}, // В наличии
             {  "cityId", 340},
             { "guarantee", "Принимаем товар в оригинальной упаковке и без следов установки к обмену и возврату в течение 7 дней со дня покупки"},
-            { "delivery.comment", "Наша компания осуществляет доставку по городу Иркутск совершенно бесплатно, оплата производится после получения товара на руки!, Оплата наличными,, безналичный расчет, или переводом на карту СБЕР ВТБ"},
+            { "delivery.comment", "Доставка курьером по городу при заказе от 1500р. Оплата за товар производится только после получения товара."},
 
 
         };
@@ -89,7 +99,7 @@ public class DromAdPublisher
         // Контакты
         var contacts = new
         {
-            contactInfo = "+7 914 905-70-76",
+            contactInfo = "+7 914 516-92-22",
             email = "",
             is_email_hidden = false
         };
