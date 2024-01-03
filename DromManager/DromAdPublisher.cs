@@ -1,5 +1,3 @@
-using NPOI.SS.Util;
-
 namespace DromAutoTrader.DromManager
 {
     /// <summary>
@@ -34,7 +32,7 @@ namespace DromAutoTrader.DromManager
             if (adPublishingInfo == null) return 0;
 
             long dromId = 0;
-            
+
             // Глобально ожидание
             _wait = new(_driver, TimeSpan.FromSeconds(10));
 
@@ -56,7 +54,7 @@ namespace DromAutoTrader.DromManager
             await Task.Delay(200);
             // Устанавливаю заголовок объявления
             TitleInput(adPublishingInfo.KatalogName);
-            await Task.Delay(1000);
+            await Task.Delay(2000);
 
             ClickDirControlVariant();
             await Task.Delay(200);
@@ -97,7 +95,7 @@ namespace DromAutoTrader.DromManager
 
             // Если объявление разместил, то записываю Id
             if (isPublished)
-                dromId =  WriteDromeId(adPublishingInfo);
+                dromId = WriteDromeId(adPublishingInfo);
 
             return dromId;
         }
@@ -137,7 +135,7 @@ namespace DromAutoTrader.DromManager
             var existingAdInfo = context.AdPublishingInfo.Find(adPublishingInfo.Id);
 
             string postedAdUrl = _driver.Url;
-            long dromeId = GetDromeId(postedAdUrl);           
+            long dromeId = GetDromeId(postedAdUrl);
 
             return dromeId;
         }
@@ -160,21 +158,25 @@ namespace DromAutoTrader.DromManager
         // Получаю ID из ссылки
         private long GetDromeId(string url)
         {
-            // Используем регулярное выражение для поиска числовых значений после последнего "/"
-            Match match = Regex.Match(url, @"/(\d+).html");
-
-            if (match.Success)
+            // Разделяем URL по слешу и выбираем последний элемент
+            try
             {
-                // Преобразуем найденное значение в int
-                if (long.TryParse(match.Groups[1].Value, out long id))
+                IWebElement elementwirhId = _wait.Until(e => e.FindElement(By.CssSelector("span.viewbull-bulletin-id__num")));
+                string dromIdString = elementwirhId.Text;
+                if (long.TryParse(dromIdString.Replace("№", ""), out long id))
                 {
                     return id;
                 }
+
+            }
+            catch (Exception)
+            {
             }
 
             // Если не удалось извлечь ID, возвращаем значение по умолчанию (например, -1)
             return -1;
         }
+
 
         // Метод открытия страницы с размещением объявления
         public void OpenGoodsPage()
@@ -260,7 +262,7 @@ namespace DromAutoTrader.DromManager
             try
             {
                 // Нахождение и клик по элементу по CSS селектору
-                IWebElement bulletinTypeVariant = _wait.Until(e => e.FindElement(By.CssSelector(".choice-w-caption__variant:nth-child(1) .bulletin-type__variant-title")));
+                IWebElement bulletinTypeVariant = _wait.Until(e => e.FindElement(By.CssSelector(".choice-w-caption__variant:nth-child(1)")));
                 ScrollToElement(bulletinTypeVariant);
 
                 bulletinTypeVariant.Click();

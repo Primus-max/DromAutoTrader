@@ -14,7 +14,7 @@ namespace DromAutoTrader.Prices
         /// </summary>
         /// <param name="prices"></param>
         /// <returns>Путь к прайсу</returns>
-        public string ExportPricesToExcel(List<AdPublishingInfo> prices)
+        public async Task< string> ExportPricesToExcel(List<AdPublishingInfo> prices)
         {
             string channelName = string.Empty;
 
@@ -30,12 +30,19 @@ namespace DromAutoTrader.Prices
                 worksheet.Cells[1, 3].Value = "Артикул";
                 worksheet.Cells[1, 4].Value = "Описание";
                 worksheet.Cells[1, 5].Value = "Цена";
+                worksheet.Cells[1, 6].Value = "Фото";
+
 
                 bool isOnce = false;
                 // Заполняем данные из списка
                 for (int i = 0; i < prices.Count; i++)
                 {
                     var price = prices[i];
+                    if (price == null) continue;
+
+                    string imageLocalPath = price?.ImagesPath?.Split(";").First();
+                    
+                    string uploadedImagePathUrl = await ImageBanUploaderService.UploadImageFromFile(imageLocalPath);
 
                     if (price.IsArchived == true) continue; // Если объявление в архиве
                     if(price.Status != "Published") continue; // Если не было размещено
@@ -45,12 +52,15 @@ namespace DromAutoTrader.Prices
                     worksheet.Cells[i + 2, 3].Value = price.Artikul;
                     worksheet.Cells[i + 2, 4].Value = price.KatalogName;
                     worksheet.Cells[i + 2, 5].Value = price.OutputPrice;
+                    worksheet.Cells[i + 2, 6].Value = uploadedImagePathUrl; 
 
                     if (!isOnce)
                     {
                         channelName = price?.AdDescription;
                         isOnce = true;
                     }
+
+                    //price.Status = "Published";
                 }
 
                 // Сохраняем файл Excel

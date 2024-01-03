@@ -438,7 +438,8 @@ namespace DromAutoTrader.ViewModels
 
         // Метод запускающий всю работу
         public async Task RunAllWork()
-        {           
+        {
+
             // Получаю, обрабатываю, записываю в базу прайсы
             await ParsingPricesAsync();
 
@@ -447,10 +448,10 @@ namespace DromAutoTrader.ViewModels
             adsArchiver.CompareAndArchiveAds();
 
             Console.WriteLine("Проверку закончил, приступаю к размещению");
-            await ProcessPublishingAdsAtDrom();
+           // await ProcessPublishingAdsAtDrom();
 
             Console.WriteLine("Публикацию закончил, создаю прайс");
-            string pricePath = ExportPrice();
+            string pricePath = await  ExportPrice();
             if (!string.IsNullOrEmpty(pricePath))
             {
                 // Здесь передаём путь к файлу для скачивания(локально)
@@ -699,12 +700,12 @@ namespace DromAutoTrader.ViewModels
 
 
         // Метод для формирования прайса
-        private string ExportPrice()
+        private async Task <string> ExportPrice()
         {
             using var context = new AppContext();
             List<AdPublishingInfo> prices = context.AdPublishingInfo.ToList();
             ExcelPriceExporter priceExporter = new ExcelPriceExporter();
-            string pricePath = priceExporter.ExportPricesToExcel(prices);
+            string pricePath = await priceExporter.ExportPricesToExcel(prices);
 
             return pricePath;
         }
