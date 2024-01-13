@@ -5,14 +5,71 @@ namespace DromAutoTrader.Services
     public class ImageBanUploaderService
     {
         private const string ApiBaseUrl = "https://api.imageban.ru/v1";
-        private const string SecretKey = "y67rw8ci8LUAW9VEdxs8LWAHKF1nnGrLIUy"; // Замените на ваш Secret Key
+        private const string SecretKey = "73ITNPONgReAaANkK2xMBahDS5bAko8e0w6"; // Замените на ваш Secret Key
+        private HttpClient _httpClient;
 
-        public static async Task<string> UploadImageFromFile(string imagePath, string albumId = null)
+        public ImageBanUploaderService()
         {
-            using (var httpClient = new HttpClient())
+            _httpClient = new HttpClient();
+            _httpClient.BaseAddress = new Uri(ApiBaseUrl);
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {SecretKey}");
+        }
+
+        /// <summary>
+        /// Метод создания альбома
+        /// </summary>
+        /// <param name="albumName"></param>
+        /// <returns>Возвращает string id альбома</returns>
+        public async Task <string> CreateAlbum(string albumName)
+        {
+
+            var formData = new MultipartFormDataContent();          
+
+            try
+            {              
+
+                // Add optional parameters
+                if (!string.IsNullOrEmpty(albumName))
+                    formData.Add(new StringContent(albumName), "album_name");
+
+                // Send POST request
+                var response = await _httpClient.PostAsync("https://api.imageban.ru/v1/album", formData);
+
+                // Handle response
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseData = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(responseData);
+
+                    // Parse responseData to get the link to the uploaded image
+                    JObject? albumIdObj = ParseImageData(responseData);
+                    string albumId = albumIdObj["id"]?.ToString();
+                    return albumId;
+                }
+                else
+                {
+                    // Handle error response
+                    Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
+                    return null;
+                }
+            }
+            catch (Exception ex)
             {
-                // Set Authorization header for authorized user access
-                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {SecretKey}");
+                Console.WriteLine($"Не удалось загрузить фото {ex.Message}");
+                return null!;
+            }
+
+        }
+
+
+        /// <summary>
+        /// Метод загрузки изображения, в ответе получаем ссылку на изображение
+        /// </summary>
+        /// <param name="imagePath"></param>
+        /// <param name="albumId"></param>
+        /// <returns></returns>
+        public async Task<string> UploadImageFromFile(string imagePath, string albumId = null!)
+        {          
 
                 // Prepare form data
                 var formData = new MultipartFormDataContent();
@@ -28,7 +85,7 @@ namespace DromAutoTrader.Services
                         formData.Add(new StringContent(albumId), "album");
 
                     // Send POST request
-                    var response = await httpClient.PostAsync(ApiBaseUrl, formData);
+                    var response = await _httpClient.PostAsync("", formData);
 
                     // Handle response
                     if (response.IsSuccessStatusCode)
@@ -37,38 +94,37 @@ namespace DromAutoTrader.Services
                         Console.WriteLine(responseData);
 
                         // Parse responseData to get the link to the uploaded image
-                        var imageUrl = ParseImageUrl(responseData);
-                        return imageUrl;
+                        JObject? imageUrl = ParseImageData(responseData);
+                        return imageUrl["link"]?.ToString();
                     }
                     else
                     {
                         // Handle error response
                         Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
-                        return null;
+                        return null!;
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-
-                    throw;
+                    Console.WriteLine($"Не удалось загрузить фото {ex.Message}");
+                    return null!;
                 }
-            }
+            
         }
 
-        private static string ParseImageUrl(string responseData)
+        // Вспомогательный метод получения данных из поля data
+        private JObject ParseImageData(string responseData)
         {
-            // Parse JSON response to get the link to the uploaded image
-            var json = JObject.Parse(responseData);
-            var data = json["data"] as JObject;
+            try
+            {
+                var json = JObject.Parse(responseData);
+                var data = json["data"] as JObject;
 
-            if (data != null)
-            {
-                var imageUrl = data?["link"]?.ToString();
-                return imageUrl;
+                return data;
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine("Invalid JSON response format.");
+                Console.WriteLine($"Error parsing JSON response: {ex.Message}");
                 return null;
             }
         }

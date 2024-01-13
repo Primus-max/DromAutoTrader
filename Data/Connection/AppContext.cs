@@ -18,6 +18,8 @@ namespace DromAutoTrader.Data.Connection
         public DbSet<BrandImageServiceMapping> BrandImageServiceMappings { get; set; } = null!;
         public DbSet<BrandChannelMapping> BrandChannelMappings { get; set; } = null!;
         public DbSet<AdPublishingInfo> AdPublishingInfo { get; set; } = null!;
+        public DbSet<Album> Albums { get; set; } = null!;
+        public DbSet<Photo> Photos { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

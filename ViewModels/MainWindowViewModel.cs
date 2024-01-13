@@ -448,14 +448,14 @@ namespace DromAutoTrader.ViewModels
             adsArchiver.CompareAndArchiveAds();
 
             Console.WriteLine("Проверку закончил, приступаю к размещению");
-           // await ProcessPublishingAdsAtDrom();
+            await ProcessPublishingAdsAtDrom();
 
             Console.WriteLine("Публикацию закончил, создаю прайс");
-            string pricePath = await  ExportPrice();
-            if (!string.IsNullOrEmpty(pricePath))
-            {
-                // Здесь передаём путь к файлу для скачивания(локально)
-            }
+           // string pricePath = await  ExportPrice();
+            //if (!string.IsNullOrEmpty(pricePath))
+            //{
+            //    // Здесь передаём путь к файлу для скачивания(локально)
+            //}
 
             Console.WriteLine("Прайс создал, убираю в архив");
             await RemoveAtArchive(); // Убираю в архив
@@ -618,9 +618,9 @@ namespace DromAutoTrader.ViewModels
                 // Беру только для выбранного канала и выбранный прайс
                 var channelAdInfos = adInfos.Where(adInfo => adInfo.AdDescription == selectedChannel && adInfo.PriceName.Contains(SelectedPrice?.Name) && adInfo.IsArchived == false).ToList();
 
-                DromAdPublisher dromAdPublisher = new(selectedChannel);
+               // DromAdPublisher dromAdPublisher = new(selectedChannel);
 
-                tasks.Add(ProcessChannelAdsAsync(dromAdPublisher, channelAdInfos));
+                tasks.Add(ProcessChannelAdsAsync(channelAdInfos));
             }
 
             await Task.WhenAll(tasks);
@@ -635,10 +635,13 @@ namespace DromAutoTrader.ViewModels
         } 
 
         // Метод публикации объявлений
-        private async Task ProcessChannelAdsAsync(DromAdPublisher dromAdPublisher, List<AdPublishingInfo> channelAdInfos)
+        private async Task ProcessChannelAdsAsync(List<AdPublishingInfo> channelAdInfos)
         {
             using var context = new AppContext();
             int countProgress = 0;
+
+            ExcelPriceExporter priceExporter = new ExcelPriceExporter();
+            
 
             foreach (var adInfo in channelAdInfos)
             {               
@@ -654,10 +657,11 @@ namespace DromAutoTrader.ViewModels
                                     // ... (остальные свойства)
                                     );
 
+              string isAdded =   await priceExporter.ExportPriceToExcel(adInfo);
 
-                long dromId = await dromAdPublisher.PublishAdAsync(adInfo);
+                // long dromId = await dromAdPublisher.PublishAdAsync(adInfo);
 
-                if (dromId > 0)
+                if (!string.IsNullOrEmpty(isAdded))
                 {
                     Console.WriteLine($"Публикация {adInfo.Artikul} || {adInfo.Brand} || канал: {adInfo.AdDescription}");
 
@@ -666,7 +670,7 @@ namespace DromAutoTrader.ViewModels
                     if (existingAdInfo != null)
                     {
                         existingAdInfo.Status = "Published";
-                        existingAdInfo.DromeId = dromId;
+                       // existingAdInfo.DromeId = dromId;
                         existingAdInfo.DatePublished = DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss");
 
                         // Информирую о прогрессе
@@ -700,15 +704,15 @@ namespace DromAutoTrader.ViewModels
 
 
         // Метод для формирования прайса
-        private async Task <string> ExportPrice()
-        {
-            using var context = new AppContext();
-            List<AdPublishingInfo> prices = context.AdPublishingInfo.ToList();
-            ExcelPriceExporter priceExporter = new ExcelPriceExporter();
-            string pricePath = await priceExporter.ExportPricesToExcel(prices);
+        //private async Task <string> ExportPrice()
+        //{
+        //    using var context = new AppContext();
+        //    List<AdPublishingInfo> prices = context.AdPublishingInfo.ToList();
+        //    ExcelPriceExporter priceExporter = new ExcelPriceExporter();
+        //    string pricePath = await priceExporter.ExportPriceToExcel(price);
 
-            return pricePath;
-        }
+        //    return pricePath;
+        //}
 
 
         // Метод для перещения публикаций в архив
@@ -744,7 +748,9 @@ namespace DromAutoTrader.ViewModels
         {
             var currentDate = DateTime.Now.Date;
 
-            return _db.AdPublishingInfo
+            using var context = new AppContext();
+
+            return context.AdPublishingInfo
                 .ToList()
                 .Where(a => DateTime.Parse(a.DatePublished).Date != currentDate)
                 .ToList();

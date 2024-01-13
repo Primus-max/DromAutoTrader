@@ -23,8 +23,15 @@ namespace DromAutoTrader
         {
             InitializeComponent();
 
-            // Инициализация базы данных
-            //InitializeDatabase();
+
+             using var appContext  = new AppContext();
+
+
+            var asdf =  appContext.Albums.ToList();
+            var aassdf = appContext.Photos;
+
+            ImageBanUploaderService service = new ImageBanUploaderService();
+            var album =  service.CreateAlbum("8888");
 
             // Объявляю какакую версию EPPlus использую
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;

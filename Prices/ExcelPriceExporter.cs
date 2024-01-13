@@ -1,5 +1,5 @@
 ﻿using OfficeOpenXml;
-using System.IO;
+using System.Linq;
 
 
 namespace DromAutoTrader.Prices
@@ -9,77 +9,91 @@ namespace DromAutoTrader.Prices
     /// </summary>
     public class ExcelPriceExporter
     {
+        private int cellCount = 0;
+
         /// <summary>
         /// Метод экспорта прайса с выходными ценами
         /// </summary>
-        /// <param name="prices"></param>
+        /// <param name="price">Объект объявления</param>
         /// <returns>Путь к прайсу</returns>
-        public async Task< string> ExportPricesToExcel(List<AdPublishingInfo> prices)
+        public async Task<string> ExportPriceToExcel(AdPublishingInfo price)
         {
-            string channelName = string.Empty;
+            if (price == null )
+                return null;
 
-            // Создаем новый пакет Excel
-            using (var package = new ExcelPackage())
+            // Получаем или создаем файл Excel
+            string filePath = GetFilePath();
+            FileInfo excelFile = new FileInfo(filePath);
+
+            try
             {
-                // Добавляем новый лист в пакет
-                var worksheet = package.Workbook.Worksheets.Add("Prices");
-
-                // Заголовки столбцов
-                worksheet.Cells[1, 1].Value = "Канал";
-                worksheet.Cells[1, 2].Value = "Бренд";
-                worksheet.Cells[1, 3].Value = "Артикул";
-                worksheet.Cells[1, 4].Value = "Описание";
-                worksheet.Cells[1, 5].Value = "Цена";
-                worksheet.Cells[1, 6].Value = "Фото";
-
-
-                bool isOnce = false;
-                // Заполняем данные из списка
-                for (int i = 0; i < prices.Count; i++)
+                using (var package = new ExcelPackage(excelFile))
                 {
-                    var price = prices[i];
-                    if (price == null) continue;
+                    // Получаем лист, если он существует, или создаем новый
+                    var worksheet = package.Workbook.Worksheets.FirstOrDefault() ?? package.Workbook.Worksheets.Add("Prices");
 
-                    string imageLocalPath = price?.ImagesPath?.Split(";").First();
-                    
-                    string uploadedImagePathUrl = await ImageBanUploaderService.UploadImageFromFile(imageLocalPath);
-
-                    if (price.IsArchived == true) continue; // Если объявление в архиве
-                    if(price.Status != "Published") continue; // Если не было размещено
-
-                    worksheet.Cells[i + 2, 1].Value = price.AdDescription;
-                    worksheet.Cells[i + 2, 2].Value = price.Brand;
-                    worksheet.Cells[i + 2, 3].Value = price.Artikul;
-                    worksheet.Cells[i + 2, 4].Value = price.KatalogName;
-                    worksheet.Cells[i + 2, 5].Value = price.OutputPrice;
-                    worksheet.Cells[i + 2, 6].Value = uploadedImagePathUrl; 
-
-                    if (!isOnce)
+                    // Заголовки столбцов (если лист был создан только что)
+                    if (worksheet.Dimension == null)
                     {
-                        channelName = price?.AdDescription;
-                        isOnce = true;
+                        worksheet.Cells[1, 1].Value = "Бренд";
+                        worksheet.Cells[1, 2].Value = "Артикул";
+                        worksheet.Cells[1, 3].Value = "Описание";
+                        worksheet.Cells[1, 4].Value = "Цена";
+                        worksheet.Cells[1, 5].Value = "Состояние";
+                        worksheet.Cells[1, 6].Value = "Наличие";
+                        worksheet.Cells[1, 7].Value = "Фото";
                     }
 
-                    //price.Status = "Published";
+                    // Заполняем данные
+                    var imageLocalPath = price?.ImagesPath?.Split(";");
+                    List<string> images = new List<string>();
+                    string uploadedImagePathUrl;
+                    ImageBanUploaderService uploaderService = new ();
+                    foreach (var image in imageLocalPath)
+                    {
+                        uploadedImagePathUrl = await uploaderService.UploadImageFromFile(image);
+                        images.Add(uploadedImagePathUrl);
+
+                        await Task.Delay(200);
+                    }
+                    
+
+                    worksheet.Cells[cellCount + 2, 1].Value = price.Brand;
+                    worksheet.Cells[cellCount + 2, 2].Value = price.Artikul;
+                    worksheet.Cells[cellCount + 2, 3].Value = price.KatalogName;
+                    worksheet.Cells[cellCount + 2, 4].Value = price.OutputPrice;
+                    worksheet.Cells[cellCount + 2, 5].Value = "Новый";
+                    worksheet.Cells[cellCount + 2, 6].Value = "В наличии";
+                    worksheet.Cells[cellCount + 2, 7].Value = string.Join(",", images);
+
+                    cellCount++;
+
+                    // Сохраняем изменения в существующем файле
+                    package.Save();
                 }
-
-                // Сохраняем файл Excel
-                var currentDate = DateTime.Now;
-                var fileName = $"{currentDate:yyyyMMddHHmmss}_{channelName}.xlsx";
-                var filePath = Path.Combine("ourprices", fileName);
-
-                // Если папки "ourprices" не существует, создаем ее
-                if (!Directory.Exists("ourprices"))
-                {
-                    Directory.CreateDirectory("ourprices");
-                }
-
-                FileInfo excelFile = new FileInfo(filePath);
-                package.SaveAs(excelFile);
-
-                return filePath;
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Не удалось добавить запись в прайс: {ex.Message}");
+            }
+
+            return filePath;
+        }
+
+        private string GetFilePath()
+        {
+            // Генерируем или получаем путь к файлу
+            var currentDate = DateTime.Now;
+            var fileName = $"{currentDate:yyyyMMdd}_Prices.xlsx";
+            var filePath = Path.Combine("ourprices", fileName);
+
+            // Если папки "ourprices" не существует, создаем ее
+            if (!Directory.Exists("ourprices"))
+            {
+                Directory.CreateDirectory("ourprices");
+            }
+
+            return filePath;
         }
     }
-
 }
