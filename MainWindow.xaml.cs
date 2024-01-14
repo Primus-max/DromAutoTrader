@@ -1,5 +1,7 @@
 ﻿using DromAutoTrader.Data;
+using DromAutoTrader.Managers;
 using DromAutoTrader.Models;
+using DromAutoTrader.Prices;
 using DromAutoTrader.ViewModels;
 using DromAutoTrader.Views;
 using DromAutoTrader.Views.Pages;
@@ -21,17 +23,7 @@ namespace DromAutoTrader
 
         public MainWindow()
         {
-            InitializeComponent();
-
-
-             using var appContext  = new AppContext();
-
-
-            var asdf =  appContext.Albums.ToList();
-            var aassdf = appContext.Photos;
-
-            ImageBanUploaderService service = new ImageBanUploaderService();
-            var album =  service.CreateAlbum("8888");
+            InitializeComponent();           
 
             // Объявляю какакую версию EPPlus использую
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -56,6 +48,15 @@ namespace DromAutoTrader
             context.Database.ExecuteSqlRaw("PRAGMA journal_mode = WAL;");
         }
 
+
+        private async Task test()
+        {
+            List<string> imagesPaths = new List<string>();
+            imagesPaths.Add(@"C:\Users\FedoTT\Desktop\SB1392_00.jpg");
+
+            ImagesManager imagesManager = new();
+           await imagesManager.UploadImages("Bred", "43fslhdef34", imagesPaths);
+        }
         private void HandlePostingProgressItemUpdated(object sender, PostingProgressItem progressItem)
         {
             Application.Current?.Dispatcher.Invoke(() =>

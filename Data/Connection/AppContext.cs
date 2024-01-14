@@ -20,6 +20,7 @@ namespace DromAutoTrader.Data.Connection
         public DbSet<AdPublishingInfo> AdPublishingInfo { get; set; } = null!;
         public DbSet<Album> Albums { get; set; } = null!;
         public DbSet<Photo> Photos { get; set; } = null!;
+        public DbSet<AlbumPhoto> AlbumPhotos { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

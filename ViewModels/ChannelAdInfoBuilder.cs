@@ -1,4 +1,6 @@
-﻿namespace DromAutoTrader.ViewModels
+﻿using DromAutoTrader.Managers;
+
+namespace DromAutoTrader.ViewModels
 {
     public class ChannelAdInfoBuilder
     {
@@ -73,6 +75,10 @@
             imagesPaths = await imagesPathsservice.SelectPaths(_price?.Brand, _price?.Artikul); // Получаю путь к изображению
             _adPublishingInfo.ImagesPaths = imagesPaths; // Это временное хранение путей не для хранения в базе
             _adPublishingInfo.ImagesPath = string.Join(";", imagesPaths); // Формирую пути в одну строку с разделителем для хранения в базе
+
+            // Сразу выгружаю фото на сервер
+            ImagesManager imagesManager = new();
+            await imagesManager.UploadImages(_price.Brand, _price.Artikul, imagesPaths);
 
             return _adPublishingInfo;
         }

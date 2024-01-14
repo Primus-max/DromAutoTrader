@@ -20,13 +20,13 @@ namespace DromAutoTrader.Services
         /// </summary>
         /// <param name="albumName"></param>
         /// <returns>Возвращает string id альбома</returns>
-        public async Task <string> CreateAlbum(string albumName)
+        public async Task<string> CreateAlbum(string albumName)
         {
 
-            var formData = new MultipartFormDataContent();          
+            var formData = new MultipartFormDataContent();           
 
             try
-            {              
+            {
 
                 // Add optional parameters
                 if (!string.IsNullOrEmpty(albumName))
@@ -68,48 +68,55 @@ namespace DromAutoTrader.Services
         /// <param name="imagePath"></param>
         /// <param name="albumId"></param>
         /// <returns></returns>
-        public async Task<string> UploadImageFromFile(string imagePath, string albumId = null!)
-        {          
+        public async Task<Photo> UploadImageFromFile(string imagePath, string albumId = null!)
+        {
 
-                // Prepare form data
-                var formData = new MultipartFormDataContent();
+            // Prepare form data
+            var formData = new MultipartFormDataContent();
+            Photo photo = new ();
 
-                try
+
+            try
+            {
+                // Load image file
+                byte[] imageData = File.ReadAllBytes(imagePath);
+                formData.Add(new ByteArrayContent(imageData), "image", Path.GetFileName(imagePath));
+
+                // Add optional parameters
+                if (!string.IsNullOrEmpty(albumId))
+                    formData.Add(new StringContent(albumId), "album");
+
+                // Send POST request
+                var response = await _httpClient.PostAsync("", formData);
+
+                // Handle response
+                if (response.IsSuccessStatusCode)
                 {
-                    // Load image file
-                    byte[] imageData = File.ReadAllBytes(imagePath);
-                    formData.Add(new ByteArrayContent(imageData), "image", Path.GetFileName(imagePath));
+                    var responseData = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(responseData);
 
-                    // Add optional parameters
-                    if (!string.IsNullOrEmpty(albumId))
-                        formData.Add(new StringContent(albumId), "album");
+                    // Parse responseData to get the link to the uploaded image
+                    JObject? imageUrl = ParseImageData(responseData);
 
-                    // Send POST request
-                    var response = await _httpClient.PostAsync("", formData);
+                    photo.Link = imageUrl["link"]?.ToString();
+                    photo.Name = imageUrl["name"]?.ToString();
+                    photo.PhotoId = imageUrl["id"]?.ToString();
 
-                    // Handle response
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var responseData = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine(responseData);
-
-                        // Parse responseData to get the link to the uploaded image
-                        JObject? imageUrl = ParseImageData(responseData);
-                        return imageUrl["link"]?.ToString();
-                    }
-                    else
-                    {
-                        // Handle error response
-                        Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
-                        return null!;
-                    }
+                    return photo;
                 }
-                catch (Exception ex)
+                else
                 {
-                    Console.WriteLine($"Не удалось загрузить фото {ex.Message}");
+                    // Handle error response
+                    Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
                     return null!;
                 }
-            
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Не удалось загрузить фото {ex.Message}");
+                return null!;
+            }
+
         }
 
         // Вспомогательный метод получения данных из поля data

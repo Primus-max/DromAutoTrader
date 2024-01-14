@@ -1,5 +1,4 @@
 ﻿using OfficeOpenXml;
-using System.Linq;
 
 
 namespace DromAutoTrader.Prices
@@ -18,7 +17,7 @@ namespace DromAutoTrader.Prices
         /// <returns>Путь к прайсу</returns>
         public async Task<string> ExportPriceToExcel(AdPublishingInfo price)
         {
-            if (price == null )
+            if (price == null)
                 return null;
 
             // Получаем или создаем файл Excel
@@ -45,18 +44,9 @@ namespace DromAutoTrader.Prices
                     }
 
                     // Заполняем данные
-                    var imageLocalPath = price?.ImagesPath?.Split(";");
-                    List<string> images = new List<string>();
-                    string uploadedImagePathUrl;
-                    ImageBanUploaderService uploaderService = new ();
-                    foreach (var image in imageLocalPath)
-                    {
-                        uploadedImagePathUrl = await uploaderService.UploadImageFromFile(image);
-                        images.Add(uploadedImagePathUrl);
-
-                        await Task.Delay(200);
-                    }
-                    
+                    using var appContext = new AppContext();
+                    List<string?>? images = appContext.Photos.Where(p => p.Name == price.Artikul)
+                        .Select(p => p.Link).ToList();
 
                     worksheet.Cells[cellCount + 2, 1].Value = price.Brand;
                     worksheet.Cells[cellCount + 2, 2].Value = price.Artikul;
