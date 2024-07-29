@@ -1,10 +1,11 @@
-﻿using DromAutoTrader.Prices;
+﻿using DromAutoTrader.Data;
+using DromAutoTrader.Models;
 using DromAutoTrader.ViewModels;
+using DromAutoTrader.Views;
+using DromAutoTrader.Views.Pages;
 using OfficeOpenXml;
-using System.IO;
-using System;
-using System.Windows;
-
+using System.Windows.Data;
+using System.Windows.Media;
 
 namespace DromAutoTrader
 {
@@ -13,194 +14,197 @@ namespace DromAutoTrader
     /// </summary>
     public partial class MainWindow : Window
     {
+        
+        private MainWindowViewModel _mainViewModel = null!;
+        private bool isPriceSelected = false;
+        private ObservableCollection<PostingProgressItem> _postingProgressItems = null!;
 
         public MainWindow()
         {
             InitializeComponent();
 
+            // Инициализация базы данных
+            //InitializeDatabase();
+
+            // Объявляю какакую версию EPPlus использую
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
             var viewModel = new MainWindowViewModel();
-            DataContext = viewModel;
-            viewModel.SupplierDataGrid = SupplierDataGrid;
+            _mainViewModel = viewModel;
+            DataContext = _mainViewModel;
+            _postingProgressItems = new ObservableCollection<PostingProgressItem>();
 
+            // Передаю Frame черерз локатор
+            LocatorService.Current.ChannelFrame = ChannelFrame;
 
-            TestParsing();
+            #region Подписка на события
+            Loaded += MainWindow_Loaded;
+            EventAggregator.PostingProgressItemUpdated += HandlePostingProgressItemUpdated; // Подписываюсь на изменение прогресса
+
+            #endregion
+
+            // Включаю модификацию базы данных для работы в многопоточном режиме
+            using var context = new AppContext();
+            // Выполним SQL-команду для настройки режима WAL
+            context.Database.ExecuteSqlRaw("PRAGMA journal_mode = WAL;");
         }
 
-        public void TestParsing()
+        private void HandlePostingProgressItemUpdated(object sender, PostingProgressItem progressItem)
         {
-            PriceProcessor priceProcessor = new PriceProcessor();
-            BrandImporter brandImporter = new BrandImporter();
-
-            string directoryPath = @"C:\Users\FedoTT\source\repos\DromAutoTrader\ТЗ\Прайсы";
-
-            if (Directory.Exists(directoryPath))
+            Application.Current?.Dispatcher.Invoke(() =>
             {
-                string[] fileEntries = Directory.GetFiles(directoryPath, "*.xlsx"); // Получить все файлы с расширением .xlsx
+                // Найти существующий элемент в коллекции
+                var existingItem = _postingProgressItems.FirstOrDefault(item => item.PriceName == progressItem.PriceName);
 
-                foreach (string filePath in fileEntries)
+                if (existingItem != null)
                 {
-                    var prices = priceProcessor.ProcessExcelPrice(filePath);
-                    brandImporter.ImportBrandsFromPrices(prices);
+                    // Обновить свойства существующего элемента
+                    existingItem.ProcessName = progressItem.ProcessName;
+                    existingItem.CurrentStage = progressItem.CurrentStage;
+                    existingItem.ChannelName = progressItem.ChannelName;
+                    existingItem.CurrentStage= progressItem.CurrentStage;
+                    existingItem.TotalStages = progressItem.TotalStages;
                 }
-            }
-            else
-            {
-                // TODO запись логов
-                //Console.WriteLine("Указанная директория не существует.");
-            }
+                else
+                {
+                    // Если элемент не найден, добавить его в коллекцию
+                    _postingProgressItems.Add(progressItem);
+                }
+                ProcessPostingDataGrid.ItemsSource = null;
+                // Установить источник данных для DataGrid
+                ProcessPostingDataGrid.ItemsSource = _postingProgressItems;
+                UpdateLayout();
+            });
         }
 
 
+        #region Cкрытые метод для разработчика
+        // Скрытый метод для добавления сервисов для поиска картинок
+        private void AddImageService()
+        {
+            AppContext _db = AppContextFactory.GetInstance();
+            // загружаем данные о поставщиках из БД и включаем связанные данные (PriceIncreases и Brands)
+            _db.ImageServices.Load();
 
 
+            List<string> urls = new() { "https://berg.ru/", " https://uniqom.ru/", "https://lynxauto.info/", " https://luzar.ru/", " https://startvolt.com/", " https://irk.rossko.ru/", " https://tmparts.ru/" };
+
+            foreach (var url in urls)
+            {
+                ImageService imageService = new ImageService();
+                imageService.Name = url;
+
+                _db.ImageServices.Add(imageService);
+                _db.SaveChanges();
+            }
+        }
+        #endregion
+
+        #region Обработчики событий
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Устанавливаем начальное содержимое Frame при загрузке окна
+            ChannelFrame.Navigate(new AllChannelPage());
+        }
+
+        // Получю данные из полей для ставок
+        private void DoRate_Click(object sender, RoutedEventArgs e)
+        {
+            List<string> partsText = PartsTextBox.Text.Split(",").ToList();
+            string selectedChannel = ChannelCombobox.Text;
+            string rate = RateTextBox.Text;
+
+            _mainViewModel.SetRates(partsText, rate, selectedChannel);
+        }
+
+        #region ФИЛЬТРЫ
+        #region Брэнды       
+
+        private void BrandCollection_Filter(object sender, System.Windows.Data.FilterEventArgs e)
+        {
+            if (e.Item is not Brand brand) return;
+            if (string.IsNullOrEmpty(brand.Name)) return;
+
+            string searhingText = FilterSearchParameterTextBox.Text;
+            if (string.IsNullOrEmpty(searhingText)) return;
+
+            if (brand.Name.Contains(searhingText, StringComparison.OrdinalIgnoreCase)) return;
+
+            e.Accepted = false;
+        }
+
+        private void FilterSearchParameterTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var textBox = (TextBox)sender;
+            var collection = (CollectionViewSource)textBox.FindResource("BrandsCollection");
+
+            collection.View.Refresh();
+        }
+
+        #region Выбор прайса и каналов для него
+        private void PriceListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            isPriceSelected = PriceListBox.SelectedItem != null;
+        }
+
+        private void RadioButtonGroupChoiceChip_Selected(object sender, RoutedEventArgs e)
+        {
+            if (!isPriceSelected)
+            {
+                MessageBox.Show("Пожалуйста, выберите прайс кликнув на его имя, затем выберите каналы для этого прайса", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            DependencyObject obj = (DependencyObject)e.OriginalSource;
+            string selectedPrice = PriceListBox.SelectedItem?.ToString();
+            Price price = new() { Name = selectedPrice };
+
+            while (obj != null && obj != PriceListBox)
+            {
+                if (obj is ListBox listBox)
+                {
+                    List<Channel> selectedChannels = listBox.SelectedItems.Cast<Channel>().ToList();
+
+                    if (!string.IsNullOrEmpty(price.Name))
+                    {
+                        _mainViewModel.OnSelectChannel(price, selectedChannels);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Пожалуйста, выберите прайс кликнув на его имя, затем выберите каналы для этого прайса", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                    break;
+                }
+                obj = VisualTreeHelper.GetParent(obj);
+            }
+            isPriceSelected = false;
+        }
+
+        #endregion
+
+        #endregion
+
+        #endregion
+
+        #endregion
 
 
-
-        // Метод для инициализации базы данных
-
-
-        //#region ПОСТАВЩИКИ
-
-        //#region Методы
-
-        //// TODO реалилзовать метод сохранения данных при поетери фокуса на поле
-
-        //// Событие потери фокусу на DataGrid
-        ////private void SupplierDataGrid_LostFocus(object sender, RoutedEventArgs e)
-        ////{
-        ////    if (SelectedSupplier != null && !SupplierDataGrid.IsReadOnly)
-        ////    {
-        ////        if (SelectedSupplier.Name == "Имя поставщика")
-        ////        {
-        ////            // Удаляем поставщика с пустым именем
-        ////            DeleteSupplierFromDatabase(SelectedSupplier.Id);
-        ////            Suppliers.Remove(SelectedSupplier);
-        ////        }
-        ////        else
-        ////        {
-        ////            // Сохраняем изменения в базе данных
-        ////            UpdateSupplierInDatabase(SelectedSupplier.Id, SelectedSupplier.Name);
-        ////        }
-
-        ////        SupplierDataGrid.IsReadOnly = true;
-        ////    }
-        ////}
-
-
-        //private void SupplierDataGrid_KeyUp(object sender, KeyEventArgs e)
-        //{
-        //    if (e.Key == Key.Enter)
-        //    {
-        //        if (sender is DataGrid dataGrid)
-        //        {
-        //            if (dataGrid.SelectedItem is Supplier selectedSupplier)
-        //            {
-        //                if (selectedSupplier.Name == "Имя поставщика")
-        //                {
-        //                    // Удаляем поставщика с пустым именем
-        //                    DeleteSupplierFromDatabase(selectedSupplier.Id);
-        //                    Suppliers.Remove(selectedSupplier);
-        //                }
-        //                else
-        //                {
-        //                    // Сохраняем изменения в базе данных
-        //                    UpdateSupplierInDatabase(selectedSupplier.Id, selectedSupplier.Name);
-        //                }
-
-        //                dataGrid.IsReadOnly = true;
-        //            }
-        //        }
-        //    }
-        //}
-
-
-        //private void EditButton_Click(object sender, RoutedEventArgs e)
-        //{
-        //    // Включение редактирования имени поставщика
-        //    var button = (Button)sender;
-        //    var supplier = (Supplier)button.DataContext;
-        //    if (supplier != null)
-        //    {
-        //        supplier.Name = string.Empty; // Очищаем имя для редактирования
-        //    }            
-        //}
-
-        //private void DeleteButton_Click(object sender, RoutedEventArgs e)
-        //{
-        //    // Удаление выбранного поставщика
-        //    var button = (Button)sender;
-        //    var supplier = (Supplier)button.DataContext;
-        //    if (supplier != null)
-        //    {
-        //        Suppliers.Remove(supplier);
-        //    }
-        //}
-
-        //private void AddSupplierButton_Click(object sender, RoutedEventArgs e)
-        //{
-
-        //    SupplierDataGrid.IsReadOnly = false;
-
-        //    // Создаем нового поставщика с пустым именем
-        //    var newSupplier = new Supplier { Id = Suppliers.Count + 1, };
-
-        //    // Добавляем его в список поставщиков
-        //    Suppliers.Add(newSupplier);
-
-        //    // Устанавливаем источник данных для DataGrid
-        //    SupplierDataGrid.ItemsSource = Suppliers;
-
-        //}
-
-        //// Метод для получения всех поставщиков из базы данных
-        //public List<Supplier> GetAllSuppliers()
+        //private void InitializeDatabase()
         //{
         //    try
         //    {
-        //        return _db.Suppliers.ToList();
+        //        // Экземпляр базы данных
+        //        _db = AppContextFactory.GetInstance();
+
+        //        _db.BrandChannelMappings.Load();
         //    }
-        //    catch (Exception ex)
+        //    catch (Exception)
         //    {
-        //        Console.WriteLine($"Не удалось получить список поставщиков: {ex.Message}");
-        //        return new List<Supplier>(); // Вернуть пустой список или обработать ошибку иным способом
+        //        // TODO сделать запись логов
+        //        //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");
         //    }
         //}
 
-        //private void AddSupplierToDatabase(string name)
-        //{
-        //    var newSupplier = new Supplier { Name = name };
-        //    _db.Suppliers.Add(newSupplier);
-        //    _db.SaveChanges();
-        //}
-
-
-        //private void UpdateSupplierInDatabase(int id, string newName)
-        //{
-        //    var supplierToUpdate = _db.Suppliers.FirstOrDefault(s => s.Id == id);
-        //    if (supplierToUpdate != null)
-        //    {
-        //        supplierToUpdate.Name = newName;
-        //        _db.SaveChanges();
-        //    }
-        //}
-
-
-        //private void DeleteSupplierFromDatabase(int id)
-        //{
-        //    var supplierToRemove = _db.Suppliers.FirstOrDefault(s => s.Id == id);
-        //    if (supplierToRemove != null)
-        //    {
-        //        _db.Suppliers.Remove(supplierToRemove);
-        //        _db.SaveChanges();
-        //    }
-        //}
-        //#endregion
-
-        //#endregion
-
-
-        // Другие методы и события вашего MainWindow
     }
 }
+

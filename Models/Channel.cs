@@ -1,15 +1,24 @@
-﻿using DromAutoTrader.Models.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SQLite;
+using SQLiteNetExtensions.Attributes;
 
 namespace DromAutoTrader.Models
 {
-    internal class Channel: IBaseModel
+    public class Channel
     {
-        public int Id { get; set; } // Уникальный идентификатор поставщика
-        public string? Name { get; set; }  // Название поставщика    
+        public int Id { get; set; }
+        public string? Name { get; set; } = null!;
+        public string? Description { get; set; } = null!;
+
+
+        // Навигационное свойство для связи с ценами повышения
+        [OneToMany]
+        public List<TablePriceOfIncrease>? PriceIncreases { get; set; }
+
+        // Брэнды для этого канала
+        [ManyToMany(typeof(BrandChannelMapping))]
+        public List<Brand>? Brands { get; set; }
+
+        [Ignore] // Используем атрибут Ignore, чтобы это свойство не сохранялось в базу данных
+        public int BrandsCount => Brands?.Count ?? 0;
     }
 }

@@ -1,11 +1,5 @@
-﻿
-using System;
-using System.Linq;
-using DromAutoTrader.Models;
+﻿using DromAutoTrader.Data;
 using DromAutoTrader.Prices;
-using Microsoft.EntityFrameworkCore;
-using AppContext = DromAutoTrader.Data.Connection.AppContext;
-
 
 /// <summary>
 /// Класс для импорта брендов из прайс-листа в базу данных.
@@ -26,21 +20,33 @@ public class BrandImporter
     /// Импортирует бренды из переданного прайс-листа в базу данных.
     /// </summary>
     /// <param name="prices">Прайс-лист, содержащий информацию о брендах.</param>
-    public void ImportBrandsFromPrices(PriceList prices)
+    public (int, List<string>) ImportBrandsFromPrices(PriceList prices)
     {
+        int countNewElement = 0;
+        List<string> newBrands = new List<string>();
         foreach (var priceItem in prices)
         {
             if (!string.IsNullOrEmpty(priceItem.Brand))
             {
                 // Проверка на дубликаты в базе данных
-                bool isDuplicate = _db.Brands.Any(b => b.Name == priceItem.Brand);
+                bool isDuplicate = _db.Brands.Any(b => b.Name.ToLower() == priceItem.Brand.ToLower());
 
                 if (!isDuplicate)
                 {
                     // Создание нового объекта Brand и добавление его в базу данных
                     var brand = new Brand { Name = priceItem.Brand };
-                    _db.Brands.Add(brand);
-                    _db.SaveChanges(); // Сохранение изменений в базе данных.
+                    try
+                    {
+                        _db.Brands.Add(brand);
+                        _db.SaveChanges(); // Сохранение изменений в базе данных.
+
+                        newBrands.Add(brand.Name);
+
+                        countNewElement++; // Считаем новые элементы
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
                 else
                 {
@@ -48,19 +54,17 @@ public class BrandImporter
                 }
             }
         }
+
+        return (countNewElement, newBrands);
     }
 
     private void InitializeDatabase()
     {
         try
         {
-            // Экземпляр базы данных
-            _db = new AppContext();
-            // Гарантируем, что база данных создана
-            _db.Database.EnsureCreated();
-            // Загружаем данные о поставщиках из БД (по вашей логике).
+            _db = AppContextFactory.GetInstance();
         }
-        catch (Exception ex)
+        catch (Exception )
         {
             // TODO: Добавить запись логов
             //Console.WriteLine($"Не удалось инициализировать базу данных: {ex.Message}");

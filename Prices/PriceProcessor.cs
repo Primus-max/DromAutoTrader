@@ -1,20 +1,22 @@
 ﻿using OfficeOpenXml;
-using System.Collections.Generic;
-using System.IO;
+using OfficeOpenXml.FormulaParsing.Excel;
+
+using System.Globalization;
 
 namespace DromAutoTrader.Prices
 {
+    /// <summary>
+    /// Класс для обработки прайс-листов из Excel-файлов.
+    /// </summary>
     public class PriceProcessor
     {
         private PriceFieldMapper fieldMapper;
+        private readonly Logger _logger;
 
-
-        /// <summary>
-        /// Класс для обработки прайс-листов из Excel-файлов.
-        /// </summary>
         public PriceProcessor()
         {
             fieldMapper = new PriceFieldMapper();
+            _logger = new LoggingService().ConfigureLogger();
         }
 
         /// <summary>
@@ -27,8 +29,14 @@ namespace DromAutoTrader.Prices
             var priceList = new PriceList(); // Создаем коллекцию для хранения обработанных прайс-листов.
 
             using (var package = new ExcelPackage(new FileInfo(filePath)))
-            {
-                var worksheet = package.Workbook.Worksheets[0]; // Предполагаем, что данные находятся в первом листе.
+            {                
+                var worksheet = package.Workbook.Worksheets.FirstOrDefault(); // Предполагаем, что данные находятся в первом листе.
+
+                if (worksheet == null)
+                {
+                    _logger.Error("Не удалось получить листы при парсинге прайса");
+                    return new PriceList();
+                }
 
                 int rowCount = worksheet.Dimension.End.Row;
 
@@ -58,7 +66,7 @@ namespace DromAutoTrader.Prices
                             }
                             else
                             {
-                                // Обработка ошибки или установка значения по умолчанию.
+                                _logger.Error($"Не удалось получить значение в ячейке прайса при парсинге {filePath}");
                             }
                         }
                     }
@@ -109,13 +117,10 @@ namespace DromAutoTrader.Prices
                     priceItem.Description = value;
                     break;
                 case PriceField.PriceBuy:
-                    if (decimal.TryParse(value, out decimal priceBuyValue))
+                    value = value.Replace(",", ".");
+                    if (decimal.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out decimal priceBuyValue))
                     {
                         priceItem.PriceBuy = priceBuyValue;
-                    }
-                    else
-                    {
-                        // Обработка ошибки при парсинге цены.
                     }
                     break;
                 case PriceField.Count:
